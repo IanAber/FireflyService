@@ -1,0 +1,256 @@
+<html lang="en">
+<head>
+  <title id='Description'>Fuel Cell Stack</title>
+  <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+  <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.web.css" type="text/css" />
+  <script type="text/javascript" src="scripts/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxchart.core.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxchart.rangeselector.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxdatetimeinput.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxcalendar.js"></script>
+  <script type="text/javascript" src="scripts/charts.js"></script>
+  <script type="text/javascript">
+
+    function buildURLForTimes(start, end) {
+      $("#startAt").jqxDateTimeInput('setDate', start );
+      $("#endAt").jqxDateTimeInput('setDate', end );
+      url = encodeURI("../FuelCellData/Stack?start="
+              + start.getUTCFullYear() + "-" + (start.getUTCMonth() + 1) + "-" + start.getUTCDate() + " " + start.getUTCHours() + ":" + start.getUTCMinutes()
+              + "&end=" + end.getUTCFullYear() + "-" + (end.getUTCMonth() + 1) + "-" +  end.getUTCDate() + " " + end.getUTCHours() + ":" + end.getUTCMinutes());
+      return url;
+    }
+
+    $(document).ready(function () {
+      let Settings = {
+        title: "Fuel Cell Stack",
+        description: "Fuel Cell Stack Measurments.",
+        enableAnimations: false,
+        animationDuration: 1000,
+        enableAxisTextAnimation: true,
+        showLegend: true,
+        padding: { left: 5, top: 5, right: 5, bottom: 5 },
+        titlePadding: { left: 90, top: 0, right: 0, bottom: 10 },
+        xAxis: {
+          dataField: 'logged',
+          type: 'date',
+          showGridLines: false,
+          textRotationAngle: 270,
+          formatFunction: xAxisFormatFunction,
+          minValue: start,
+          maxValue: end,
+          rangeSelector: {
+            serieType: 'spline',
+            padding: { /*left: 0, right: 0,*/ top: 20, bottom: 0 },
+            backgroundColor: 'white',
+            size: 110,
+            gridLines: {visible: false},
+            min: start,
+            max: end,
+            formatFunction: xAxisSelectorFormatFunction
+          }
+        },
+        colorScheme: 'scheme01',
+        seriesGroups: [{
+          type: 'spline',
+          valueAxis: {
+            unitInterval: 5,
+            gridLines: {
+              visible: true,
+              step: 1,
+            },
+            labels: {
+              formatSettings: {
+                decimalPlaces: 1,
+              },
+              visible: true,
+              step: 1,
+            },
+            minValue: 0,
+            maxValue: 60,
+            description: 'Total Volts',
+          },
+          series: [{
+            dataField: 'stackVolts',
+            displayText: 'Volts'
+          }]
+        },{
+          type: 'spline',
+          valueAxis: {
+            unitInterval: 50,
+            gridLines: {
+              visible: true,
+              step: 1,
+            },
+            labels: {
+              formatSettings: {
+                decimalPlaces: 1,
+              },
+              visible: true,
+              step: 1,
+            },
+            minValue: 0,
+            maxValue: 300,
+            description: 'Current',
+          },
+          series: [{
+            dataField: 'stackCurrent',
+            displayText: 'Amps'
+          }]
+        },{
+            type: 'spline',
+            valueAxis: {
+              unitInterval: 50,
+              gridLines: {
+                visible: true,
+                step: 1,
+              },
+              labels: {
+                formatSettings: {
+                  decimalPlaces: 0,
+                },
+                visible: true,
+                step: 1,
+              },
+              minValue: 0,
+              maxValue: 1000,
+              description: 'Cells mV',
+            },
+            series: [{
+              dataField: 'cell00',
+              displayText: 'cell0'
+            },{
+              dataField: 'cell01',
+              displayText: 'cell1'
+            },{
+              dataField: 'cell02',
+              displayText: 'cell2'
+            },{
+              dataField: 'cell03',
+              displayText: 'cell3'
+            },{
+              dataField: 'cell04',
+              displayText: 'cell4'
+            },{
+              dataField: 'cell05',
+              displayText: 'cell5'
+            },{
+              dataField: 'cell06',
+              displayText: 'cell6'
+            },{
+              dataField: 'cell07',
+              displayText: 'cell7'
+            },{
+              dataField: 'cell08',
+              displayText: 'cell8'
+            }, {
+              dataField: 'cell09',
+              displayText: 'cell9'
+            },{
+              dataField: 'cell10',
+              displayText: 'cell10'
+            },{
+              dataField: 'cell11',
+              displayText: 'cell11'
+            },{
+              dataField: 'cell02',
+              displayText: 'cell12'
+            },{
+              dataField: 'cell13',
+              displayText: 'cell13'
+            },{
+              dataField: 'cell14',
+              displayText: 'cell14'
+            },{
+              dataField: 'cell15',
+              displayText: 'cell15'
+            },{
+              dataField: 'cell16',
+              displayText: 'cell16'
+            },{
+              dataField: 'cell17',
+              displayText: 'cell17'
+            },{
+              dataField: 'cell18',
+              displayText: 'cell18'
+            }, {
+              dataField: 'cell19',
+              displayText: 'cell19'
+            },{
+              dataField: 'cell20',
+              displayText: 'cell20'
+            },{
+              dataField: 'cell21',
+              displayText: 'cell21'
+            },{
+              dataField: 'cell22',
+              displayText: 'cell22'
+            },{
+              dataField: 'cell23',
+              displayText: 'cell23'
+            },{
+              dataField: 'cell24',
+              displayText: 'cell24'
+            },{
+              dataField: 'cell25',
+              displayText: 'cell25'
+            },{
+              dataField: 'cell26',
+              displayText: 'cell26'
+            },{
+              dataField: 'cell27',
+              displayText: 'cell27'
+            },{
+              dataField: 'cell28',
+              displayText: 'cell28'
+            }, {
+              dataField: 'cell29',
+              displayText: 'cell29'
+            },{
+              dataField: 'cell30',
+              displayText: 'cell30'
+            }]
+          }]
+      }
+      setupChart(Settings);
+    });
+
+  </script>
+</head>
+<body style="background:white;">
+<div id='ChartContainer' style="width:100%; height: 96%" ></div>
+<div style="text-align:center; height: 4%">
+  <div style="float:left">
+    <label for="timeRange">Time Span</label>
+    <select id="timeRange" onchange="getCurrent()">
+      <option value=1>Focus on selection</option>
+      <option value=2>Double selection</option>
+      <option value=259200000>3 Days</option>
+      <option value=172800000>2 Days</option>
+      <option value=86400000>24 Hours</option>
+      <option value=43200000>12 Hours</option>
+      <option value=28800000 selected='selected'>8 Hours</option>
+      <option value=14400000>4 Hours</option>
+      <option value=7200000>2 Hours</option>
+      <option value=3600000>1 Hour</option>
+      <option value=1800000>30 Minutes</option>
+      <option value=900000>15 Minutes</option>
+      <option value=600000>10 Minutes</option>
+      <option value=300000>5 Minutes</option>
+      <option value=0>Custom</option>
+    </select>
+  </div>
+  <div id="customDateTimes" style="float:left; padding-left: 10px">
+    <span style="float:left;font-size:larger">Start At:&nbsp;</span>
+    <div id="startAt"></div>
+    <span style="float:left;font-size:larger">&nbsp;End At:&nbsp;</span>
+    <div id="endAt"></div>&nbsp;
+    <button onClick="refresh(buildURLCustomTimes())" style="height:100%; width:100px" >Update</button>
+  </div>
+  <div  style="float:left; padding-left: 10px"><label for="autoRefresh"><input id="autoRefresh" type="checkbox" onclick="clickAutoRefresh(this)">Auto Refresh</label></div>
+  <div id="waiting" style="float:left; visibility:visible; padding-left: 10px"><span>Fetching Data please stand by...</span></div>
+</div>
+</body>
+</html>

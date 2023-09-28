@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Firefly IO</title>
+        <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
+        <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+        <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+        <script type="text/ecmascript" src="scripts/admin.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxbargauge.js"></script>
+        <script type="text/javascript" src="scripts/heartbeat.js"></script>
+        <style>
+            #leakAlarmDiv {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>
+                <span class="system" id="system">Loading...</span>
+                <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+            </h1>
+        </div>
+        <div class="centered">
+            <table class="Relays">
+                <tr>
+                    <th id=relay0 class="RelayOff" onclick="clickRelay(0)"><span id="relayText0">Relay 0</span></th>
+                    <th id=relay1 class="RelayOff" onclick="clickRelay(1)"><span id="relayText1">Relay 1</span></th>
+                    <th id=relay2 class="RelayOff" onclick="clickRelay(2)"><span id="relayText2">Relay 2</span></th>
+                    <th id=relay3 class="RelayOff" onclick="clickRelay(3)"><span id="relayText3">Relay 3</span></th>
+                    <th id=relay4 class="RelayOff" onclick="clickRelay(4)"><span id="relayText4">Relay 4</span></th>
+                    <th id=relay5 class="RelayOff" onclick="clickRelay(5)"><span id="relayText5">Relay 5</span></th>
+                    <th id=relay6 class="RelayOff" onclick="clickRelay(6)"><span id="relayText6">Relay 6</span></th>
+                    <th id=relay7 class="RelayOff" onclick="clickRelay(7)"><span id="relayText7">Relay 7</span></th>
+                </tr>
+                <tr>
+                    <th id=relay8 class="RelayOff" onclick="clickRelay(8)"><span id="relayText8">Relay 8</span></th>
+                    <th id=relay9 class="RelayOff" onclick="clickRelay(9)"><span id="relayText9">Relay 9</span></th>
+                    <th id=relay10 class="RelayOff" onclick="clickRelay(10)"><span id="relayText10">Relay 10</span></th>
+                    <th id=relay11 class="RelayOff" onclick="clickRelay(11)"><span id="relayText11">Relay 11</span></th>
+                    <th id=relay12 class="RelayOff" onclick="clickRelay(12)"><span id="relayText12">Relay 12</span></th>
+                    <th id=relay13 class="RelayOff" onclick="clickRelay(13)"><span id="relayText13">Relay 13</span></th>
+                    <th id=relay14 class="RelayOff" onclick="clickRelay(14)"><span id="relayText14">Relay 14</span></th>
+                    <th id=relay15 class="RelayOff" onclick="clickRelay(15)"><span id="relayText15">Relay 15</span></th>
+                </tr>
+            </table>
+        </div>
+        <div class="firefly">
+            <h2  class="firefly AnalogueInputs">Analogue Inputs</h2>
+            <table class="AnalogueInputs">
+                <tr class="AnalogueHeader">
+                    <th class="AnalogueName">Name</th>
+                    <th class="AnalogueData">Raw Value</th>
+                    <th class="AnalogueData">Calculated Value</th>
+                    <th class="AnalogueName">&nbsp;</th>
+                    <th class="AnalogueName">Name</th>
+                    <th class="AnalogueData">Raw Value</th>
+                    <th class="AnalogueData">Calculated Value</th>
+                </tr>
+                <tr class="AnalogueData">
+                    <td class="AnalogueName"><span id="a0name">A0</span></td>
+                    <td class="AnalogueData"><span id="a0raw">0</span></td>
+                    <td class="AnalogueData"><span id="a0value">0</span></td>
+                    <td class="AnalogueData">&nbsp;</td>
+                    <td class="AnalogueName"><span id="a4name">A4</span></td>
+                    <td class="AnalogueData"><span id="a4raw">0</span></td>
+                    <td class="AnalogueData"><span id="a4value">0</span></td>
+                </tr>
+                <tr class="AnalogueData">
+                    <td class="AnalogueName"><span id="a1name">A1</span></td>
+                    <td class="AnalogueData"><span id="a1raw">0</span></td>
+                    <td class="AnalogueData"><span id="a1value">0</span></td>
+                    <td class="AnalogueData">&nbsp;</td>
+                    <td class="AnalogueName"><span id="a5name">A5</span></td>
+                    <td class="AnalogueData"><span id="a5raw">0</span></td>
+                    <td class="AnalogueData"><span id="a5value">0</span></td>
+                </tr>
+                <tr class="AnalogueData">
+                    <td class="AnalogueName"><span id="a2name">A2</span></td>
+                    <td class="AnalogueData"><span id="a2raw">0</span></td>
+                    <td class="AnalogueData"><span id="a2value">0</span></td>
+                    <td class="AnalogueData">&nbsp;</td>
+                    <td class="AnalogueName"><span id="a6name">A6</span></td>
+                    <td class="AnalogueData"><span id="a6raw">0</span></td>
+                    <td class="AnalogueData"><span id="a6value">0</span></td>
+                </tr>
+                <tr class="AnalogueData">
+                    <td class="AnalogueName"><span id="a3name">A3</span></td>
+                    <td class="AnalogueData"><span id="a3raw">0</span></td>
+                    <td class="AnalogueData"><span id="a3value">0</span></td>
+                    <td class="AnalogueData">&nbsp;</td>
+                    <td class="AnalogueName"><span id="a7name">A7</span></td>
+                    <td class="AnalogueData"><span id="a7raw">0</span></td>
+                    <td class="AnalogueData"><span id="a7value">0</span></td>
+                </tr>
+            </table>
+        </div>
+        <div class="twocolumns">
+            <div class="firefly">
+                <h2 class="firefly DigitalInputs">Digital Inputs</h2>
+                <table class="digitalInputs">
+                    <tr>
+                        <th id="di0" class="DILow" ><span id="InputText0">Input-0</span></th>
+                        <th id="di1" class="DILow" ><span id="InputText1">Input-0</span></th>
+                        <th id="di2" class="DILow" ><span id="InputText2">Input-0</span></th>
+                        <th id="di3" class="DILow" ><span id="InputText3">Input-0</span></th>
+                    </tr>
+                </table>
+            </div>
+            <div class="firefly">
+                <h2 class="firefly DigitalOutputs">Digital Outputs</h2>
+                <table class="digitalOutputs">
+                    <tr>
+                        <th id="do0" class="DOLow" onclick="clickOutput(0)"><span id="OutputText0">Output-0</span></th>
+                        <th id="do1" class="DOLow" onclick="clickOutput(1)"><span id="OutputText1">Output-1</span></th>
+                        <th id="do2" class="DOLow" onclick="clickOutput(2)"><span id="OutputText2">Output-2</span></th>
+                        <th id="do3" class="DOLow" onclick="clickOutput(3)"><span id="OutputText3">Output-3</span></th>
+                        <th id="do4" class="DOLow" onclick="clickOutput(4)"><span id="OutputText2">Output-4</span></th>
+                        <th id="do5" class="DOLow" onclick="clickOutput(5)"><span id="OutputText3">Output-5</span></th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="measurementGrid">
+            <div id="ACMeasurementsDiv">
+                <h2 class="firefly ACMeasurement">AC Measurements</h2>
+                <table class="ACMeasurements">
+                    <thead>
+                        <tr class="ACHeader">
+                            <th class="DeviceName">Device</th>
+                            <th class="DeviceMeasurement">Voltage</th>
+                            <th class="DeviceMeasurement">Current</th>
+                            <th class="DeviceMeasurement">Power</th>
+                            <th class="DeviceMeasurement">Frequency</th>
+                            <th class="DeviceMeasurement">Power Factor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="ACData" id="AC1">
+                            <td class="ACName"><span id="acname1"></span></td>
+                            <td class="ACData"><span id="acvolts1"></span>V</td>
+                            <td class="ACData"><span id="acamps1"></span>A</td>
+                            <td class="ACData"><span id="acwatts1"></span>W</td>
+                            <td class="ACData"><span id="achz1"></span>Hz</td>
+                            <td class="ACData"><span id="acpf1"></span></td>
+                        </tr>
+                        <tr class="ACError" id="ACErr1">
+                            <td class="ACName"><span id="acnameerr1"></span></td>
+                            <td class="ACError" colspan="6"><span class="error" id="acerr1"></span></td>
+                        </tr>
+                        <tr class="ACData" id="AC2">
+                            <td class="ACName"><span id="acname2"></span></td>
+                            <td class="ACData"><span id="acvolts2"></span>V</td>
+                            <td class="ACData"><span id="acamps2"></span>A</td>
+                            <td class="ACData"><span id="acwatts2"></span>W</td>
+                            <td class="ACData"><span id="achz2"></span>Hz</td>
+                            <td class="ACData"><span id="acpf2"></span></td>
+                        </tr>
+                        <tr class="ACError" id="ACErr2">
+                            <td class="ACName"><span id="acnameerr2"></span></td>
+                            <td class="ACError" colspan="6"><span class="error" id="acerr2"></span></td>
+                        </tr>
+                        <tr class="ACData" id="AC3">
+                            <td class="ACName"><span id="acname3"></span></td>
+                            <td class="ACData"><span id="acvolts3"></span>V</td>
+                            <td class="ACData"><span id="acamps3"></span>A</td>
+                            <td class="ACData"><span id="acwatts3"></span>W</td>
+                            <td class="ACData"><span id="achz3"></span>Hz</td>
+                            <td class="ACData"><span id="acpf3"></span></td>
+                        </tr>
+                        <tr class="ACError" id="ACErr3">
+                            <td class="ACName"><span id="acnameerr3"></span></td>
+                            <td class="ACError" colspan="6"><span class="error" id="acerr3"></span></td>
+                        </tr>
+                        <tr class="ACData" id="AC4">
+                            <td class="ACName"><span id="acname4"></span></td>
+                            <td class="ACData"><span id="acvolts4"></span>V</td>
+                            <td class="ACData"><span id="acamps4"></span>A</td>
+                            <td class="ACData"><span id="acwatts4"></span>W</td>
+                            <td class="ACData"><span id="achz4"></span>Hz</td>
+                            <td class="ACData"><span id="acpf4"></span></td>
+                        </tr>
+                        <tr class="ACError" id="ACErr4">
+                            <td class="ACName"><span id="acnameerr4"></span></td>
+                            <td class="ACError" colspan="6"><span class="error" id="acerr4"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="DCMeasurementsDiv">
+                <h2 class="firefly DCMeasurement">DC Measurements</h2>
+                <table class="DCMeasurements">
+                    <thead>
+                        <tr class="DCHeader">
+                            <th class="DeviceName">Device</th>
+                            <th class="DeviceMeasurement">Voltage</th>
+                            <th class="DeviceMeasurement">Current</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="DCData" id="DC1">
+                            <td class="DCName"><span id="dcname1"></span></td>
+                            <td class="DCData"><span id="dcvolts1"></span>V</td>
+                            <td class="DCData"><span id="dcamps1"></span>A</td>
+                        </tr>
+                        <tr class="DCError" id="DCErr1">
+                            <td class="DCName"><span id="dcnameerr1"></span></td>
+                            <td class="DCError" colspan="6"><span class="error" id="dcerr1"></span></td>
+                        </tr>
+                        <tr class="DCData" id="DC2">
+                            <td class="DCName"><span id="dcname2"></span></td>
+                            <td class="DCData"><span id="dcvolts2"></span>V</td>
+                            <td class="DCData"><span id="dcamps2"></span>A</td>
+                        </tr>
+                        <tr class="DCError" id="DCErr2">
+                            <td class="DCName"><span id="dcnameerr2"></span></td>
+                            <td class="DCError" colspan="6"><span class="error" id="dcerr2"></span></td>
+                        </tr>
+                        <tr class="DCData" id="DC3">
+                            <td class="DCName"><span id="dcname3"></span></td>
+                            <td class="DCData"><span id="dcvolts3"></span>V</td>
+                            <td class="DCData"><span id="dcamps3"></span>A</td>
+                        </tr>
+                        <tr class="DCError" id="DCErr3">
+                            <td class="DCName"><span id="dcnameerr3"></span></td>
+                            <td class="DCError" colspan="6"><span class="error" id="dcerr3"></span></td>
+                        </tr>
+                        <tr class="DCData" id="DC4">
+                            <td class="DCName"><span id="dcname4"></span></td>
+                            <td class="DCData"><span id="dcvolts4"></span>V</td>
+                            <td class="DCData"><span id="dcamps4"></span>A</td>
+                        </tr>
+                        <tr class="DCError" id="DCErr4">
+                            <td class="DCName"><span id="dcnameerr4"></span></td>
+                            <td class="DCError" colspan="6"><span class="error" id="dcerr4"></span></td>
+                        </tr>
+                   </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
+            <div id="systems" style="display: grid; grid-template-columns: 20% 20% 20% 20% 20%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">
+                <div class="centered">
+                    <div id="fcStackPower" ondblclick="openFuelCell()"></div>
+                </div>
+            </div>
+            <div id="fcAlarms" class="alarm"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 50% 50%;">
+            <div style="text-align: left">
+                <menu>
+                    <li><a href="/config.html" target="_blank">Configuration</a></li>
+                    <li><a href="/registration" target="_blank">Add a user or change password</a></li>
+                    <li><a href="/api.html" target="_blank">Show the current API documentation</a></li>
+                    <li><a href="/NodeRED" target="_blank" rel="noopener noreferrer" style="target-new: tab;">Node-<span style="color: red">RED</span></a></li>
+                    <li><a href="/debug/true" target="_blank">Enable Debug Output</a></li>
+                    <li><a href="/">User Screen</a></li>
+                </menu>
+                <span id="connStatus"></span>
+            </div>
+        </div>
+        <footer>
+            <span class="version">Version </span><span class="version" id="version"></span>
+            <img src="images/logout.png" alt="Logout" title="Logout" style="width: 2em;" onclick="logout('/')" /><br />
+            <div id="leakAlarmDiv" style="display: none;">
+                <h1 style="color:red;">Possible Hydrogen Leak Detected!</h1>
+            </div>
+            <div id="conductivityAlarmDiv" style="display: none;">
+                <h1 style="color:red;">Water quality is bad, conductivity is too high!</h1>
+            </div>
+        </footer>
+    </body>
+    <script type="text/javascript">
+        $(document).ready(setupPage);
+        function logout(to_url) {
+            dt = new Date();
+            var out = "/Logout.html?time=" + dt;
+            $.get(out).done(function() {
+                window.location = to_url;
+            }).fail(function() {
+                window.location = to_url;
+            });
+        }
+    </script>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>ElektrikGreen FireflyIO API</title>
+        <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
+        <link rel="stylesheet" type="text/css" href="css/api.css" />
+    </head>
+    <body>
+        <div class="header">
+            <h1 class="firefly"><span class="firefly" id="system">ElektrikGreen FireflyIO API</span><img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/></h1>
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <td class="uri">/ws</td>
+                    <td class="verb">GET</td>
+                    <td class="description">start a web socket connection</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setRelay/{relay}/{on}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Turn on or off (1,0,on,off,true,false) the relay by name or number</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setOutput/{output}/{on}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Turn on or off (1,0,on,off,true,false) the digital output by name or number</td>
+                </tr>
+                <tr>
+                    <td class="uri">/getStatus</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns a JSON object containing the full system status</td>
+                </tr>
+                <tr>
+                    <td class="uri">/getFuelCell</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the current status of the fuel cell only</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/TargetPower/{power}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Set the target power output</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/TargetBattHigh/{volts}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Set the battery high voltage setpoint</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/TargetBattLow/{volts}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Set the batery low voltage set point</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/Start</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the fuel cell</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/Stop</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Stop the fuel cell</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/ExhaustOpen</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the water pump on high and begin air removal</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/ExhaustClose</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Stop the exhaust function</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/Enable</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Enable CAN communications to the fuel cell (we are always listening but may not be sending)</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/Disable</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Disable CAN communications to the fuel cell so it can be controlled locally by its own user interface</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setFuelCell/ResetFault</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Sends the fault reset message to the fuel cell</td>
+                </tr>
+                <tr>
+                    <td class="uri">/getElectrolyser/{electrolyser}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the status of one or all electrolysers by name (all for all electrolysers)</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Production/{electrolyser}/{rate}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Set the production rate (60-100) by electrolyser name</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Start/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the electrolyser by name</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Stop/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Stop the electrolyser by name</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Preheat/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the preheat cycle</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Reboot/{electrolyser</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Reboot the electrolyser</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Locate/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the locate cycle where the lights on the device flash to identify the machine</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Blowdown/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the blowdown procedure</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/Refill/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the water refil process</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/StartMaintenance/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start maintenance mode</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setElectrolyser/StopMaintenance/{electrolyser}</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Stop maintenance mode</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setDryer/Start</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Start the dryer</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setDryer/Stop</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Stop the dryer</td>
+                </tr>
+                <tr>
+                    <td class="uri">/setDryer/Reboot</td>
+                    <td class="verb">PUT</td>
+                    <td class="description">Reboot the dryer</td>
+                </tr>
+                <tr>
+                    <td class="uri">/getElectrolyser/production/{electrolyser}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the current production rate setting</td>
+                </tr>
+                <tr>
+                    <td class="uri">/getElectrolyser/state/{electrolyser}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the electrolyser run state</td>
+                </tr>
+                <tr>
+                    <td class="uri">/FuelCellData/DCDC?start={date/time}&end={date/time}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the JSON formatted data for the fuel cell DC to DC converter</td>
+                </tr>
+                <tr>
+                    <td class="uri">/FuelCellData/Stack?start={date/time}&end={date/time}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the JSON formatted data for the fuel cell stack</td>
+                </tr>
+                <tr>
+                    <td class="uri">/FuelCellData/Pressures?start={date/time}&end={date/time}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the JSON formatted data for the fuel cell gas pressures</td>
+                </tr>
+                <tr>
+                    <td class="uri">/FuelCellData/Coolant?start={date/time}&end={date/time}</td>
+                    <td class="verb">GET</td>
+                    <td class="description">Returns the JSON formatted data for the fuel cell coolant system</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

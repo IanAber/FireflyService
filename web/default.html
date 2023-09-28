@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Firefly IO</title>
+        <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
+        <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+        <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+        <script type="text/ecmascript" src="scripts/default.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxslider.js"></script>
+        <script type="text/javascript" src="scripts/heartbeat.js"></script>
+    </head>
+    <body>
+        <div class="header">
+            <h1>
+                <span class="system" id="system">Loading...</span>
+                <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+            </h1>
+        </div>
+        <div style="height: fit-content" >
+            <div id="systems" style="display: grid; grid-template-columns: 20% 20% 20% 20% 20%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">
+                <div class="centered">
+                    <div class="control" id="gas"></div>
+                    <div style="padding-bottom:25px">
+                        <label for="gas">Gas Pressure</label>
+                    </div>
+                    <div class="control" id="conductivity"></div>
+                    <div>
+                        <label for="conductivity">Water Quality</label>
+                    </div>
+                </div>
+            </div>
+            <div id="fcAlarms" class="alarm"></div>
+        </div>
+        <footer>
+            <span class="version">Version </span><span class="version" id="version"></span>
+            <div id="leakAlarmDiv" style="display: none;">
+                <h1 style="color:red;">Possible Hydrogen Leak Detected!</h1>
+            </div>
+            <div id="conductivityAlarmDiv" style="display: none;">
+                <h1 style="color:red;">Water quality is bad, conductivity is too high!</h1>
+            </div>
+            <div id="ErrorTextDiv">
+                <p id="ErrorText"></p>
+            </div>
+            <menu>
+                <!--adminLink-->
+                <li><a href="/registration" target="_blank">User management</a></li>
+                <li>Logout&nbsp;<img src="images/logout.png" alt="Logout" title="Logout" style="width: 2em;" onclick="logout('/')" /></li>
+            </menu>
+        </footer>
+    </body>
+    <script type="text/javascript">
+        $(document).ready(setupPage);
+
+        function logout(to_url) {
+            dt = new Date();
+            var out = "/Logout.html?time=" + dt;
+            $.get(out).done(function() {
+                window.location = to_url;
+            }).fail(function() {
+                window.location = to_url;
+            });
+        }
+
+    </script>
+</html>

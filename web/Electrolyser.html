@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Electrolyser</title>
+      <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+      <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
+      <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+      <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+      <script type="text/ecmascript" src="scripts/Electrolyser.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxcheckbox.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxbargauge.js"></script>
+      <script type="text/javascript" src="scripts/jqwidgets/jqxslider.js"></script>
+      <script type="text/javascript" src="scripts/heartbeat.js"></script>
+  </head>
+  <body>
+      <div class="header">
+          <h1 class="firefly">
+              <span class="system" id="system">%s</span>
+              <img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+          </h1>
+      </div>
+      <div class="threegauges" >
+          <div class="centered">
+              <div id="production"></div>
+          </div>
+          <div class="centered">
+              <div id="stackCurrent"></div>
+          </div>
+          <div class="centered">
+              <div id="stackVoltage"></div>
+          </div>
+      </div>
+      <div class="gauges" >
+          <div class="centered">
+              <table class="firefly">
+                  <tr class="parameters">
+                      <td class="label">Model</td><td class="parameter"><span class="parameter" id="model"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Serial #</td><td class="parameter"><span class="parameter" id="serial"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Inner H2</td><td class="parameter"><span class="parameter" id="innerh2"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Outer H2</td><td class="parameter"><span class="parameter" id="outerh2"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Water Pressure</td><td class="parameter"><span class="parameter" id="waterPressure"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Temperature</td><td class="parameter"><span class="parameter" id="temperature"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Max Pressure</td><td class="parameter"><span class="parameter" id="maxPressure"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Restart Pressure</td><td class="parameter"><span class="parameter" id="restartPressure"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">State</td><td class="parameter"><span class="parameter" id="state"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="parameter" colspan="2"><span class="parameter" id="errors"></span></td>
+                  </tr>
+              </table>
+          </div>
+          <div class="centered">
+              <label class="parameters" for="rate">Production Rate</label><br \>
+              <div style="margin:auto" id="rate"></div>
+          </div>
+          <div class="centered">
+              <table class="firefly">
+                  <tr class="parameters">
+                      <td class="label"><img id="Run" class="swOff" src="images/power-off.png" alt="Enable" onclick="RunClick()" /></td>
+                      <td class="left"><label for="Run">Run</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="Maintenance" class="swOff" src="images/power-off.png" alt="Enable" onclick="MaintenanceClick()" /></td>
+                      <td class="left"><label for="Maintenance">Maintenance</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="Blowdown" class="swOff" src="images/power-off.png" alt="Enable" onclick="BlowDownClick()" /></td>
+                      <td class="left"><label for="Blowdown">Blowdown</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="Refill" class="swOff" src="images/power-off.png" alt="Enable" onclick="RefillClick()" /></td>
+                      <td class="left"><label for="Refill">Fill</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="Preheat" class="swOff" src="images/power-off.png" alt="Enable" onclick="PreheatClick()" /></td>
+                      <td class="left"><label for="Preheat">Preheat</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="Rescan" class="swOff" src="images/power-off.png" alt="Rescaan" onclick="RescanClick()" /></td>
+                      <td class="left"><label for="Rescan">Rescan IP</label></td>
+                  </tr>
+              </table>
+          </div>
+          <div class="centered" id="DryerDiv">
+              <table class="firefly">
+                  <tr class="parameters">
+                      <td class="label"><img id="DryerStart" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerStartClick()" /></td>
+                     <td class="left"><label for="DryerStart">Start Dryer</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="DryerStop" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerStopClick()" /></td>
+                      <td class="left"><label for="DryerStop">Stop Dryer</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="DryerReboot" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerRebootClick()" /></td>
+                      <td class="left"><label for="DryerReboot">Reboot Dryer</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Input Pressure</td>
+                      <td class="parameter"><span class="parameter" id="inPressure"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Output Pressure</td>
+                      <td class="parameter"><span class="parameter" id="outPressure"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Temperature 1</td>
+                      <td class="parameter"><span class="parameter" id="temp1"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Temperature 2</td>
+                      <td class="parameter"><span class="parameter" id="temp2"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Temperature 3</td>
+                      <td class="parameter"><span class="parameter" id="temp3"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Temperature 4</td>
+                      <td class="parameter"><span class="parameter" id="temp4"></span></td>
+                  </tr>
+              </table>
+
+          </div>
+      </div>
+      <footer class="firefly">
+          <span class="version">Version </span><span class="version" id="version">%s</span>
+      </footer>
+  </body>
+  <script type="text/javascript">
+      $(document).ready(setupPage('%s'));
+  </script>
+</html>

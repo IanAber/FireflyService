@@ -1,0 +1,490 @@
+package main
+
+import (
+	"database/sql"
+	"flag"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
+	"log"
+	"net"
+	"os"
+	"strings"
+	"time"
+)
+
+/**********************************************************
+CAN bus must be enabled before this service can be started
+https://www.pragmaticlinux.com/2021/07/automatically-bring-up-a-socketcan-interface-on-boot/
+*/
+var (
+	canBus                *CANBus
+	CANInterface          string
+	WebPort               string
+	databaseServer        string
+	databasePort          string
+	databaseName          string
+	databaseLogin         string
+	databasePassword      string
+	Relays                RelaysType
+	Outputs               DigitalOutputsType
+	Inputs                DigitalInputsType
+	AnalogInputs          AnalogInputsType
+	ACMeasurements        [4]ACMeasurementsType
+	DCMeasurements        [4]DCMeasurementsType
+	Electrolysers         ElectrolysersType
+	jsonSettings          string
+	currentSettings       *SettingsType
+	webFiles              string
+	pDB                   *sql.DB
+	ElectrolyserStatement *sql.Stmt
+	FuelCell              PANFuelCell
+	logFile               *os.File
+	logFileName           string
+	callLogging           bool = false
+	debugOutput           bool = false
+	store                 *sessions.CookieStore
+)
+
+func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
+	if pDB != nil {
+		if closeErr := pDB.Close(); closeErr != nil {
+			log.Println(closeErr)
+		}
+		pDB = nil
+	}
+	// Set the time zone to Local to correctly record times
+	var sConnectionString = databaseLogin + ":" + databasePassword + "@tcp(" + databaseServer + ":" + databasePort + ")/" + databaseName + "?loc=Local"
+
+	db, err := sql.Open("mysql", sConnectionString)
+	if err != nil {
+		log.Println(err)
+		return nil, nil, err
+	}
+	err = db.Ping()
+	if err != nil {
+		if closeErr := db.Close(); closeErr != nil {
+			log.Println(closeErr)
+		}
+		pDB = nil
+		return nil, nil, err
+	}
+	logAnalog, err := db.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, inputs, outputs, relays, ACVolts, ACAmps, ACWatts, ACHertz) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+	if err != nil {
+		log.Println(err)
+		if closeErr := db.Close(); closeErr != nil {
+			log.Println(closeErr)
+		}
+		return nil, nil, err
+	}
+	const fuelCellLogStatement = `INSERT INTO firefly.PANFuelCell (
+		StackCurrent, StackVoltage, CoolantInTemp, CoolantOutTemp, OutputVoltage,
+		OutputCurrent, CoolantFanSpeed, CoolantPumpSpeed, CoolantPumpVolts, CoolantPumpAmps,
+		InsulationResistance, HydrogenPressure, AirPressure, CoolantPressure, AirinletTemp,
+		AmbientTemp,  AirFlow, HydrogenConcentration, DCDCTemp, DCDCInVolts,
+		DCDCOutVolts, DCDCInAmps, DCDCOutAmps, MinCellVolts, MaxCellVolts,
+		AvgCellVolts, IdxMaxCell, IdxMinCell, RunStage, FaultLevel, 
+		Cell00Volts	, Cell01Volts	, Cell02Volts	, Cell03Volts	, Cell04Volts,
+		Cell05Volts	, Cell06Volts	, Cell07Volts	, Cell08Volts	, Cell09Volts,
+		Cell10Volts	, Cell11Volts	, Cell12Volts	, Cell13Volts	, Cell14Volts,
+		Cell15Volts	, Cell16Volts	, Cell17Volts	, Cell18Volts	, Cell19Volts,
+		Cell20Volts	, Cell21Volts	, Cell22Volts	, Cell23Volts	, Cell24Volts,
+		Cell25Volts	, Cell26Volts	, Cell27Volts	, Cell28Volts	, Cell29Volts,
+		Cell30Volts	, Cell31Volts	, Alarms		, PowerRequested, PowerModeState)
+        VALUES (
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?,
+			?,?,?,?,?)`
+	if pStmt, err := db.Prepare(fuelCellLogStatement); err != nil {
+		log.Println("Failed to prepare the fuel cell log statement -", err)
+		return logAnalog, nil, err
+	} else {
+		dbRecord.stmt = pStmt
+	}
+
+	ElectrolyserStatement, err = db.Prepare(`INSERT INTO firefly.Electrolyser (name, flow, volts, amps, temperature, errors, waterPressure, rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?);`)
+
+	return logAnalog, db, err
+}
+
+func ConnectCANBus() *CANBus {
+	if Bus, err := NewCANBus(CANInterface); err != nil {
+		log.Println(err)
+		return nil
+	} else {
+		return Bus
+	}
+}
+
+func init() {
+	flag.StringVar(&CANInterface, "can", "can0", "CAN Interface Name")
+	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
+	flag.StringVar(&jsonSettings, "jsonSettings", "/etc/FireFlyIO.json", "JSON file containing the system control parameters")
+	flag.StringVar(&webFiles, "webFiles", "/FireflyService/web", "Path to the WEB files location")
+	flag.StringVar(&databaseServer, "sqlServer", "localhost", "MySQL Server")
+	flag.StringVar(&databaseName, "database", "firefly", "Database name")
+	flag.StringVar(&databaseLogin, "dbUser", "FireflyService", "Database login user name")
+	flag.StringVar(&databasePassword, "dbPassword", "logger", "Database user password")
+	flag.StringVar(&databasePort, "dbPort", "3306", "Database port")
+	flag.StringVar(&logFileName, "logfile", "/var/log/FireflyService", "Name of the log file")
+	flag.Parse()
+
+	// open log file
+	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Panic(err)
+	}
+	// set log out put
+	log.SetOutput(logFile)
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
+	Relays.InitRelays()
+	Outputs.InitOutputs()
+	Inputs.InitInputs()
+	AnalogInputs.InitAnalogInputs()
+
+	log.Println("Loading the settings")
+	currentSettings = NewSettings()
+	if err := currentSettings.LoadSettings(jsonSettings); err != nil {
+		log.Print(err)
+	}
+	if len(currentSettings.SessionKey) == 0 {
+		currentSettings.SessionKey = string(securecookie.GenerateRandomKey(32))
+		if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
+			log.Println(err)
+		}
+	}
+	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+
+	log.Println("Connecting to can bus")
+	canBus = ConnectCANBus()
+	FuelCell.init(canBus)
+	if err := FuelCell.setTargetBattHigh(currentSettings.FuelCellSettings.HighBatterySetpoint); err != nil {
+		log.Print(err)
+	}
+	if err := FuelCell.setTargetBattLow(currentSettings.FuelCellSettings.LowBatterySetpoint); err != nil {
+		log.Print(err)
+	}
+	if err := FuelCell.setTargetPower(currentSettings.FuelCellSettings.PowerSetting); err != nil {
+		log.Print(err)
+	}
+
+	log.Println("Starting the WEB site.")
+	go setUpWebSite()
+	go setUpLocalWebSocket()
+}
+
+/**
+ClientLoop ticks every second and logs values to the database. It also broadcasts the values to any registered web socket clients.
+*/
+func ClientLoop() {
+	// Set up the sync to send data to waiting web socket clients every second
+	broadcastTime := time.NewTicker(time.Second)
+
+	for {
+		select {
+		case <-broadcastTime.C:
+			{
+				// Make sure the CAN bus is up and running
+				if canBus == nil || canBus.bus == nil {
+					if debugOutput {
+						log.Println("Adding the CAN bus monitor")
+					}
+					if canBus != nil {
+						//	if canBus.bus != nil {
+						//		if err := canBus.bus.SetDown(); err != nil {
+						//			log.Println(err)
+						//		}
+						//	}
+						canBus = nil
+						FuelCell.bus = nil
+					}
+					canBus = ConnectCANBus()
+					FuelCell.bus = canBus
+				}
+				// Get the full staatus
+				if bytes, err := getJsonStatus(); err != nil {
+					log.Print("Error marshalling the full data - ", err)
+				} else {
+					select {
+					// Send the full status message
+					case pool.Broadcast <- WSMessageType{
+						data:    bytes,
+						service: wsFull,
+						device:  "",
+					}:
+					default:
+						log.Println("Channel would block!")
+					}
+				}
+
+				if bytes, err := FuelCell.GetStatusAsJSON(); err != nil {
+					log.Print("Error marshalling the fuelcell data - ", err)
+				} else {
+					select {
+					// Send the fuel cell only staatus
+					case pool.Broadcast <- WSMessageType{
+						data:    bytes,
+						service: wsFuelCell,
+						device:  "",
+					}:
+					default:
+						log.Println("Channel would block!")
+					}
+				}
+
+				for _, el := range Electrolysers.Arr {
+					if bytes, err := el.getJsonStatus(); err != nil {
+						log.Print("Error marshalling the electrolyser data - ", err)
+					} else {
+						select {
+						case pool.Broadcast <- WSMessageType{
+							data:    bytes,
+							service: wsElectrolyser,
+							device:  strings.ToLower(el.status.Name),
+						}:
+						default:
+							if debugOutput {
+								log.Println("Channel would block!")
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+var WaterDumpHoldoff time.Time
+
+func DatabaseLogger() {
+	var (
+		err       error
+		logAnalog *sql.Stmt
+	)
+	logAnalog, pDB, err = connectToDatabase()
+	if err != nil {
+		log.Println(err)
+	}
+	loggingTime := time.NewTicker(time.Second)
+
+	for {
+		select {
+		case <-loggingTime.C:
+			if pDB == nil {
+				log.Println("Reconnect to the database")
+				logAnalog, pDB, err = connectToDatabase()
+				if err != nil {
+					log.Println(err)
+				}
+			}
+			if pDB != nil {
+				//if debugOutput {
+				//	log.Println("Logging data")
+				//}
+				rawTemp, cpuTemp := AnalogInputs.GetCPUTemperature()
+				if _, err := logAnalog.Exec(AnalogInputs.GetRawInput(0), AnalogInputs.GetRawInput(1), AnalogInputs.GetRawInput(2), AnalogInputs.GetRawInput(3),
+					AnalogInputs.GetRawInput(4), AnalogInputs.GetRawInput(5), AnalogInputs.GetRawInput(6), AnalogInputs.GetRawInput(7),
+					AnalogInputs.GetVREF(), cpuTemp, rawTemp,
+					Inputs.GetAllInputs(), Outputs.GetAllOutputs(), Relays.GetAllRelays(),
+					ACMeasurements[0].getVolts(), ACMeasurements[0].getAmps(), ACMeasurements[0].getPower(), ACMeasurements[0].getFrequency(),
+				); err != nil {
+					log.Println(err)
+					if closeErr := pDB.Close(); closeErr != nil {
+						log.Println(closeErr)
+					}
+					pDB = nil
+					logAnalog = nil
+				}
+				if err := dbRecord.saveToDatabase(); err != nil {
+					log.Println(err)
+					if closeErr := pDB.Close(); closeErr != nil {
+						log.Println(closeErr)
+					}
+					pDB = nil
+					dbRecord.stmt = nil
+				}
+			} else {
+				log.Println("Database is not connected")
+			}
+			// Check for water dump.
+			if currentSettings.WaterDumpAction == CONDUCTIVITYHIGH {
+				on := false
+				_, conductivity := AnalogInputs.GetInput(7)
+				if conductivity > float32(currentSettings.MaximumConductivity) {
+					for _, el := range Electrolysers.Arr {
+						if el.IsSwitchedOn() {
+							on = true
+						}
+					}
+				}
+				// If there is an electrolyser that is running and the holdoff time has expired
+				if on && !WaterDumpHoldoff.After(time.Now()) {
+					go TurnOnWaterDumpValve()
+					WaterDumpHoldoff = time.Now().Add(time.Minute * 30)
+				}
+			}
+		}
+	} // Log data to the database
+}
+
+/*
+CANHeartbeat sends CAN packets to the fuel cell
+*/
+func CANHeartbeat() {
+	heartbeatTime := time.NewTicker(time.Millisecond * 500)
+	for {
+		select {
+		case <-heartbeatTime.C:
+			{
+				if canBus != nil {
+					Relays.UpdateRelays() // Heartbeat to the FireflyService board. If we don't send this the board will turn all relays off after about a minute.
+					if err := canBus.SetFlags(currentSettings.getModbusFlags(), 0, 0, 0, 0, 0, 0, 0); err != nil {
+						log.Println(err)
+					}
+					if err := FuelCell.updateOutput(); err != nil {
+						log.Print(err)
+					}
+					if err := FuelCell.updateSettings(); err != nil {
+						log.Print(err)
+					}
+				} else {
+					log.Println("No CAN bus available")
+				}
+				heartbeat++
+			}
+		}
+	}
+}
+
+/**
+ElectrolyserLoop reads the electrolysers every two seconds when they are powered on
+*/
+func ElectrolyserLoop() {
+	electrolyserHeartbeat := time.NewTicker(time.Second * 2)
+	for {
+		select {
+		case <-electrolyserHeartbeat.C:
+			{
+				for _, el := range Electrolysers.Arr {
+					if el.IsSwitchedOn() {
+						if !el.status.IP.Equal(net.IPv4zero) {
+							// Get the values for this electrolyser
+							el.ReadValues()
+							// Write the data to the database
+							if _, err := ElectrolyserStatement.Exec(el.status.Name, el.status.H2Flow, el.status.StackVoltage, el.status.StackCurrent, el.status.ElectrolyteTemp, strings.Join(el.GetErrors(), "\r\n"), el.status.WaterPressure, el.status.CurrentProductionRate); err != nil {
+								log.Println(err)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ElectrolyserPumpManagement controls the pump relay.
+*/
+func ElectrolyserPumpManagement() {
+	pumpTicker := time.NewTicker(time.Second * 5)
+	for {
+		select {
+		case <-pumpTicker.C:
+			{
+				// Only if we have a relay defined
+				if currentSettings.CoolingPumpRelay < 16 {
+					tMax := 0.0
+					for _, el := range Electrolysers.Arr {
+						if el.IsSwitchedOn() {
+							if float64(el.status.ElectrolyteTemp) > tMax {
+								tMax = float64(el.status.ElectrolyteTemp)
+							}
+						}
+					}
+					if tMax > float64(currentSettings.CoolingPumpStartTemperature) {
+						Relays.SetRelay(currentSettings.CoolingPumpRelay, true)
+					} else if tMax < float64(currentSettings.CoolingPumpStopTemperature) {
+						Relays.SetRelay(currentSettings.CoolingPumpRelay, false)
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+LeakDetection sets up a timer to check the hydrogen sensor and conductivity every second.
+If five consecutive readings are higher than the threshold the electrolysers are powered down.
+*/
+func LeakDetection() {
+	leakTimer := time.NewTicker(time.Second)
+	alarmCount := 0
+	conductivityAlarmCount := 0
+
+	for {
+		select {
+		case <-leakTimer.C:
+			{
+				if AnalogInputs.Inputs[currentSettings.GasDetectorInput].Raw > currentSettings.GasDetectorThreshold &&
+					currentSettings.GasDetectorThreshold > 0 {
+					alarmCount += 1
+				} else {
+					alarmCount -= 1
+				}
+				if alarmCount > 5 {
+					for _, el := range Electrolysers.Arr {
+						Relays.SetRelay(el.powerRelay, false)
+						SystemAlarms.H2DetectedAlarm = true
+					}
+					alarmCount = 5
+				} else if alarmCount <= 0 {
+					alarmCount = 0
+					SystemAlarms.H2DetectedAlarm = false
+				}
+				if AnalogInputs.Inputs[7].Value > currentSettings.WaterQualityAlarm && currentSettings.WaterQualityAlarm > 0 {
+					conductivityAlarmCount += 1
+				} else {
+					conductivityAlarmCount -= 1
+				}
+				if conductivityAlarmCount > 5 {
+					for _, el := range Electrolysers.Arr {
+						Relays.SetRelay(el.powerRelay, false)
+					}
+					conductivityAlarmCount = 5
+					SystemAlarms.ConducitivtyAlarm = true
+				} else if conductivityAlarmCount <= 0 {
+					conductivityAlarmCount = 0
+					SystemAlarms.ConducitivtyAlarm = false
+				}
+			}
+
+		}
+	}
+}
+
+func main() {
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			_, _ = fmt.Fprint(os.Stderr, err)
+		}
+	}()
+
+	go ElectrolyserLoop()
+	go CANHeartbeat()
+	go DatabaseLogger()
+	go LeakDetection()
+	go ElectrolyserPumpManagement()
+	ClientLoop()
+}

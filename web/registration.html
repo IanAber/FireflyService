@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownTarget -->
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>User Management ElektrikGreen Firefly</title>
+        <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
+        <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+        <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxscrollbar.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxsplitter.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxlistbox.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxcombobox.js"></script>
+        <title>Title</title>
+        <script type="text/javascript">
+            function sendForm() {
+                let user = $("#names").val();
+                if (user === "") {
+                    alert("Please enter or select a user name");
+                    return;
+                }
+                $("#user").val(user);
+                pwd = $("#password");
+                if ((pwd.val() !== $("#passwordDup").val()) || pwd.val() === "") {
+                    alert("Passwords must be the same and cannot be empty");
+                    return;
+                }
+                $("#loginForm").submit();
+            }
+            function deleteUser() {
+                let user = $("#names").val();
+                if (user === "") {
+                    alert("Please enter or select a user name");
+                    return;
+                }
+                $("#user").val(user);
+                if (confirm("Delete user? This cannot be undone.")) {
+                    let lf = $("#loginForm");
+                    lf.attr("action", "deleteUser");
+                    lf.submit();
+                }
+            }
+            $(document).ready(function () {
+                let names = $('#names')
+                names.jqxComboBox({ height: 30, width: 270 });
+                names.on('change', function (event)
+                {
+                    var args = event.args;
+                    if (args) {
+                        // index represents the item's index.
+                        // var index = args.index;
+                        var item = args.item;
+                        // // get item's label and value.
+                        // var label = item.label;
+                        var value = item.value;
+                        // var type = args.type; // keyboard, mouse or null depending on how the item was selected.
+                        $("#role").val(users.get(value));
+                    }
+                });
+                $("#role").val(users.Get($("#names").val()));
+            })
+        </script>
+        <style>
+            td.label {
+                text-align: right;
+            }
+            td.field {
+                text-align: left;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Manage Firefly Users<img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/></h1>
+        </div>
+        <div class="login">
+            <form action="addUser" method="post" id="loginForm">
+                <!--suppress HtmlFormInputWithoutLabel -->
+                <input style="visibility:hidden;" id="user" name="user">
+                <table>
+                    <tr>
+                        <td class="label"><label class="login" for="names">UserId</label></td>
+                        <td class="field"><select class="login" id="names" name="names" style="text-align: right"></select></td>
+                        <td class="button"><img class="button" src="images/trash.png" alt="Delete" onclick="deleteUser()"/></td>
+                    </tr>
+                    <tr>
+                        <td class="label"><label class="login" for="password">Password</label></td>
+                        <td class="field"><input class="login" type="password" id="password" name="password"></td>
+                    </tr>
+                    <tr>
+                        <td class="label"><label class="login" for="passwordDup">Verify Password</label></td>
+                        <td class="field"><input class="login" type="password" id="passwordDup"></td>
+                    </tr>
+                    <tr>
+                        <td class="label"><label class="login" for="role">Role</label></td>
+                        <td class="field"><select class="login" id="role" name="role">
+                                <option value="admin">Administrator</option>
+                                <option value="user" selected>User</option>
+                            </select></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><input class="submitButton" type="button" value="Submit" onclick="sendForm()"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </body>
+    <script>
+        var users = new Map([<!--map-->]);
+        users.forEach(function(value, key) {
+            $("#names").append($("<option></option>")
+                .attr("value", key)
+                .text(key));
+        })
+    </script>
+</html>

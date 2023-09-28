@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>DC Calibration</title>
+    <link rel="stylesheet" type="text/css" href="/css/fireflyio.css">
+    <script type="text/ecmascript" src="/scripts/jquery-3.6.0.min.js"></script>
+    <script type="text/ecmascript" src="/scripts/jquery-ui.js"></script>
+    <style>
+      .saveButton {
+        background-color:#44c767;
+        border-radius:28px;
+        border:1px solid #18ab29;
+        display:inline-block;
+        cursor:pointer;
+        color:#ffffff;
+        font-family:Arial,serif;
+        font-size:17px;
+        padding:6px 19px;
+        text-decoration:none;
+        text-shadow:0 1px 0 #2f6627;
+      }
+      .saveButton:hover {
+        background-color:#5cbf2a;
+      }
+      .saveButton:active {
+        position:relative;
+        top:1px;
+      }
+    </style>
+    <script type="text/javascript">
+      function SaveLowVolts() {
+        let val = $("#lowVolts").val();
+        SendVal(channel, "lowVolts", val);
+      }
+      function SaveHighVolts() {
+        let val = $("#highVolts").val();
+        SendVal(channel, "highVolts", val);
+      }
+      function SaveLowCurrent() {
+        let val = $("#lowCurrent").val();
+        SendVal(channel, "lowCurrent", val);
+      }
+      function SaveHighCurrent() {
+        let val = $("#highCurrent").val();
+        SendVal(channel, "highCurrent", val);
+      }
+      function SendVal(ch, type, val) {
+        $.ajax({
+          url: '/calibrateDC/' + ch + "/" + type + "/" + val,
+          type: 'put',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          dataType: 'json',
+          success: function() {
+            alert("OK");
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+            if (xhr.status === 400) {
+              alert(xhr.responseJSON.errors[0].Err);
+            } else {
+              alert(xhr.status + " : " + thrownError);
+            }
+          }
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Firefly DC Calibration - <!--Name--><img class="logo" src="/images/logo.png" alt="ElektrikGreen Logo"/></h1>
+    </div>
+    <div>
+      <div>
+        <h3>Enter the measured voltage or current into the appropriate box and click the save button to set the calibration value</h3>
+      </div>
+      <div>
+        <label for="lowVolts">Low Voltage Measurement</label>
+        <input type="number" id="lowVolts" />
+        <a href="#" class="saveButton" onclick="SaveLowVolts()">Save Low Voltage</a>
+      </div>
+      <div>
+        <label for="highVolts">High Voltage Measurement</label>
+        <input type="number" id="highVolts" />
+        <a href="#" class="saveButton" onclick="SaveHighVolts()">Save High Voltage</a>
+      </div>
+      <div>
+        <label for="lowCurrent">Low Current Measurement</label>
+        <input type="number" id="lowCurrent" />
+        <a href="#" class="saveButton" onclick="SaveLowCurrent()">Save Low Current</a>
+      </div>
+      <div>
+        <label for="highCurrent">High Current Measurement</label>
+        <input type="number" id="highCurrent" />
+        <a href="#" class="saveButton" onclick="SaveHighCurrent()">Save High Current</a>
+      </div>
+    </div>
+  </body>
+  <!--Variables-->
+</html>
+
+
+
+

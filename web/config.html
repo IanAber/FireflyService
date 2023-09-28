@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Firefly IO Configuration</title>
+    <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
+    <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+    <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+    <script type="text/ecmascript" src="scripts/config.js"></script>
+</head>
+<body onLoad=loadSettings() >
+    <div class="header">
+        <h1>Firefly IO settings<img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/></h1>
+    </div>
+    <div>
+        <form class="settings" action="/setSettings" method="post" id="settingsForm">
+            <label for="name">System Name</label><input type="text" id="name" name="name" value="Loading..."><br />
+            <table class="settings">
+                <thead>
+                    <tr>
+                        <th class="settingsHeader" colspan="6">Analog Ports</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th class="settings">Pin</th>
+                        <th class="settings">Name</th>
+                        <th class="settings">Low Value</th>
+                        <th class="settings">Low AtoD</th>
+                        <th class="settings">High Value</th>
+                        <th class="settings">High AtoD</th>
+                    </tr>
+                    <tr>
+                        <td>0</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a0name" name="a0name" value="Loading...">
+                        </td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a0LowVal" name="a0LowVal">
+                        </td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a0LowA2D" name="a0LowA2D">
+                        </td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a0HighVal" name="a0HighVal">
+                        </td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a0HighA2D" name="a0HighA2D">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a1name" name="a1name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a1LowVal" name="a1LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a1LowA2D" name="a1LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a1HighVal" name="a1HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a1HighA2D" name="a1HighA2D"></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a2name" name="a2name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a2LowVal" name="a2LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a2LowA2D" name="a2LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a2HighVal" name="a2HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a2HighA2D" name="a2HighA2D"></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a3name" name="a3name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a3LowVal" name="a3LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a3LowA2D" name="a3LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a3HighVal" name="a3HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a3HighA2D" name="a3HighA2D"></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a4name" name="a4name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a4LowVal" name="a4LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a4LowA2D" name="a4LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a4HighVal" name="a4HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a4HighA2D" name="a4HighA2D"></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a5name" name="a5name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a5LowVal" name="a5LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a5LowA2D" name="a5LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a5HighVal" name="a5HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a5HighA2D" name="a5HighA2D"></td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a6name" name="a6name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a6LowVal" name="a6LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a6LowA2D" name="a6LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a6HighVal" name="a6HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a6HighA2D" name="a6HighA2D"></td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a7name" name="a7name" value="Loading..."></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a7LowVal" name="a7LowVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a7LowA2D" name="a7LowA2D"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a7HighVal" name="a7HighVal"></td>
+                        <td><!--suppress HtmlFormInputWithoutLabel -->
+                            <input class="settings" type="text" id="a7HighA2D" name="a7HighA2D"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="settingsGrid">
+                <div>
+                    <table class="settings">
+                        <thead>
+                        <tr>
+                            <th class="settingsHeader" colspan="2">Digital Output Ports</th>
+                        </tr>
+                        <tr>
+                            <th class="settings">Pin</th><th class="settings">Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><label for="do0name">0</label></td>
+                                <td><input class="settings" type="text" id="do0name" name="do0name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="do1name">1</label></td>
+                                <td><input class="settings" type="text" id="do1name" name="do1name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="do2name">2</label></td>
+                                <td><input class="settings" type="text" id="do2name" name="do2name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="do3name">3</label></td>
+                                <td><input class="settings" type="text" id="do3name" name="do3name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="do4name">4</label></td>
+                                <td><input class="settings" type="text" id="do4name" name="do4name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="do5name">5</label></td>
+                                <td><input class="settings" type="text" id="do5name" name="do5name" value="Loading..."></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="settings">
+                        <thead>
+                        <tr>
+                            <th class="settingsHeader" colspan="2">Digital Input Ports</th>
+                        </tr>
+                        <tr>
+                            <th class="settings">Pin</th><th class="settings">Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><label for="di0name">0</label></td>
+                                <td><input class="settings" type="text" id="di0name" name="di0name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="di1name">1</label></td>
+                                <td><input class="settings" type="text" id="di1name" name="di1name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="di2name">2</label></td>
+                                <td><input class="settings" type="text" id="di2name" name="di2name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="di3name">3</label></td>
+                                <td><input class="settings" type="text" id="di3name" name="di3name" value="Loading..."></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <table class="settings">
+                        <thead>
+                            <tr>
+                                <th class="settingsHeader" colspan="2">Relays</th>
+                            </tr>
+                            <tr>
+                                <th class="settings">Relay</th><th class="settings">Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><label for="relay0name">0</label></td>
+                                <td><input class="settings" type="text" id="relay0name" name="relay0name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay1name">1</label></td>
+                                <td><input class="settings" type="text" id="relay1name" name="relay1name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay2name">2</label></td>
+                                <td><input class="settings" type="text" id="relay2name" name="relay2name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay3name">3</label></td>
+                                <td><input class="settings" type="text" id="relay3name" name="relay3name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay4name">4</label></td>
+                                <td><input class="settings" type="text" id="relay4name" name="relay4name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay5name">5</label></td>
+                                <td><input class="settings" type="text" id="relay5name" name="relay5name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay6name">6</label></td>
+                                <td><input class="settings" type="text" id="relay6name" name="relay6name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay7name">7</label></td>
+                                <td><input class="settings" type="text" id="relay7name" name="relay7name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay8name">8</label></td>
+                                <td><input class="settings" type="text" id="relay8name" name="relay8name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay9name">9</label></td>
+                                <td><input class="settings" type="text" id="relay9name" name="relay9name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay10name">10</label></td>
+                                <td><input class="settings" type="text" id="relay10name" name="relay10name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay11name">11</label></td>
+                                <td><input class="settings" type="text" id="relay11name" name="relay11name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay12name">12</label></td>
+                                <td><input class="settings" type="text" id="relay12name" name="relay12name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay13name">13</label></td>
+                                <td><input class="settings" type="text" id="relay13name" name="relay13name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay14name">14</label></td>
+                                <td><input class="settings" type="text" id="relay14name" name="relay14name" value="Loading..."></td>
+                            </tr>
+                            <tr>
+                                <td><label for="relay15name">15</label></td>
+                                <td><input class="settings" type="text" id="relay15name" name="relay15name" value="Loading..."></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 50% 50%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">
+                <div>
+                    <table class="settings">
+                        <thead>
+                            <tr>
+                                <th class="settingsHeader" colspan="2">AC Measurement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><label for="ACMeasurement20">Device 0</label></td>
+                                <td><input class="settings" type="text" id="ACMeasurement20" name="ACMeasurement20" value=""></td>
+                            </tr>
+                            <tr>
+                                <td><label for="ACMeasurement21">Device 1</label></td>
+                                <td><input class="settings" type="text" id="ACMeasurement21" name="ACMeasurement21" value=""></td>
+                            </tr>
+                            <tr>
+                                <td><label for="ACMeasurement22">Device 2</label></td>
+                                <td><input class="settings" type="text" id="ACMeasurement22" name="ACMeasurement22" value=""></td>
+                            </tr>
+                            <tr>
+                                <td><label for="ACMeasurement23">Device 3</label></td>
+                                <td><input class="settings" type="text" id="ACMeasurement23" name="ACMeasurement23" value=""></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <table class="settings">
+                        <thead>
+                        <tr>
+                            <th class="settingsHeader" colspan="3">DC Measurement</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><label for="DCMeasurement10">Device 0</label></td>
+                            <td><input class="settings" type="text" id="DCMeasurement10" name="DCMeasurement10" value=""></td>
+                            <td><a id="calibrateDC10" href="/calibrateDC/0" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                        </tr>
+                        <tr>
+                            <td><label for="DCMeasurement11">Device 1</label></td>
+                            <td><input class="settings" type="text" id="DCMeasurement11" name="DCMeasurement11" value=""></td>
+                            <td><a id="calibrateDC11" href="/calibrateDC/1" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                        </tr>
+                        <tr>
+                            <td><label for="DCMeasurement12">Device 2</label></td>
+                            <td><input class="settings" type="text" id="DCMeasurement12" name="DCMeasurement12" value=""></td>
+                            <td><a id="calibrateDC12" href="/calibrateDC/2" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                        </tr>
+                        <tr>
+                            <td><label for="DCMeasurement13">Device 3</label></td>
+                            <td><input class="settings" type="text" id="DCMeasurement13" name="DCMeasurement13" value=""></td>
+                            <td><a id="calibrateDC13" href="/calibrateDC/3" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="Electrolysers">
+                <h2 class="firefly Electrolysers">Electrolysers</h2>
+                <div class="ElectrolyserParams">
+                    <label class="Electrolysers" for="electrolyserMaxStackVoltsForShutdown">Max Volts For Shutdown</label>
+                    <select class="Electrolysers" id="electrolyserMaxStackVoltsForShutdown" name="electrolyserMaxStackVoltsForShutdown"
+                        title="Set the maximum voltage for the stack to allow the electrolyser to be turned off.">
+                        <option value="35">35V</option>
+                        <option value="34">34V</option>
+                        <option value="33">33V</option>
+                        <option value="32">32V</option>
+                        <option value="31">31V</option>
+                        <option value="30" selected>30V</option>
+                        <option value="29">29V</option>
+                        <option value="28">28V</option>
+                        <option value="27">27V</option>
+                        <option value="26">26V</option>
+                        <option value="25">25V</option>
+                    </select>
+                </div>
+                <div class="Electrolysers">
+                    <label for="ElectrolyserRelays"></label><input style="visibility: hidden" name="ElectrolyserRelays" id="ElectrolyserRelays" value="[]">
+                    <table class="Electrolysers" id="Electrolysers">
+                        <thead class="Electrolysers">
+                            <tr class="Electrolysers">
+                                <th class="Electrolysers">Relay</th>
+                                <th class="Electrolysers">Name</th>
+                                <th class="Electrolysers">
+                                    <label for="DryerNone">No Dryer</label>
+                                    <input class="settings_cb" type="radio" id="DryerNone" name="Dryer" value=-1 checked>
+                                </th>
+                                <th class="Electrolysers">IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody class="Electrolysers" id="ElectrolysersBody">
+                        </tbody>
+                        <tfoot class="Electrolysers">
+                            <tr class="Electrolysers">
+                                <td class="ElectrolyserAdd" onclick="appendElectrolyser()" colspan=3 >Add An Electrolyser</td>
+                            </tr>
+                            <tr class="Electrolysers">
+                                <td class="ElectrolyserAdd"><label for="forceScan">Force a rescan </label><input type="checkbox" id="forceScan" name="forceScan" value="forceScan"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <table class="Electrolysers">
+                        <tr class="Electrolysers">
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="CoolantManagement">
+                <h2 class="firefly CoolantParams">Electrolyser Cooling</h2>
+                <div class="CoolantParams">
+                    <label for="coolingPumpRelay">Water Pump</label>
+                    <select id="coolingPumpRelay" name="coolingPumpRelay" title="CChoose the relay that controls the cooling pump for water cooled electrolysers">
+                        <option value="255" selected>No Water Pump</option>
+                    </select>
+                </div>
+                <div class="CoolantParams">
+                    <label for="coolingPumpStartTemperature">Pump Start Temperature</label>
+                    <select id="coolingPumpStartTemperature" name="coolingPumpStartTemperature" title="The cooling pump will start when one or more electrolysers reaches this stack temperature.">
+                        <option value="25">25℃</option>
+                        <option value="26">26℃</option>
+                        <option value="27">27℃</option>
+                        <option value="28">28℃</option>
+                        <option value="29">29℃</option>
+                        <option value="30">30℃</option>
+                        <option value="31">31℃</option>
+                        <option value="32">32℃</option>
+                        <option value="33">33℃</option>
+                        <option value="34">34℃</option>
+                        <option value="35">35℃</option>
+                        <option value="36">36℃</option>
+                        <option value="37">37℃</option>
+                        <option value="38">38℃</option>
+                        <option value="39">39℃</option>
+                        <option value="40">40℃</option>
+                        <option value="41">41℃</option>
+                        <option value="42">42℃</option>
+                        <option value="43">43℃</option>
+                        <option value="44">44℃</option>
+                        <option value="45">45℃</option>
+                        <option value="46">46℃</option>
+                        <option value="47">47℃</option>
+                        <option value="48">48℃</option>
+                        <option value="49">49℃</option>
+                        <option value="50">50℃</option>
+                        <option value="51">51℃</option>
+                        <option value="52">52℃</option>
+                        <option value="53">53℃</option>
+                        <option value="54">54℃</option>
+                        <option value="55">55℃</option>
+                        <option value="56">56℃</option>
+                        <option value="57">57℃</option>
+                        <option value="58">58℃</option>
+                        <option value="59">59℃</option>
+                        <option value="60">60℃</option>
+                    </select>
+                </div>
+                <div class="CoolantParams">
+                    <label for="coolingPumpStopTemperature">Pump Stop Temperature</label>
+                    <select id="coolingPumpStopTemperature" name="coolingPumpStopTemperature" title="The cooling pump will stop when all electrolysers reach this stack temperature.">
+                        <option value="25">25℃</option>
+                        <option value="26">26℃</option>
+                        <option value="27">27℃</option>
+                        <option value="28">28℃</option>
+                        <option value="29">29℃</option>
+                        <option value="30">30℃</option>
+                        <option value="31">31℃</option>
+                        <option value="32">32℃</option>
+                        <option value="33">33℃</option>
+                        <option value="34">34℃</option>
+                        <option value="35">35℃</option>
+                        <option value="36">36℃</option>
+                        <option value="37">37℃</option>
+                        <option value="38">38℃</option>
+                        <option value="39">39℃</option>
+                        <option value="40">40℃</option>
+                        <option value="41">41℃</option>
+                        <option value="42">42℃</option>
+                        <option value="43">43℃</option>
+                        <option value="44">44℃</option>
+                        <option value="45">45℃</option>
+                        <option value="46">46℃</option>
+                        <option value="47">47℃</option>
+                        <option value="48">48℃</option>
+                        <option value="49">49℃</option>
+                        <option value="50">50℃</option>
+                        <option value="51">51℃</option>
+                        <option value="52">52℃</option>
+                        <option value="53">53℃</option>
+                        <option value="54">54℃</option>
+                        <option value="55">55℃</option>
+                        <option value="56">56℃</option>
+                        <option value="57">57℃</option>
+                        <option value="58">58℃</option>
+                        <option value="59">59℃</option>
+                        <option value="60">60℃</option>
+                    </select>
+                </div>
+            </div>
+            <div class="WaterManagement">
+                <h2 class="firefly WaterParams">Water Management</h2>
+                <div class="WaterParams">
+                    <label for="waterDumpRelay">Water Relay</label>
+                    <select id="waterDumpRelay" name="waterDumpRelay" title="Choose a relay that dumps water from the electrolyser input supply to manage conductivity.">
+                        <option value="255" selected>No Relay Configured</option>
+                    </select>
+                </div>
+                <div class="WaterParams">
+                    <label for="waterDumpSeconds">Dump Time</label>
+                    <select id="waterDumpSeconds" name = "waterDumpSeconds" title="The length of time the dump valve is open for to flush the system on electrolyser start">
+                        <option value="5">5s</option>
+                        <option value="6">6s</option>
+                        <option value="7">7s</option>
+                        <option value="8">8s</option>
+                        <option value="9">9s</option>
+                        <option value="10">10s</option>
+                        <option value="11">11s</option>
+                        <option value="12">12s</option>
+                        <option value="13">13s</option>
+                        <option value="14">14s</option>
+                        <option value="15">15s</option>
+                        <option value="16">16s</option>
+                        <option value="17">17s</option>
+                        <option value="18">18s</option>
+                        <option value="19">19s</option>
+                        <option value="20">20s</option>
+                        <option value="21">21s</option>
+                        <option value="22">22s</option>
+                        <option value="23">23s</option>
+                        <option value="24">24s</option>
+                        <option value="25">25s</option>
+                        <option value="26">26s</option>
+                        <option value="27">27s</option>
+                        <option value="28">28s</option>
+                        <option value="29">29s</option>
+                        <option value="30">30s</option>
+                        <option value="31">31s</option>
+                        <option value="32">32s</option>
+                        <option value="33">33s</option>
+                        <option value="34">34s</option>
+                        <option value="35">35s</option>
+                        <option value="36">36s</option>
+                        <option value="37">37s</option>
+                        <option value="38">38s</option>
+                        <option value="39">39s</option>
+                        <option value="40">40s</option>
+                        <option value="41">41s</option>
+                        <option value="42">42s</option>
+                        <option value="43">43s</option>
+                        <option value="44">44s</option>
+                        <option value="45">45s</option>
+                    </select>
+                </div>
+                <div class="WaterParams">
+                    <label for="waterDumpAction">When to Dump Water</label>
+                    <select id="waterDumpAction" name="waterDumpAction" title="Select the water dump function">
+                        <option value=0>Never</option>
+                        <option value=1>Any time conductivity high</option>
+                        <option value=2>On first electrolyser powered if conductivity is high</option>
+                        <option value=3>On first electrolyser started if conductivity is high</option>
+                        <option value=4>Always on first electrolyser powered</option>
+                        <option value=5>Always on first electrolyser started</option>
+                    </select>
+                </div>
+                <div class="WaterParams">
+                    <label for="maxConductivity">Maximum Conductivity</label>
+                    <select id="maxConductivity" name = "maxConductivity" title="Water will be dumped when an electorlyser is turned on if the cunductivity is higher than the velue selected here">
+                        <option value="0">0µS/cm</option>
+                        <option value="0.5">0.5µS/cm</option>
+                        <option value="1">1µS/cm</option>
+                        <option value="1.5">1.5µS/cm</option>
+                        <option value="2">2µS/cm</option>
+                        <option value="2.5">2.5µS/cm</option>
+                        <option value="3">3µS/cm</option>
+                        <option value="3.5">3.5µS/cm</option>
+                        <option value="4">4µS/cm</option>
+                        <option value="4.5">4.5µS/cm</option>
+                        <option value="5">5µS/cm</option>
+                        <option value="5.5">5.5µS/cm</option>
+                        <option value="6">6µS/cm</option>
+                        <option value="6.5">6.5µS/cm</option>
+                        <option value="7">7µS/cm</option>
+                    </select>
+                </div>
+                <div class="WaterParams">
+                    <label for="maxGreenConductivity">Maximum Conductivity for Green status</label>
+                    <input type="number" id="maxGreenConductivity" name="maxGreenConductivity" />
+                </div>
+                <div class="WaterParams">
+                    <label for="maxYellowConductivity">Maximum Conductivity for Yellow status</label>
+                    <input type="number" id="maxYellowConductivity" name="maxYellowConductivity" />
+                </div>
+                <div class="WaterParams">
+                    <label for="waterAlarm">Water Quality Shutoff</label>
+                    <input type="number" id="waterQualityAlarm" name="waterQualityAlarm" title="Electrolysers will not run if the water conductivity is above this level" />
+                </div>
+            </div>
+            <div id="gasManagement" class="gasManagement">
+                <h2 class="firefly GasParams">Hydrogen Settings</h2>
+                <div class="GasSettings">
+                    <label for="GasUnits">Gas Pressure Units</label><select id="GasUnits" name="GasUnits" >
+                        <option value="Bar" selected>Bar</option>
+                        <option value="psi" selected>Pounds Per Square Inch</option>
+                    </select>
+                </div>
+                <div class="GasSettings">
+                    <label for="MaxGasPressure" >Maximum Gas Pressure</label>
+                    <input type="number" id="MaxGasPressure" name="MaxGasPressure" />
+                </div>
+                <div class="GasSettings">
+                    <Label for="GasInput">Gas Pressure Input</Label>
+                    <select id="GasInput" name="GasInput">
+                    </select>
+                </div>
+                <div class="GasSettings">
+                    <label for="GasDetectorThreshold">Gas Detector Maximum Value</label>
+                    <input type="number" id="GasDetectorThreshold" name="GasDetectorThreshold" />
+                </div>
+                <div class="GasSettings">
+                    <label for="GasDetectorInput">Gas Detector Input</label>
+                    <select id="GasDetectorInput" name="GasDetectorInput">
+                    </select>
+                </div>
+            </div>
+            <div class="FuelCellSettings">
+                <h2 class="firefly FuelCell">Fuel Cell</h2>
+                <label for="FuelCell">Fuel Cell Present?</label>
+                <input id="FuelCell" name="FuelCell" type="checkbox" value=TRUE>
+                <label for="fcCapacity">Fuel Cell Capacity</label>
+                <select id="fcCapacity" name="fcCapacity">
+                    <option value="5">5kW</option>
+                    <option value="10" selected>10kW</option>
+                    <option value="20">20kW</option>
+                </select>
+                <label for="isoLowBehaviour">Fuel Cell - Iso Low Fault Behaviour</label>
+                <select id="isoLowBehaviour" name="isoLowBehaviour">
+                    <option value="false">Shut down if IsoLow fault detected</option>
+                    <option value="true">Ignore IsoLow fault detection</option>
+                </select><br />
+            </div>
+            <div class="SystemSettings">
+                <label for="nodeRed">Node-<span style="color: red">RED</span> URL</label>
+                <input type="text" id="nodeRed" name="nodeRed" width="100em"/>
+            </div>
+            <div class="SystemSettings">
+                <label for="APIKey">API Key</label>
+                <input type="text" id="APIKey" name="APIKey" style="width: 25em" /><img src="images/keys.png" alt="Generate Key" title="Generate new key" onclick="GenerateNewKey()" class="button" style="width: 2em; height: 2em" />
+            </div>
+
+            <input class="submitButton" type="button" value="Submit" onclick="saveSettings()">
+        </form>
+    </div>
+</body>
+</html>
