@@ -18,7 +18,7 @@
             <table class="settings">
                 <thead>
                     <tr>
-                        <th class="settingsHeader" colspan="6">Analog Ports</th>
+                        <th class="settingsHeader" colspan="8">Analog Ports</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,6 +29,8 @@
                         <th class="settings">Low AtoD</th>
                         <th class="settings">High Value</th>
                         <th class="settings">High AtoD</th>
+                        <th class="settings">Min Value</th>
+                        <th class="settings">Max Value</th>
                     </tr>
                     <tr>
                         <td>0</td>
@@ -47,97 +49,173 @@
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a0HighA2D" name="a0HighA2D">
                         </td>
+                        <td>
+                            <input class="settings" type="text" id="a0MinVal" name="a0MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a0MaxVal" name="a0MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>1</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a1name" name="a1name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a1LowVal" name="a1LowVal"></td>
+                            <input class="settings" type="text" id="a1LowVal" name="a1LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a1LowA2D" name="a1LowA2D"></td>
+                            <input class="settings" type="text" id="a1LowA2D" name="a1LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a1HighVal" name="a1HighVal"></td>
+                            <input class="settings" type="text" id="a1HighVal" name="a1HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a1HighA2D" name="a1HighA2D"></td>
+                            <input class="settings" type="text" id="a1HighA2D" name="a1HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a1MinVal" name="a1MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a1MaxVal" name="a1MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>2</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a2name" name="a2name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a2LowVal" name="a2LowVal"></td>
+                            <input class="settings" type="text" id="a2LowVal" name="a2LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a2LowA2D" name="a2LowA2D"></td>
+                            <input class="settings" type="text" id="a2LowA2D" name="a2LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a2HighVal" name="a2HighVal"></td>
+                            <input class="settings" type="text" id="a2HighVal" name="a2HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a2HighA2D" name="a2HighA2D"></td>
+                            <input class="settings" type="text" id="a2HighA2D" name="a2HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a2MinVal" name="a2MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a2MaxVal" name="a2MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>3</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a3name" name="a3name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a3LowVal" name="a3LowVal"></td>
+                            <input class="settings" type="text" id="a3LowVal" name="a3LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a3LowA2D" name="a3LowA2D"></td>
+                            <input class="settings" type="text" id="a3LowA2D" name="a3LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a3HighVal" name="a3HighVal"></td>
+                            <input class="settings" type="text" id="a3HighVal" name="a3HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a3HighA2D" name="a3HighA2D"></td>
+                            <input class="settings" type="text" id="a3HighA2D" name="a3HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a3MinVal" name="a3MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a3MaxVal" name="a3MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>4</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a4name" name="a4name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a4LowVal" name="a4LowVal"></td>
+                            <input class="settings" type="text" id="a4LowVal" name="a4LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a4LowA2D" name="a4LowA2D"></td>
+                            <input class="settings" type="text" id="a4LowA2D" name="a4LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a4HighVal" name="a4HighVal"></td>
+                            <input class="settings" type="text" id="a4HighVal" name="a4HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a4HighA2D" name="a4HighA2D"></td>
+                            <input class="settings" type="text" id="a4HighA2D" name="a4HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a4MinVal" name="a4MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a4MaxVal" name="a4MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>5</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a5name" name="a5name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a5LowVal" name="a5LowVal"></td>
+                            <input class="settings" type="text" id="a5LowVal" name="a5LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a5LowA2D" name="a5LowA2D"></td>
+                            <input class="settings" type="text" id="a5LowA2D" name="a5LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a5HighVal" name="a5HighVal"></td>
+                            <input class="settings" type="text" id="a5HighVal" name="a5HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a5HighA2D" name="a5HighA2D"></td>
+                            <input class="settings" type="text" id="a5HighA2D" name="a5HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a5MinVal" name="a5MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a5MaxVal" name="a5MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>6</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a6name" name="a6name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a6LowVal" name="a6LowVal"></td>
+                            <input class="settings" type="text" id="a6LowVal" name="a6LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a6LowA2D" name="a6LowA2D"></td>
+                            <input class="settings" type="text" id="a6LowA2D" name="a6LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a6HighVal" name="a6HighVal"></td>
+                            <input class="settings" type="text" id="a6HighVal" name="a6HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a6HighA2D" name="a6HighA2D"></td>
+                            <input class="settings" type="text" id="a6HighA2D" name="a6HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a6MinVal" name="a6MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a6MaxVal" name="a6MaxVal">
+                        </td>
                     </tr>
                     <tr>
                         <td>7</td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
                             <input class="settings" type="text" id="a7name" name="a7name" value="Loading..."></td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a7LowVal" name="a7LowVal"></td>
+                            <input class="settings" type="text" id="a7LowVal" name="a7LowVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a7LowA2D" name="a7LowA2D"></td>
+                            <input class="settings" type="text" id="a7LowA2D" name="a7LowA2D">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a7HighVal" name="a7HighVal"></td>
+                            <input class="settings" type="text" id="a7HighVal" name="a7HighVal">
+                        </td>
                         <td><!--suppress HtmlFormInputWithoutLabel -->
-                            <input class="settings" type="text" id="a7HighA2D" name="a7HighA2D"></td>
+                            <input class="settings" type="text" id="a7HighA2D" name="a7HighA2D">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a7MinVal" name="a7MinVal">
+                        </td>
+                        <td>
+                            <input class="settings" type="text" id="a7MaxVal" name="a7MaxVal">
+                        </td>
                     </tr>
                 </tbody>
             </table>

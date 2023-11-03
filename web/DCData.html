@@ -1,0 +1,170 @@
+<html lang="en">
+<head>
+  <title id='Description'>DC Data</title>
+  <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+  <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.web.css" type="text/css" />
+  <script type="text/javascript" src="scripts/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxchart.core.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxchart.rangeselector.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxdatetimeinput.js"></script>
+  <script type="text/javascript" src="scripts/jqwidgets/jqxcalendar.js"></script>
+  <script type="text/javascript" src="scripts/charts.js"></script>
+  <script type="text/javascript">
+    var name = "{{name}}";
+    var channel = "{{channel}}";
+
+    function buildURLForTimes(start, end) {
+      $("#startAt").jqxDateTimeInput('setDate', start );
+      $("#endAt").jqxDateTimeInput('setDate', end );
+      url = encodeURI("../DC/Data/?start="
+              + start.getUTCFullYear() + "-" + (start.getUTCMonth() + 1) + "-" + start.getUTCDate() + " " + start.getUTCHours() + ":" + start.getUTCMinutes()
+              + "&end=" + end.getUTCFullYear() + "-" + (end.getUTCMonth() + 1) + "-" +  end.getUTCDate() + " " + end.getUTCHours() + ":" + end.getUTCMinutes());
+      return url;
+    }
+
+    $(document).ready(function () {
+      let Settings = {
+        title: "DC - " + name,
+        description: "DC Measurments.",
+        enableAnimations: false,
+        animationDuration: 1000,
+        enableAxisTextAnimation: true,
+        showLegend: true,
+        padding: { left: 5, top: 5, right: 5, bottom: 5 },
+        titlePadding: { left: 90, top: 0, right: 0, bottom: 10 },
+        xAxis: {
+          dataField: 'logged',
+          type: 'date',
+          showGridLines: false,
+          textRotationAngle: 270,
+          formatFunction: xAxisFormatFunction,
+          minValue: start,
+          maxValue: end,
+          rangeSelector: {
+            serieType: 'spline',
+            padding: { /*left: 0, right: 0,*/ top: 20, bottom: 0 },
+            backgroundColor: 'white',
+            size: 110,
+            gridLines: {visible: false},
+            min: start,
+            max: end,
+            formatFunction: xAxisSelectorFormatFunction
+          }
+        },
+        colorScheme: 'scheme01',
+        seriesGroups: [{
+          type: 'spline',
+          valueAxis: {
+            unitInterval: 5,
+            gridLines: {
+              visible: true,
+              step: 2,
+            },
+            labels: {
+              formatSettings: {
+                decimalPlaces: 1,
+              },
+              visible: true,
+              step: 2,
+            },
+            minValue: 0,
+            maxValue: 70,
+            description: 'Volts',
+          },
+          series: [{
+            dataField: channel + '_volts',
+            displayText: 'Volts'
+          },{
+            dataField: channel + ''
+          }]
+        },{
+          type: 'spline',
+          valueAxis: {
+            unitInterval: 1,
+            gridLines: {
+              visible: true,
+              step: 10,
+            },
+            labels: {
+              formatSettings: {
+                decimalPlaces: 1,
+              },
+              visible: true,
+              step: 50,
+            },
+            minValue: -200,
+            maxValue: 200,
+            description: 'Current',
+          },
+          series: [{
+            dataField: channel + '_amps',
+            displayText: 'Amps'
+          }]
+        },{
+          type: 'spline',
+          valueAxis: {
+            unitInterval: 1,
+            gridLines: {
+              visible: true,
+              step: 1000,
+            },
+            labels: {
+              formatSettings: {
+                decimalPlaces: 1,
+              },
+              visible: true,
+              step: 1000,
+            },
+            minValue: -8000,
+            maxValue: 8000,
+            description: 'Power',
+          },
+          series: [{
+            dataField: channel + '_watts',
+            displayText: 'watts'
+          }]
+        }]
+      }
+      setupChart(Settings);
+    });
+
+  </script>
+</head>
+  <body style="background:white;">
+    <div id='ChartContainer' style="width:100%; height: 96%" ></div>
+    <div style="text-align:center; height: 4%">
+      <div style="float:left">
+        <label for="timeRange">Time Span</label>
+        <select id="timeRange" onchange="getCurrent()">
+          <option value=1>Focus on selection</option>
+          <option value=2>Double selection</option>
+          <option value=259200000>3 Days</option>
+          <option value=172800000>2 Days</option>
+          <option value=86400000>24 Hours</option>
+          <option value=43200000>12 Hours</option>
+          <option value=28800000 selected='selected'>8 Hours</option>
+          <option value=14400000>4 Hours</option>
+          <option value=7200000>2 Hours</option>
+          <option value=3600000>1 Hour</option>
+          <option value=1800000>30 Minutes</option>
+          <option value=900000>15 Minutes</option>
+          <option value=600000>10 Minutes</option>
+          <option value=300000>5 Minutes</option>
+          <option value=0>Custom</option>
+        </select>
+      </div>
+      <div id="customDateTimes" style="float:left; padding-left: 10px">
+        <span style="float:left;font-size:larger">Start At:&nbsp;</span>
+        <div id="startAt"></div>
+        <span style="float:left;font-size:larger">&nbsp;End At:&nbsp;</span>
+        <div id="endAt"></div>&nbsp;
+        <button onClick="refresh(buildURLCustomTimes())" style="height:100%; width:100px" >Update</button>
+      </div>
+      <div  style="float:left; padding-left: 10px"><label for="autoRefresh"><input id="autoRefresh" type="checkbox" onclick="clickAutoRefresh(this)">Auto Refresh</label></div>
+      <div id="waiting" style="float:left; visibility:visible; padding-left: 10px"><span>Fetching Data please stand by...</span></div>
+    </div>
+  </body>
+</html>

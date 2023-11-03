@@ -6,7 +6,7 @@
       <synchronize>true</synchronize>
       <remarks>Firefly</remarks>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mariadb://firefly.home:3306/firefly</jdbc-url>
+      <jdbc-url>jdbc:mariadb://cloud.cedartechnology.com:41003/firefly</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

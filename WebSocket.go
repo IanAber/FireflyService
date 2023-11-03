@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"time"
 )
 
 var pool Pool
@@ -90,6 +91,7 @@ func (pool *Pool) StartUnregister() {
 }
 
 func (pool *Pool) StartBroadcast() {
+	const ErrorText = "Broadcast update error - %s\n"
 	for {
 		select {
 		case message := <-pool.Broadcast:
@@ -97,20 +99,23 @@ func (pool *Pool) StartBroadcast() {
 			//	log.Printf("message received for service - %d (device = [%s]", message.service, message.device)
 			//}
 			for client := range pool.Clients {
-				//if debugOutput {
-				//	log.Printf("Service = %d ; %d : Client = %s ; %s", message.service, client.Service, message.device, client.Device)
-				//}
 				if client.Service == message.service {
 					// Client has requested this service
 					if !(message.service == wsElectrolyser && client.Device != message.device) {
 						// This is either the right electrolyser or the service is not wsElectrolyser
-						if err := client.Conn.WriteMessage(websocket.TextMessage, message.data); err != nil {
-							log.Printf("Broadcast update error - %s\n", err)
+						// We will give it 3 seconds to complete
+						if debugOutput {
+							log.Print("Sending to ", client.Device)
+						}
+						// If we hit an error, log it and drop the client. The client will have to reconnect.
+						if err := client.Conn.SetWriteDeadline(time.Now().Add((time.Second * 3))); err != nil {
+							log.Printf(ErrorText, err)
 							delete(pool.Clients, client)
 						} else {
-							//if debugOutput {
-							//	log.Print("  Broadcast to - ", client.Conn.UnderlyingConn().RemoteAddr())
-							//}
+							if err := client.Conn.WriteMessage(websocket.TextMessage, message.data); err != nil {
+								log.Printf(ErrorText, err)
+								delete(pool.Clients, client)
+							}
 						}
 					}
 				}

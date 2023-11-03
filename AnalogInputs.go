@@ -7,6 +7,31 @@ import (
 	"sync"
 )
 
+const AnalogBySecond = `select UNIX_TIMESTAMP(logged) as logged,
+	((a0 * ?) + ?) as a0,
+	((a1 * ?) + ?) as a1,
+	((a2 * ?) + ?) as a2,
+	((a3 * ?) + ?) as a3,
+	((a4 * ?) + ?) as a4,
+	((a5 * ?) + ?) as a5,
+	((a6 * ?) + ?) as a6,
+	((a7 * ?) + ?) as a7
+	from IOValues
+   where logged between ? and ?`
+
+const AnalogByMinute = `select min(UNIX_TIMESTAMP(logged)) as logged,
+	((AVG(a0) * ?) + ?) as a0,
+	((AVG(a1) * ?) + ?) as a1,
+	((AVG(a2) * ?) + ?) as a2,
+	((AVG(a3) * ?) + ?) as a3,
+	((AVG(a4) * ?) + ?) as a4,
+	((AVG(a5) * ?) + ?) as a5,
+	((AVG(a6) * ?) + ?) as a6,
+	((AVG(a7) * ?) + ?) as a7
+	from IOValues
+  where logged between ? and ?
+  group by UNIX_TIMESTAMP(logged) div 60`
+
 type AnalogInputType struct {
 	Name  string  `json:"Name"`
 	Raw   uint16  `json:"Raw"`

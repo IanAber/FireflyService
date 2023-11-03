@@ -52,7 +52,6 @@ func RequestLoggerMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 					http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 					return
 				}
-				//				log.Println("Authentication error", err)
 				http.ServeFile(w, req, webFiles+"/Login.html")
 				return
 			}
@@ -123,7 +122,6 @@ func setUpWebSite() {
 	router.HandleFunc("/setFuelCell/Enable", enableFc).Methods("PUT")                      // Enable CAN communications to the fuel cell (we are always listening but may not be sending)
 	router.HandleFunc("/setFuelCell/Disable", disableFc).Methods("PUT")                    // Disable CAN communications to the fuel cell so it can be controlled locally by its own user interface
 	router.HandleFunc("/setFuelCell/ResetFault", resetFCFault).Methods("PUT")              // Send the reset fault code to the fuel cell
-	router.HandleFunc("/unknown", getUnknownFrames).Methods("GET")
 	router.HandleFunc("/NodeRED", redirectToNodeRED).Methods("GET")
 	router.HandleFunc("/Electrolyser.html", serveElectrolyser).Methods("GET")
 	router.HandleFunc("/electrolyser/acquire}", acquireElectrolysers).Methods("GET")                                     // Go and find the electrolyser IP address based on its name.
@@ -149,14 +147,27 @@ func setUpWebSite() {
 
 	router.HandleFunc("/debug/{on}", setDebug).Methods("GET")
 	router.HandleFunc("/logCalls/{on}", setCallLogging).Methods("GET")
+
 	// Historical data access
 	router.HandleFunc("/FuelCellData/DCDC", getFuelCellDCDCData).Methods("GET")
 	router.HandleFunc("/FuelCellData/Stack", getFuelCellStackData).Methods("GET")
 	router.HandleFunc("/FuelCellData/Pressures", getFuelCellPressureData).Methods("GET")
 	router.HandleFunc("/FuelCellData/Coolant", getFuelCellCoolantData).Methods("GET")
+	router.HandleFunc("/Electrolyser/Data/{electrolyser}", getElectrolyserData).Methods("GET")
+	router.HandleFunc("/Analog/Data", getAnalogData).Methods("GET")
+	router.HandleFunc("/AC/Data", getACData).Methods("GET")
+	router.HandleFunc("/DC/Data", getDCData).Methods("GET")
+
+	// Charts
+	router.HandleFunc("/ElectrolyserData.html", serveElectrolyserData).Methods("GET")
+	router.HandleFunc("/AnalogData.html", serveAnalogData).Methods("GET")
+	router.HandleFunc("/ACData.html", serveACData).Methods("GET")
+	router.HandleFunc("/DCData.html", serveDCData).Methods("GET")
+
 	// Default page
 	router.HandleFunc("/", serveDefault)
 	router.HandleFunc("/default.html", serveDefault).Methods("GET")
+	router.HandleFunc("/ping", ping).Methods("GET")
 
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir(webFiles)})
 	router.PathPrefix("/").Handler(http.StripPrefix("/", fileServer))
@@ -167,6 +178,12 @@ func setUpWebSite() {
 	keyFile := "/certs/localhost.key"
 	//log.Fatal(http.ListenAndServe(port, router))
 	log.Fatal(http.ListenAndServeTLS(port, certFile, keyFile, router))
+}
+
+func ping(w http.ResponseWriter, _ *http.Request) {
+	if _, err := fmt.Fprint(w, "OK"); err != nil {
+		log.Println(err)
+	}
 }
 
 func openDCCalibration(w http.ResponseWriter, r *http.Request) {
@@ -326,6 +343,16 @@ func redirectToNodeRED(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type ReplacementsType map[string]string
+
+func replaceText(txt string, replacements ReplacementsType) string {
+	for key, val := range replacements {
+		//		log.Println("Replace ", key, " with ", val)
+		txt = strings.Replace(txt, "{{"+key+"}}", val, -1)
+	}
+	return txt
+}
+
 func serveElectrolyser(w http.ResponseWriter, r *http.Request) {
 	const function = "serveElectrolyser"
 
@@ -333,11 +360,101 @@ func serveElectrolyser(w http.ResponseWriter, r *http.Request) {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		return
 	} else {
-		if _, err := fmt.Fprintf(w, string(fileContent), currentSettings.Name+" - "+r.FormValue("name"), version, r.FormValue("name")); err != nil {
+		replacements := make(ReplacementsType)
+		replacements["title"] = currentSettings.Name + " - " + r.FormValue("name")
+		replacements["name"] = r.FormValue("name")
+		replacements["version"] = version
+
+		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
 			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		}
 	}
 }
+
+func serveElectrolyserData(w http.ResponseWriter, r *http.Request) {
+	const function = "serveElectrolyserData"
+
+	if fileContent, err := os.ReadFile(webFiles + "/ElectrolyserData.html"); err != nil {
+		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		return
+	} else {
+		replacements := make(ReplacementsType)
+		replacements["name"] = r.FormValue("name")
+
+		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+	}
+}
+
+func serveACData(w http.ResponseWriter, r *http.Request) {
+	const function = "serveACData"
+
+	if fileContent, err := os.ReadFile(webFiles + "/ACData.html"); err != nil {
+		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		return
+	} else {
+		replacements := make(ReplacementsType)
+		replacements["name"] = r.FormValue("name")
+		replacements["channel"] = r.FormValue("channel")
+
+		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+	}
+}
+
+func serveDCData(w http.ResponseWriter, r *http.Request) {
+	const function = "serveDCData"
+
+	if fileContent, err := os.ReadFile(webFiles + "/DCData.html"); err != nil {
+		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		return
+	} else {
+		replacements := make(ReplacementsType)
+		replacements["name"] = r.FormValue("name")
+		replacements["channel"] = r.FormValue("channel")
+
+		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+	}
+}
+
+func replacementText(setting AnalogSettingType) string {
+	return fmt.Sprintf(`{"name":"%s", "min": %f, "max": %f, "interval": %d}`,
+		setting.Name, setting.MinVal,
+		setting.MaxVal, int64((setting.MaxVal-setting.MinVal)/5))
+}
+
+func serveAnalogData(w http.ResponseWriter, r *http.Request) {
+	const function = "serveAnalogData"
+
+	if fileContent, err := os.ReadFile(webFiles + "/AnalogData.html"); err != nil {
+		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		return
+	} else {
+		replacements := make(ReplacementsType)
+		replacements["name"] = r.FormValue("name")
+
+		for idx := 0; idx < 8; idx++ {
+
+		}
+		replacements["struct"] = fmt.Sprintf("[%s,%s,%s,%s,%s,%s,%s,%s]",
+			replacementText(currentSettings.AnalogChannels[0]),
+			replacementText(currentSettings.AnalogChannels[1]),
+			replacementText(currentSettings.AnalogChannels[2]),
+			replacementText(currentSettings.AnalogChannels[3]),
+			replacementText(currentSettings.AnalogChannels[4]),
+			replacementText(currentSettings.AnalogChannels[5]),
+			replacementText(currentSettings.AnalogChannels[6]),
+			replacementText(currentSettings.AnalogChannels[7]))
+		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+	}
+}
+
 func rescanElectrolyser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	request := strings.ToLower(vars["electrolyser"])
@@ -396,7 +513,7 @@ func setElectrolyserProductionRate(w http.ResponseWriter, r *http.Request) {
 	const function = "setElectrolyserProductionRate"
 
 	if debugOutput {
-		log.Println("Set production")
+		log.Println("Set ", request, " production = ", vars["rate"])
 	}
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
@@ -443,6 +560,120 @@ func getElectrolyserProductionRate(w http.ResponseWriter, r *http.Request) {
 			if _, err := fmt.Fprintf(w, string(sData)); err != nil {
 				log.Println(err)
 			}
+		}
+	}
+}
+
+// getElectrolyserData returns the data collected from the named electrolyser between two date/times
+func getElectrolyserData(w http.ResponseWriter, r *http.Request) {
+	const function = "getElectrolyserData"
+
+	if pDB == nil {
+		ReturnJSONErrorString(w, function, "No Database", http.StatusInternalServerError, true)
+		return
+	}
+
+	vars := mux.Vars(r)
+	name := strings.ToLower(vars["electrolyser"])
+
+	if el := Electrolysers.FindByName(name); el == nil {
+		ReturnJSONErrorString(w, function, "Electrolyser "+name+" was not found", http.StatusBadRequest, false)
+	} else {
+		if start, end, err := GetTimeRange(r); err != nil {
+			ReturnJSONError(w, function, err, http.StatusBadRequest, false)
+		} else {
+			if end.Sub(start) > time.Hour {
+				SendDataAsJSON(w, function, ElectrolyserDataByMinute, name, start, end)
+			} else {
+				SendDataAsJSON(w, function, ElectrolyserDataBySecond, name, start, end)
+			}
+			if err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			}
+		}
+	}
+}
+
+func getACData(w http.ResponseWriter, r *http.Request) {
+	const function = "getACData"
+
+	if pDB == nil {
+		ReturnJSONErrorString(w, function, "No Database", http.StatusInternalServerError, true)
+		return
+	}
+
+	if start, end, err := GetTimeRange(r); err != nil {
+		ReturnJSONError(w, function, err, http.StatusBadRequest, false)
+	} else {
+		if end.Sub(start) > time.Hour {
+			SendDataAsJSON(w, function, ACDataByMinute, start, end)
+		} else {
+			SendDataAsJSON(w, function, ACDataBySecond, start, end)
+		}
+		if err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+	}
+}
+
+func getDCData(w http.ResponseWriter, r *http.Request) {
+	const function = "getDCData"
+
+	if pDB == nil {
+		ReturnJSONErrorString(w, function, "No Database", http.StatusInternalServerError, true)
+		return
+	}
+
+	if start, end, err := GetTimeRange(r); err != nil {
+		ReturnJSONError(w, function, err, http.StatusBadRequest, false)
+	} else {
+		if end.Sub(start) > time.Hour {
+			SendDataAsJSON(w, function, DCDataByMinute, start, end)
+		} else {
+			SendDataAsJSON(w, function, DCDataBySecond, start, end)
+		}
+		if err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+	}
+}
+
+func getAnalogData(w http.ResponseWriter, r *http.Request) {
+	const DeviceString = "Analog Data"
+
+	if pDB == nil {
+		ReturnJSONErrorString(w, DeviceString, "No Database", http.StatusInternalServerError, true)
+		return
+	}
+
+	if start, end, err := GetTimeRange(r); err != nil {
+		ReturnJSONError(w, DeviceString, err, http.StatusBadRequest, false)
+	} else {
+		if end.Sub(start) > time.Hour {
+			SendDataAsJSON(w, DeviceString, AnalogByMinute,
+				currentSettings.AnalogChannels[0].calibrationMultiplier, currentSettings.AnalogChannels[0].calibrationConstant,
+				currentSettings.AnalogChannels[1].calibrationMultiplier, currentSettings.AnalogChannels[1].calibrationConstant,
+				currentSettings.AnalogChannels[2].calibrationMultiplier, currentSettings.AnalogChannels[2].calibrationConstant,
+				currentSettings.AnalogChannels[3].calibrationMultiplier, currentSettings.AnalogChannels[3].calibrationConstant,
+				currentSettings.AnalogChannels[4].calibrationMultiplier, currentSettings.AnalogChannels[4].calibrationConstant,
+				currentSettings.AnalogChannels[5].calibrationMultiplier, currentSettings.AnalogChannels[5].calibrationConstant,
+				currentSettings.AnalogChannels[6].calibrationMultiplier, currentSettings.AnalogChannels[6].calibrationConstant,
+				currentSettings.AnalogChannels[7].calibrationMultiplier, currentSettings.AnalogChannels[7].calibrationConstant,
+				start, end)
+		} else {
+			SendDataAsJSON(w, DeviceString, AnalogBySecond,
+				currentSettings.AnalogChannels[0].calibrationMultiplier, currentSettings.AnalogChannels[0].calibrationConstant,
+				currentSettings.AnalogChannels[1].calibrationMultiplier, currentSettings.AnalogChannels[1].calibrationConstant,
+				currentSettings.AnalogChannels[2].calibrationMultiplier, currentSettings.AnalogChannels[2].calibrationConstant,
+				currentSettings.AnalogChannels[3].calibrationMultiplier, currentSettings.AnalogChannels[3].calibrationConstant,
+				currentSettings.AnalogChannels[4].calibrationMultiplier, currentSettings.AnalogChannels[4].calibrationConstant,
+				currentSettings.AnalogChannels[5].calibrationMultiplier, currentSettings.AnalogChannels[5].calibrationConstant,
+				currentSettings.AnalogChannels[6].calibrationMultiplier, currentSettings.AnalogChannels[6].calibrationConstant,
+				currentSettings.AnalogChannels[7].calibrationMultiplier, currentSettings.AnalogChannels[7].calibrationConstant,
+				start, end)
+		}
+		if err != nil {
+			ReturnJSONError(w, DeviceString, err, http.StatusInternalServerError, true)
 		}
 	}
 }
@@ -713,7 +944,7 @@ func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 func startElectrolyserWebSocket(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	request := strings.ToLower(vars["electrolyser"])
-	const function = "getElectrolyserStatus"
+	const function = "startElectrolyserStatus"
 
 	if debugOutput {
 		log.Print("Electrolyser WebSocket Endpoint Hit for ", request)
@@ -976,7 +1207,6 @@ func setRelay(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			log.Println("Relay - ", relayNum, bOn)
 			Relays.SetRelay(uint8(relayNum), bOn)
 		} else {
 			ReturnJSONErrorString(w, function, fmt.Sprintf("Invalid relay number - %d", relayNum), http.StatusBadRequest, true)

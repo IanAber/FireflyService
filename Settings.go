@@ -20,6 +20,8 @@ type AnalogSettingType struct {
 	UpperCalibrationAtoD   uint16
 	calibrationConstant    float32
 	calibrationMultiplier  float32
+	MaxVal                 float32
+	MinVal                 float32
 }
 
 type actionType uint8
@@ -103,6 +105,8 @@ func NewSettings() *SettingsType {
 		settings.AnalogChannels[idx].LowerCalibrationActual = 0
 		settings.AnalogChannels[idx].LowerCalibrationAtoD = 0
 		settings.AnalogChannels[idx].calculateConstants()
+		settings.AnalogChannels[idx].MaxVal = 1024
+		settings.AnalogChannels[idx].MinVal = 0
 	}
 	for idx := range settings.DigitalInputs {
 		settings.DigitalInputs[idx].Port = uint8(idx)
@@ -433,6 +437,18 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 			return
 		} else {
 			settings.AnalogChannels[analog].UpperCalibrationAtoD = uint16(f)
+		}
+		if f, err := strconv.ParseFloat(r.FormValue(fmt.Sprintf("a%dMinVal", analog)), 32); err != nil {
+			ReturnJSONError(w, DeviceString+"Analog Min Value", err, http.StatusInternalServerError, true)
+			return
+		} else {
+			settings.AnalogChannels[analog].MinVal = float32(f)
+		}
+		if f, err := strconv.ParseFloat(r.FormValue(fmt.Sprintf("a%dMaxVal", analog)), 32); err != nil {
+			ReturnJSONError(w, DeviceString+"Analog Max Value", err, http.StatusInternalServerError, true)
+			return
+		} else {
+			settings.AnalogChannels[analog].MaxVal = float32(f)
 		}
 		settings.AnalogChannels[analog].calculateConstants()
 	}

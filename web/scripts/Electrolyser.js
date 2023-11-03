@@ -137,6 +137,7 @@ function RegisterWebSocket() {
             stackVoltage.val(jsonData.stackVoltage);
             $("#model").text(jsonData.model);
             $("#serial").text(jsonData.serial);
+            $("#ip").text(jsonData.ip);
             $("#innerh2").text(jsonData.innerH2.toFixed(1));
             $("#outerh2").text(jsonData.outerH2.toFixed(1));
             $("#waterPressure").text(jsonData.waterPressure.toFixed(2));
@@ -225,7 +226,6 @@ function RegisterWebSocket() {
                     $("#outPressure").text("");
                 }
             }
-
         } catch (e) {
             alert(e);
         }
@@ -247,7 +247,7 @@ function setButtonOnOff(button, on) {
 function RunClick() {
     let button = $("#Run");
     button.addClass("depressed");
-    let url = ""
+    let url
     if (button.hasClass("swOn")) {
         url = "/setElectrolyser/Stop/" + elName;
     } else {
@@ -265,7 +265,11 @@ function MaintenanceClick() {
     if (button.hasClass("swOn")) {
         url = "/setElectrolyser/StopMaintenance/" + elName;
     } else {
-        url = "/setElectrolyser/StartMaintenance/" + elName;
+        if (confirm("Entering Maintenance Mode requires that you empty and refill the electrolyser.\nAre you really sure this is what you want to do?") === true) {
+            url = "/setElectrolyser/StartMaintenance/" + elName;
+        } else {
+            return;
+        }
     }
     $.ajax({
         method : "PUT",
@@ -277,7 +281,11 @@ function BlowDownClick() {
     let button = $("#BlowDown");
     button.addClass("depressed");
     if (button.hasClass("swOff")) {
-        url = "/setElectrolyser/Blowdown/" + elName;
+        if (confirm("You are about to perform an Electrolyser Blow Down sequence.\nAre you really sure this is what you want to do?") === true) {
+            url = "/setElectrolyser/Blowdown/" + elName;
+        } else {
+            return;
+        }
         $.ajax({
             method : "PUT",
             url: url
@@ -288,8 +296,12 @@ function BlowDownClick() {
 function RescanClick() {
     let button = $("#Rescan");
     if (!button.hasClass("depressed")) {
-        button.addClass("depressed");
-        url = "/setElectrolyser/Rescan/" + elName;
+        if (confirm("You are about to perform an Electrolyser Rescan sequence to try and update the IP address.\nThis should only be performed if you believe the current IP address is incorrect.\nAre you really sure this is what you want to do?") === true) {
+            button.addClass("depressed");
+            url = "/setElectrolyser/Rescan/" + elName;
+        } else {
+            return;
+        }
         $.ajax({
             method : "PUT",
             url: url
@@ -303,7 +315,11 @@ function RefillClick() {
     let button = $("#Refill");
     setButtonOnOff(button, true);
     if (button.hasClass("swOff")) {
-        url = "/setElectrolyser/Refill/" + elName;
+        if (confirm("You are about to perform an Electrolyser Refill sequence.\nAre you really sure this is what you want to do?") === true) {
+            url = "/setElectrolyser/Refill/" + elName;
+        } else {
+            return;
+        }
         $.ajax({
             method : "PUT",
             url: url
@@ -352,6 +368,7 @@ function rebootDryer() {
 }
 
 function StartHeartbeat() {
-    $("#heartbeat").css({width: "20px", height: "20px"})
-    $("#heartbeat").animate({width: "15px", height: "15px"})
+    let hb = $("#heartbeat")
+    hb.css({width: "20px", height: "20px"})
+    hb.animate({width: "15px", height: "15px"})
 }

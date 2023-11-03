@@ -22,19 +22,19 @@
   <body>
       <div class="header">
           <h1 class="firefly">
-              <span class="system" id="system">%s</span>
+              <span class="system" id="system">{{title}}</span>
               <img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
           </h1>
       </div>
       <div class="threegauges" >
           <div class="centered">
-              <div id="production"></div>
+              <div id="production" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
           </div>
           <div class="centered">
-              <div id="stackCurrent"></div>
+              <div id="stackCurrent" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
           </div>
           <div class="centered">
-              <div id="stackVoltage"></div>
+              <div id="stackVoltage" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
           </div>
       </div>
       <div class="gauges" >
@@ -68,12 +68,15 @@
                       <td class="label">State</td><td class="parameter"><span class="parameter" id="state"></span></td>
                   </tr>
                   <tr class="parameters">
+                      <td class="label">IP</td><td class="parameter"><span class="parameter" id="ip"></span></td>
+                  </tr>
+                  <tr class="parameters">
                       <td class="parameter" colspan="2"><span class="parameter" id="errors"></span></td>
                   </tr>
               </table>
           </div>
           <div class="centered">
-              <label class="parameters" for="rate">Production Rate</label><br \>
+              <label class="parameters" for="rate">Production Rate</label><br>
               <div style="margin:auto" id="rate"></div>
           </div>
           <div class="centered">
@@ -147,10 +150,10 @@
           </div>
       </div>
       <footer class="firefly">
-          <span class="version">Version </span><span class="version" id="version">%s</span>
+          <span class="version">Version </span><span class="version" id="version">{{version}}</span>
       </footer>
   </body>
   <script type="text/javascript">
-      $(document).ready(setupPage('%s'));
+      $(document).ready(setupPage('{{name}}'));
   </script>
 </html>

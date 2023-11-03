@@ -8,7 +8,6 @@ import (
 	"go.einride.tech/can/pkg/socketcan"
 	"log"
 	"net"
-	"net/http"
 	"sync"
 	"time"
 
@@ -21,30 +20,7 @@ const CALIBRATE_DC_VOLTAGE_HIGH = 2
 const CALIBRATE_DC_CURRENT_LOW = 4
 const CALIBRATE_DC_CURRENT_HIGH = 8
 
-var UnknownFrames map[uint32]time.Time
-
 func init() {
-	UnknownFrames = make(map[uint32]time.Time)
-}
-
-func getUnknownFrames(w http.ResponseWriter, _ *http.Request) {
-	const deviceString = "GetUnknownFrames"
-	setContentTypeHeader(w)
-	if _, err := fmt.Fprint(w, `{
-  "UnknownFrames" : {
-`); err != nil {
-		ReturnJSONError(w, deviceString, err, http.StatusInternalServerError, true)
-	}
-	for id, when := range UnknownFrames {
-		if _, err := fmt.Fprintf(w, `    "0x%08x" : "%v"
-`, id-0x80000000, when); err != nil {
-			ReturnJSONError(w, deviceString, err, http.StatusInternalServerError, true)
-		}
-	}
-	if _, err := fmt.Fprint(w, `  }
-}`); err != nil {
-		ReturnJSONError(w, deviceString, err, http.StatusInternalServerError, true)
-	}
 }
 
 type FrameHandler func(frame can.Frame, canBus *CANBus)
@@ -107,16 +83,20 @@ const AcErrorCanId3 = 0x4B
 const DcVoltsAmpsCanId3 = 0x4C
 const DcErrorCanId3 = 0x4F
 
+const DCVolts0CanID = 0x50
+const DCAmps0CanID = 0x51
+const DCVolts1CanID = 0x54
+const DCAmps1CanID = 0x55
+const DCVolts2CanID = 0x58
+const DCAmps2CanID = 0x59
+const DCVolts3CanID = 0x5C
+const DCAmps3CanID = 0x5D
+
 // handleCANFrame figures out what to do with each CAN frame received
 func (canBus *CANBus) handleCANFrame(frm can.Frame) {
 	handler := canBus.FrameHandlers[frm.ID]
 	if handler != nil {
 		handler(frm, canBus)
-	} else if frm.ID < 255 {
-		log.Printf("Frame %x received with data %v\n", frm.ID, frm.Data)
-	} else {
-		UnknownFrames[frm.ID] = time.Now()
-		//		log.Printf("0x%x", frm.ID)
 	}
 }
 
@@ -134,9 +114,9 @@ func NewCANBus(interfaceName string) (*CANBus, error) {
 		log.Println("CAN interface not available.", err)
 	} else {
 		//		canBus.bus.SubscribeFunc(canBus.handleCANFrame)
-		canBus.FrameHandlers[RelaysAndDigitalOutCanId] = framesWeSend
-		canBus.FrameHandlers[DCCalibration] = framesWeSend
-		canBus.FrameHandlers[FlagsCanId] = flagsHandler
+		//canBus.FrameHandlers[RelaysAndDigitalOutCanId] = framesWeSend
+		//canBus.FrameHandlers[DCCalibration] = framesWeSend
+		//canBus.FrameHandlers[FlagsCanId] = flagsHandler
 		canBus.FrameHandlers[RelaysOutputsAndHeartbeat] = relayHandler
 		canBus.FrameHandlers[AnalogInputs0to3CanId] = analogInputs0to3Handler
 		canBus.FrameHandlers[AnalogInputs4to7CanId] = analogInputs4to7Handler
@@ -166,8 +146,8 @@ func NewCANBus(interfaceName string) (*CANBus, error) {
 		canBus.FrameHandlers[DcVoltsAmpsCanId3] = dcVoltsAndAmpsHandler3
 		canBus.FrameHandlers[DcErrorCanId3] = dcErrorHandler3
 
-		canBus.FrameHandlers[CanOutputControlMsg] = framesWeSend
-		canBus.FrameHandlers[CanBatteryVoltageLimitsMsg] = framesWeSend
+		//		canBus.FrameHandlers[CanOutputControlMsg] = framesWeSend
+		//		canBus.FrameHandlers[CanBatteryVoltageLimitsMsg] = framesWeSend
 		canBus.FrameHandlers[CanPowerModeMsg] = CanPowerModeHandler
 		canBus.FrameHandlers[CanPressuresMsg] = CanPressuresHandler
 		canBus.FrameHandlers[CanStackCoolantMsg] = CanStackCoolantHandler
@@ -193,6 +173,15 @@ func NewCANBus(interfaceName string) (*CANBus, error) {
 		canBus.FrameHandlers[CanBMSSettingsMsg] = CanBMSSettingsHandler
 		canBus.FrameHandlers[CanKeyOnMsg] = CanKeyOnHandler
 		canBus.FrameHandlers[CanRunTimeMsg] = CanRunTimeHandler
+
+		canBus.FrameHandlers[DCVolts0CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps0CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts1CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps1CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts2CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps2CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts3CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps3CanID] = CanDCMeasurementHandler
 
 		go ConnectAndPublish(canBus)
 	}
@@ -251,6 +240,22 @@ func (bus *CANBus) Publish(frame can.Frame) error {
 		tx := socketcan.NewTransmitter(conn)
 		return tx.TransmitFrame(context.Background(), frame)
 	}
+}
+
+func CanDCMeasurementHandler(frame can.Frame, _ *CANBus) {
+	if frame.ID >= 0x60 {
+		log.Println("DC measurement frame ID is out or range.")
+	}
+	//var dcDevice uint32
+	//var Amps float32
+	//var volts float32
+	//dcDevice = (frame.ID &0x1C) >> 2
+	//switch frame.ID &0x3 {
+	//case 0 : DCMeasurements[dcDevice].Amps = float32(binary.BigEndian.Uint16(frame.Data[0:2])) / 100
+	//break
+	//case 1 : DCMeasurements[dcDevice].Amps = float32(int32(binary.BigEndian.Uint32(frame.Data[0:4]))) / 100
+	//break;
+	//}
 }
 
 func CanKeyOnHandler(frame can.Frame, _ *CANBus) {
@@ -343,14 +348,14 @@ func CanBMSSettingsHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.SystemInfo.exhaustLastValue = frame.Data[6] != 0
 }
 
-func framesWeSend(_ can.Frame, _ *CANBus) {
-	// Dummy handler for all the frames that are echoed back to us
-}
-
-func flagsHandler(_ can.Frame, _ *CANBus) {
-	// Not used yet.
-}
-
+//func framesWeSend(_ can.Frame, _ *CANBus) {
+//	// Dummy handler for all the frames that are echoed back to us
+//}
+//
+//func flagsHandler(_ can.Frame, _ *CANBus) {
+//	// Not used yet.
+//}
+//
 func relayHandler(frame can.Frame, _ *CANBus) {
 	Relays.mu.Lock()
 	defer Relays.mu.Unlock()

@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Firefly" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" autoUploadExternalChanges="true">
+    <option name="confirmBeforeUploading" value="false" />
     <serverData>
+      <paths name="Cloud">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/" local="$PROJECT_DIR$/dist/release" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$/Scrpits" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="Firefly">
         <serverdata>
           <mappings>
@@ -9,6 +18,21 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="Firefly-2">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/FireflyService" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Firefly-3">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/FireflyService" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
     </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>

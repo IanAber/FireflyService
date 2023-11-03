@@ -9,6 +9,7 @@ function RegisterWebSocket() {
         try {
             jsonData = JSON.parse(evt.data);
             $("#system").text(jsonData.System);
+            document.title = jsonData.System;
             $("#version").text(jsonData.Version);
             leakDetection(jsonData.SystemAlarms.h2Alarm);
             conductivityDetection(jsonData.SystemAlarms.conductivityAlarm);
@@ -51,36 +52,38 @@ function RegisterWebSocket() {
                 $("#fcStackPower").hide();
             }
 
-            jsonData.Electrolysers.forEach((currentElement, index) => {
-                // noinspection JSUnresolvedFunction,JSJQueryEfficiency
-                el = $("#el" + index);
-                if (el.length === 0) {
-                    addElectrolyser(index, currentElement.name);
-                    newEl = $("#el" + index);
-                    newEl.jqxGauge({
-                        height: size,
-                        width: size,
-                        radius: (size / 2) - 25,
-                        ticksMinor: {interval: 25, size: '5%'},
-                        ticksMajor: {interval: 100,size: '9%'},
-                        labels: {interval:100},
-                        min: 0,
-                        max: 525,
-                        value: 0,
-                        animationDuration: 500,
-                        cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
-                        caption: {value: currentElement.name + ' NL/hr', position: 'bottom', offset: [0, 10], visible: true},
-                    });
-                }
-                if (currentElement.on) {
-                    el.attr('on', "1");
-                    el.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#00e100'}, visible: true }});
-                } else {
-                    el.attr('on', "0");
-                    el.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#e10000'}, visible: true }});
-                }
-                el.val(currentElement.h2Flow);
-            });
+            jsonData.Electrolysers.forEach((currentElement, index) => updateElectrolyser(currentElement, index));
+//             jsonData.Electrolysers.forEach((currentElement, index) => {
+//                 // noinspection JSUnresolvedFunction,JSJQueryEfficiency
+//                 el = $("#el" + index);
+//                 if (el.length === 0) {
+//                     el = addElectrolyser(index, currentElement.name);
+// //                    el = $("#el" + index);
+//                     el.jqxGauge({
+//                         height: size,
+//                         width: size,
+//                         radius: (size / 2) - 25,
+//                         ticksMinor: {interval: 25, size: '5%'},
+//                         ticksMajor: {interval: 100,size: '9%'},
+//                         labels: {interval:100},
+//                         min: 0,
+//                         max: 525,
+//                         value: 0,
+//                         animationDuration: 500,
+//                         cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
+//                         caption: {value: currentElement.name + ' NL/hr', position: 'bottom', offset: [0, 10], visible: true},
+//                     });
+//
+//                 }
+//                 if (currentElement.on) {
+//                     el.attr('on', "1");
+//                     el.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#00e100'}, visible: true }});
+//                 } else {
+//                     el.attr('on', "0");
+//                     el.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#e10000'}, visible: true }});
+//                 }
+//                 el.val(currentElement.h2Flow);
+//             });
         } catch (e) {
             alert(e);
         }
@@ -103,17 +106,48 @@ function conductivityDetection(alarm) {
     }
 }
 
-function addElectrolyser(id, name) {
-    sCode = '<div class="centered"><div id="el' + id + '" ondblclick="openElectrolyser(\'' + name + '\', event)"></div></div>\n';
-    jQuery('#systems').append(sCode);
-}
+// const ELDIV = `<div class="centered">
+//     <div class="control" id="el{{id}}" ondblclick="openElectrolyser('{{name}}', 'el{{id}}')">
+//     </div>
+//     <div class="control" id="elControls{{id}}">
+//         <div class="control">
+//             <label class="parameters" for="elRate{{id}}">Production Rate</label><br \>
+//             <div style="margin:auto" id="elRate{{id}}"></div>
+//         </div>
+//         <div class="control" style="display: grid; grid-template-columns: 40% 20% 40%" >
+//             <div class="control">
+//                 <img id="ELPower{{id}}" class="swOff" src="images/power-off.png" alt="Enable" onclick="PowerClick({{relay}}, 'ELPower{{id}}')" />
+//                 <label for="ELPower{{id}}">Power</label></td>
+//             </div>
+//             <div class="control">
+//                 <span id="ELStatus{{id}}">Off</span>
+//             </div>
+//             <div class="control">
+//                 <img id="ELRun{{id}}" class="swOff" src="images/power-off.png" alt="Enable" onclick="RunClick({{id}}, 'ELRun{{id}}', '{{name}}')" />
+//                 <label for="ELRun{{id}}">Run</label></td>
+//             </div>
+//         </div>
+//     </div>
+// </div>`
+//
+// function addElectrolyser(id, name, relay) {
+//     sCode = ELDIV.replace(/{{id}}/g, id).replace(/{{name}}/g, name).replace(/{{relay}}/g, relay);
+//     jQuery('#systems').append(sCode);
+//     return $("#el" + id);
+// }
+//
+// function addElectrolyser(id, name) {
+//     sCode = '<div class="centered"><div id="el' + id + '" ondblclick="openElectrolyser(\'' + name + '\', event)"></div></div>\n';
+//     jQuery('#systems').append(sCode);
+//     return $("#el" + id);
+// }
 
-function openElectrolyser(name, event) {
+function openElectrolyser(name, id) {
 
-    if ($("#"+event.currentTarget.id).attr("on") === "1") {
+    if ($("#"+id).attr("on") === "1") {
         window.open("Electrolyser.html?name=" + name);
     } else {
-        alert("Please turn the electrolyser on first.");
+        window.open("ElectrolyserData.html?name=" + name);
     }
 }
 
@@ -287,3 +321,64 @@ function  clickOutput(id) {
         dataType: 'json'
     })
 }
+
+function setOnOffButton(id, on) {
+    btn = $("#"+id);
+    if (on) {
+        if (!btn.hasClass("swOn")) {
+            btn.removeClass("swOff");
+            btn.addClass("swOn");
+        }
+    } else {
+        if (!btn.hasClass("swOff")) {
+            btn.removeClass("swOn");
+            btn.addClass("swOff");
+        }
+    }
+}
+
+// function  PowerClick(id, controlID) {
+//     let Control = $("#"+controlID);
+//     let putString = "/setRelay/" + id + "/" + ((Control.hasClass("swOff")) ? "on" : "off");
+//     $.ajax({
+//         url: putString,
+//         type: 'put',
+//         headers: {
+//             "Content-Type": "application/json"
+//         },
+//         dataType: 'json',
+//         success: function(response) {
+//             console.log("Relay command sent OK");
+//         },
+//         error: function (xhr, ajaxOptions, thrownError) {
+//             if (xhr.status == 400) {
+//                 alert(xhr.responseJSON.errors[0].Err);
+//             } else {
+//                 alert(xhr.status + " : " + thrownError);
+//             }
+//         }
+//     });
+// }
+//
+// function RunClick(id, controlID, elName) {
+//     let Control = $("#"+controlID);
+//     let putString = "/setElectrolyser/" + ((Control.hasClass("swOff")) ? "Start" : "Stop") + "/" + elName;
+//     $.ajax({
+//         url: putString,
+//         type: 'put',
+//         headers: {
+//             "Content-Type": "application/json"
+//         },
+//         dataType: 'json',
+//         success: function(response) {
+//             console.log("Electrolyser command sent OK");
+//         },
+//         error: function (xhr, ajaxOptions, thrownError) {
+//             if (xhr.status == 400) {
+//                 alert(xhr.responseJSON.errors[0].Err);
+//             } else {
+//                 alert(xhr.status + " : " + thrownError);
+//             }
+//         }
+//     });
+// }

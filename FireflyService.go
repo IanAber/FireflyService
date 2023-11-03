@@ -39,6 +39,8 @@ var (
 	webFiles              string
 	pDB                   *sql.DB
 	ElectrolyserStatement *sql.Stmt
+	ACStatement           *sql.Stmt
+	DCStatement           *sql.Stmt
 	FuelCell              PANFuelCell
 	logFile               *os.File
 	logFileName           string
@@ -70,7 +72,7 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 		pDB = nil
 		return nil, nil, err
 	}
-	logAnalog, err := db.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, inputs, outputs, relays, ACVolts, ACAmps, ACWatts, ACHertz) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+	logAnalog, err := db.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, inputs, outputs, relays) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		log.Println(err)
 		if closeErr := db.Close(); closeErr != nil {
@@ -91,7 +93,7 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 		Cell15Volts	, Cell16Volts	, Cell17Volts	, Cell18Volts	, Cell19Volts,
 		Cell20Volts	, Cell21Volts	, Cell22Volts	, Cell23Volts	, Cell24Volts,
 		Cell25Volts	, Cell26Volts	, Cell27Volts	, Cell28Volts	, Cell29Volts,
-		Cell30Volts	, Cell31Volts	, Alarms		, PowerRequested, PowerModeState)
+		Cell30Volts	, Cell31Volts	, Alarms		, PowerRequested, MaxBattVolts, MinBattVolts, PowerModeState)
         VALUES (
 			?,?,?,?,?,
 			?,?,?,?,?,
@@ -105,7 +107,8 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 			?,?,?,?,?,
 			?,?,?,?,?,
 			?,?,?,?,?,
-			?,?,?,?,?)`
+			?,?,?,?,?,?,?)`
+
 	if pStmt, err := db.Prepare(fuelCellLogStatement); err != nil {
 		log.Println("Failed to prepare the fuel cell log statement -", err)
 		return logAnalog, nil, err
@@ -114,6 +117,17 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 	}
 
 	ElectrolyserStatement, err = db.Prepare(`INSERT INTO firefly.Electrolyser (name, flow, volts, amps, temperature, errors, waterPressure, rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?);`)
+	if err != nil {
+		return logAnalog, nil, err
+	}
+	ACStatement, err = db.Prepare(ACValuesInsertStatement)
+	if err != nil {
+		return logAnalog, nil, err
+	}
+	DCStatement, err = db.Prepare(DCValuesInsertStatement)
+	if err != nil {
+		return logAnalog, nil, err
+	}
 
 	return logAnalog, db, err
 }
@@ -130,7 +144,7 @@ func ConnectCANBus() *CANBus {
 func init() {
 	flag.StringVar(&CANInterface, "can", "can0", "CAN Interface Name")
 	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
-	flag.StringVar(&jsonSettings, "jsonSettings", "/etc/FireFlyIO.json", "JSON file containing the system control parameters")
+	flag.StringVar(&jsonSettings, "jsonSettings", "/etc/FireflyService.json", "JSON file containing the system control parameters")
 	flag.StringVar(&webFiles, "webFiles", "/FireflyService/web", "Path to the WEB files location")
 	flag.StringVar(&databaseServer, "sqlServer", "localhost", "MySQL Server")
 	flag.StringVar(&databaseName, "database", "firefly", "Database name")
@@ -233,7 +247,7 @@ func ClientLoop() {
 					log.Print("Error marshalling the fuelcell data - ", err)
 				} else {
 					select {
-					// Send the fuel cell only staatus
+					// Send the fuel cell only status
 					case pool.Broadcast <- WSMessageType{
 						data:    bytes,
 						service: wsFuelCell,
@@ -297,9 +311,7 @@ func DatabaseLogger() {
 				if _, err := logAnalog.Exec(AnalogInputs.GetRawInput(0), AnalogInputs.GetRawInput(1), AnalogInputs.GetRawInput(2), AnalogInputs.GetRawInput(3),
 					AnalogInputs.GetRawInput(4), AnalogInputs.GetRawInput(5), AnalogInputs.GetRawInput(6), AnalogInputs.GetRawInput(7),
 					AnalogInputs.GetVREF(), cpuTemp, rawTemp,
-					Inputs.GetAllInputs(), Outputs.GetAllOutputs(), Relays.GetAllRelays(),
-					ACMeasurements[0].getVolts(), ACMeasurements[0].getAmps(), ACMeasurements[0].getPower(), ACMeasurements[0].getFrequency(),
-				); err != nil {
+					Inputs.GetAllInputs(), Outputs.GetAllOutputs(), Relays.GetAllRelays()); err != nil {
 					log.Println(err)
 					if closeErr := pDB.Close(); closeErr != nil {
 						log.Println(closeErr)
@@ -314,6 +326,28 @@ func DatabaseLogger() {
 					}
 					pDB = nil
 					dbRecord.stmt = nil
+				}
+				if _, err := ACStatement.Exec(ACMeasurements[0].getVolts(), ACMeasurements[0].getAmps(), ACMeasurements[0].getPower(), ACMeasurements[0].getFrequency(), ACMeasurements[0].getPowerFactor(),
+					ACMeasurements[1].getVolts(), ACMeasurements[1].getAmps(), ACMeasurements[1].getPower(), ACMeasurements[1].getFrequency(), ACMeasurements[1].getPowerFactor(),
+					ACMeasurements[2].getVolts(), ACMeasurements[2].getAmps(), ACMeasurements[2].getPower(), ACMeasurements[2].getFrequency(), ACMeasurements[2].getPowerFactor(),
+					ACMeasurements[3].getVolts(), ACMeasurements[3].getAmps(), ACMeasurements[3].getPower(), ACMeasurements[3].getFrequency(), ACMeasurements[3].getPowerFactor()); err != nil {
+					log.Println(err)
+					if closeErr := pDB.Close(); closeErr != nil {
+						log.Println(closeErr)
+					}
+					pDB = nil
+					ACStatement = nil
+				}
+				if _, err := DCStatement.Exec(DCMeasurements[0].getVolts(), DCMeasurements[0].getAmps(),
+					DCMeasurements[1].getVolts(), DCMeasurements[1].getAmps(),
+					DCMeasurements[2].getVolts(), DCMeasurements[2].getAmps(),
+					DCMeasurements[3].getVolts(), DCMeasurements[3].getAmps()); err != nil {
+					log.Println(err)
+					if closeErr := pDB.Close(); closeErr != nil {
+						log.Println(closeErr)
+					}
+					pDB = nil
+					DCStatement = nil
 				}
 			} else {
 				log.Println("Database is not connected")
@@ -370,6 +404,7 @@ func CANHeartbeat() {
 
 /**
 ElectrolyserLoop reads the electrolysers every two seconds when they are powered on
+and writes the data collected tot he database.
 */
 func ElectrolyserLoop() {
 	electrolyserHeartbeat := time.NewTicker(time.Second * 2)
@@ -378,7 +413,9 @@ func ElectrolyserLoop() {
 		case <-electrolyserHeartbeat.C:
 			{
 				for _, el := range Electrolysers.Arr {
+					// Is this electrolyser switched on?
 					if el.IsSwitchedOn() {
+						// We must have a valid IP address
 						if !el.status.IP.Equal(net.IPv4zero) {
 							// Get the values for this electrolyser
 							el.ReadValues()
@@ -474,6 +511,74 @@ func LeakDetection() {
 	}
 }
 
+func DatabaseMaintenance() {
+	const FuelCellDataArchiveStatement = `INSERT INTO firefly.PANFuelCell_Archive (
+	StackCurrent, StackVoltage, CoolantInTemp,CoolantOutTemp, logged,
+	OutputVoltage, OutputCurrent, CoolantFanSpeed, CoolantPumpSpeed, CoolantPumpVolts, CoolantPumpAmps,
+	InsulationResistance, HydrogenPressure, AirPressure, CoolantPressure, AirinletTemp, AmbientTemp, AirFlow, HydrogenConcentration,
+	DCDCTemp, DCDCInVolts, DCDCOutVolts, DCDCInAmps, DCDCOutAmps,
+	MinCellVolts, MaxCellVolts,
+	AvgCellVolts, IdxMaxCell, IdxMinCell, RunStage,
+	FaultLevel, PowerModeState,
+	Cell00Volts, Cell01Volts, Cell02Volts, Cell03Volts, Cell04Volts, Cell05Volts, Cell06Volts, Cell07Volts, Cell08Volts, Cell09Volts,
+	Cell10Volts, Cell11Volts, Cell12Volts, Cell13Volts, Cell14Volts, Cell15Volts, Cell16Volts, Cell17Volts, Cell18Volts, Cell19Volts,
+	Cell20Volts, Cell21Volts, Cell22Volts, Cell23Volts, Cell24Volts, Cell25Volts, Cell26Volts, Cell27Volts, Cell28Volts, Cell29Volts,
+	Cell30Volts, Cell31Volts,
+	Alarms, PowerRequested)
+SELECT
+	avg(StackCurrent), avg(StackVoltage), avg(CoolantInTemp), avg(CoolantOutTemp), round(min(logged)),
+	avg(OutputVoltage), avg(OutputCurrent), avg(CoolantFanSpeed), avg(CoolantPumpSpeed), avg(CoolantPumpVolts), avg(CoolantPumpAmps),
+	avg(InsulationResistance), avg(HydrogenPressure), avg(AirPressure), avg(CoolantPressure), avg(AirinletTemp), avg(AmbientTemp),
+	avg(AirFlow), avg(HydrogenConcentration),
+	avg(DCDCTemp), avg(DCDCInVolts), avg(DCDCOutVolts), avg(DCDCInAmps), avg(DCDCOutAmps),
+	avg(MinCellVolts), avg(MaxCellVolts),
+	avg(AvgCellVolts), avg(IdxMaxCell), avg(IdxMinCell), avg(RunStage),
+	avg(FaultLevel),avg(PowerModeState),
+	avg(Cell00Volts), avg(Cell01Volts), avg(Cell02Volts), avg(Cell03Volts), avg(Cell04Volts),
+	avg(Cell05Volts), avg(Cell06Volts), avg(Cell07Volts), avg(Cell08Volts), avg(Cell09Volts),
+	avg(Cell10Volts), avg(Cell11Volts), avg(Cell12Volts), avg(Cell13Volts), avg(Cell14Volts),
+	avg(Cell15Volts), avg(Cell16Volts), avg(Cell17Volts), avg(Cell18Volts), avg(Cell19Volts),
+	avg(Cell20Volts), avg(Cell21Volts), avg(Cell22Volts), avg(Cell23Volts), avg(Cell24Volts),
+	avg(Cell25Volts), avg(Cell26Volts), avg(Cell27Volts), avg(Cell28Volts), avg(Cell29Volts),
+	avg(Cell30Volts), avg(Cell31Volts),
+	min(Alarms), avg(PowerRequested)
+   FROM firefly.PANFuelCell where logged < DATE(DATE_ADD( now(), interval -1 month))
+   group by UNIX_TIMESTAMP(logged) DIV 60
+`
+	const FuelCellDataCleanupStatement = `delete FROM firefly.PANFuelCell where logged < DATE(DATE_ADD( now(), interval -1 month))`
+
+	maintenanceTimer := time.NewTicker(time.Hour)
+
+	for {
+		select {
+		case <-maintenanceTimer.C:
+			{
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("Fuel Cell Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(FuelCellDataArchiveStatement); err != nil {
+						log.Println("Fuel Cell Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back Fuel Cell Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(FuelCellDataCleanupStatement); err != nil {
+							log.Println("Fuel Cell Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back Fuel Cell Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("Fuel Cell Archive transaction failed - ", err)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 func main() {
 	defer func() {
 		if err := logFile.Close(); err != nil {
@@ -486,5 +591,6 @@ func main() {
 	go DatabaseLogger()
 	go LeakDetection()
 	go ElectrolyserPumpManagement()
+	go DatabaseMaintenance()
 	ClientLoop()
 }

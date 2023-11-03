@@ -5,9 +5,60 @@ import (
 	"sync"
 )
 
-/**
-ACMeasurmentsType contains fields for all the values returned byt he AC meausrment devices.
+/*
+Query strings to return historical data
 */
+const ACDataByMinute = `select UNIX_TIMESTAMP(logged) as logged
+						,avg(A_volts) as A_volts
+						,avg(A_amps) as A_amps
+						,avg(A_hertz) as A_hertz
+						,avg(A_watts) as A_watts
+						,avg(A_powerFactor) as A_powerFactor
+						,avg(B_volts) as B_volts
+						,avg(B_amps) as B_amps
+						,avg(B_hertz) as B_hertz
+						,avg(B_watts) as B_watts
+						,avg(B_powerFactor) as B_powerFactor
+						,avg(C_volts) as C_volts
+						,avg(C_amps) as C_amps
+						,avg(C_hertz) as C_hertz
+						,avg(C_watts) as C_watts
+						,avg(C_powerFactor) as C_powerFactor
+						,avg(D_volts) as D_volts
+						,avg(D_amps) as D_amps
+						,avg(D_hertz) as D_hertz
+						,avg(D_watts) as D_watts
+						,avg(D_powerFactor) as D_powerFactor
+					from ACValues
+				   where logged between ? and ?
+			    group by UNIX_TIMESTAMP(logged) div 60`
+
+const ACDataBySecond = `select UNIX_TIMESTAMP(logged) as logged
+						,A_volts
+						,A_amps
+						,A_hertz
+						,A_watts
+						,A_powerFactor
+						,B_volts
+						,B_amps
+						,B_hertz
+						,B_watts
+						,B_powerFactor
+						,C_volts
+						,C_amps
+						,C_hertz
+						,C_watts
+						,C_powerFactor
+						,D_volts
+						,D_amps
+						,D_hertz
+						,D_watts
+						,D_powerFactor
+					from ACValues
+				   where logged between ? and ?`
+
+const ACValuesInsertStatement = "INSERT INTO firefly.ACValues (`A_volts`, `A_amps`, `A_watts`, `A_hertz`, `A_powerFactor`, `B_volts`, `B_amps`, `B_watts`, `B_hertz`, `B_powerFactor`, `C_volts`, `C_amps`, `C_watts`, `C_hertz`, `C_powerFactor`, `D_volts`, `D_amps`, `D_watts`, `D_hertz`, `D_powerFactor`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+
 type ACMeasurementsType struct {
 	Name        string
 	Volts       float32

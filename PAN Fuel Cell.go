@@ -8,19 +8,19 @@ import (
 	"go.einride.tech/can"
 	"log"
 	"net/http"
+	"os"
 	"time"
 	//	"log"
 	"sync"
 )
 
-/*
-Query strings to return historical data
-*/
 const FuelCellDCDCVoltagesBySecond = `select UNIX_TIMESTAMP(logged) as logged
                        ,(DCDCOutVolts / 10) as voltage
                        ,(DCDCOutAmps / 100) as current
 					   ,((DCDCOutVolts * DCDCOutAmps) / 1000) as power
 					   ,(PowerRequested * 100) as requestedPower
+					   ,(MaxBattVolts / 10) as MaxBattVolts
+					   ,(MinBattVolts / 10) as MinBattVolts
                    from firefly.PANFuelCell
                   where logged between ? and ?`
 
@@ -29,6 +29,8 @@ const FuelCellDCDCVoltagesByMinute = `select min(UNIX_TIMESTAMP(logged)) as logg
                        ,(avg(DCDCOutAmps) / 100) as current
 					   ,(avg(DCDCOutVolts * DCDCOutAmps) / 1000) as power
 					   ,(avg(PowerRequested) * 100) as requestedPower
+					   ,(avg(MaxBattVolts) / 10) as MaxBattVolts
+					   ,(avg(MinBattVolts) / 10) as MinBattVolts
                    from firefly.PANFuelCell
                   where logged between ? and ?
 	              group by UNIX_TIMESTAMP(logged) div 60`
@@ -122,8 +124,8 @@ const FuelCellPressuresByMinute = `select min(UNIX_TIMESTAMP(logged)) as logged
 	              group by UNIX_TIMESTAMP(logged) div 60`
 
 const FuelCellCoolantBySecond = `select UNIX_TIMESTAMP(PANFuelCell.logged) as logged
-                       ,(PANFuelCell.CoolantInTemp / 10) as inTemp
-                       ,(PANFuelCell.CoolantOutTemp / 10) as outTemp
+                       ,(PANFuelCell.CoolantInTemp / 10) - 40 as inTemp
+                       ,(PANFuelCell.CoolantOutTemp / 10) - 40 as outTemp
 					   ,(PANFuelCell.CoolantFanSpeed) as fanSpeed
 					   ,(PANFuelCell.CoolantPumpSpeed) as pumpSpeed
 					   ,(PANFuelCell.CoolantPumpAmps) as pumpAmps
@@ -132,8 +134,8 @@ const FuelCellCoolantBySecond = `select UNIX_TIMESTAMP(PANFuelCell.logged) as lo
                   where logged between ? and ?`
 
 const FuelCellCoolantByMinute = `select min(UNIX_TIMESTAMP(logged)) as logged
-                       ,(avg(PANFuelCell.CoolantInTemp / 10)) as inTemp
-                       ,(avg(PANFuelCell.CoolantOutTemp / 10)) as outTemp
+                       ,(avg(PANFuelCell.CoolantInTemp / 10) - 40) as inTemp
+                       ,(avg(PANFuelCell.CoolantOutTemp / 10) - 40) as outTemp
 					   ,(avg(PANFuelCell.CoolantFanSpeed)) as fanSpeed
 					   ,(avg(PANFuelCell.CoolantPumpSpeed)) as pumpSpeed
 					   ,(avg(PANFuelCell.CoolantPumpAmps)) as pumpAmps
@@ -172,7 +174,7 @@ const (
 	ExhaustOpen
 )
 
-const CanOutputControlMsg = 0x961088C1
+const CanOutputControlMsg = 0x161088C1
 
 type OutputControlType struct {
 	FuelCellRunEnable RunCommandType  // Startup / Shutdown
@@ -189,6 +191,7 @@ func (t *OutputControlType) UpdateFuelCell(bus *CANBus) error {
 	var frame can.Frame
 
 	frame.ID = CanOutputControlMsg
+	frame.IsExtended = true
 	frame.Length = 8
 	if t.repeats > 0 {
 		frame.Data[0] = byte(t.FuelCellRunEnable)
@@ -201,7 +204,7 @@ func (t *OutputControlType) UpdateFuelCell(bus *CANBus) error {
 	return bus.Publish(frame)
 }
 
-const CanBatteryVoltageLimitsMsg = 0x961088C2
+const CanBatteryVoltageLimitsMsg = 0x161088C2
 
 type BatteryVoltageLimitsType struct {
 	BMSHighVoltage uint16 //Battery high voltage setpoint
@@ -216,6 +219,7 @@ func (t *BatteryVoltageLimitsType) UpdateFuelCell(bus *CANBus) error {
 	var frame can.Frame
 
 	frame.ID = CanBatteryVoltageLimitsMsg
+	frame.IsExtended = true
 	frame.Length = 8
 	binary.LittleEndian.PutUint16(frame.Data[0:2], t.BMSHighVoltage)
 	binary.LittleEndian.PutUint16(frame.Data[2:4], t.BMSLowVoltage)
@@ -239,25 +243,26 @@ func (t *BatteryVoltageLimitsType) UpdateFuelCell(bus *CANBus) error {
 
 type PowerModeStateType byte
 
-//const (
-//	PMOff = iota
-//	PMInit
-//	PMH2Purge
-//	PMStartup
-//	PMAirPurge
-//	PMH2LeakCheck
-//	PMManual
-//	PMEmergencyShut
-//	PMFault
-//	PM_Shutdown
-//)
+//goland:noinspection GoUnusedConst
+const (
+	PMOff = iota
+	PMInit
+	PMH2Purge
+	PMStartup
+	PMAirPurge
+	PMH2LeakCheck
+	PMManual
+	PMEmergencyShut
+	PMFault
+	PM_Shutdown
+)
 
 func (pm PowerModeStateType) String() string {
 	modeStates := [...]string{"Off", "Standby", "Hydrogen intake", "Start", "AirPurge", "Hydrogen leak check", "manual", "emergency stop", "fault", "shutdown"}
 	return modeStates[pm]
 }
 
-const CanPowerModeMsg = 0x961088A1
+const CanPowerModeMsg = 0x161088A1
 
 type PowerModeType struct {
 	PowerModeState PowerModeStateType
@@ -278,7 +283,7 @@ func (t *PowerModeType) Load(data [8]byte) {
 	dbRecord.FaultLevel = data[1]
 }
 
-const CanPressuresMsg = 0x961088A2
+const CanPressuresMsg = 0x161088A2
 
 type PressuresType struct {
 	H2Pressure        uint16 // Hydrogen pressure
@@ -315,7 +320,7 @@ func (t *PressuresType) GetH2AirPressureDiff() float64 {
 	return float64(t.H2AirPressureDiff) / 10.0
 }
 
-const CanStackCoolantMsg = 0x961088A3
+const CanStackCoolantMsg = 0x161088A3
 
 type StackCoolantType struct {
 	CoolantInTemp  uint16 // Coolant temperature at the inlet of the stack
@@ -338,22 +343,22 @@ func (t *StackCoolantType) Load(data [8]byte) {
 }
 
 func (t *StackCoolantType) GetCoolantInTemp() float64 {
-	return float64(t.CoolantInTemp) / 10.0
+	return (float64(t.CoolantInTemp) / 10.0) - 40
 }
 
 func (t *StackCoolantType) GetCoolantOutTemp() float64 {
-	return float64(t.CoolantOutTemp) / 10.0
+	return (float64(t.CoolantOutTemp) / 10.0) - 40
 }
 
 func (t *StackCoolantType) GetAirTemp() float64 {
-	return float64(t.AirTemp) / 10.0
+	return (float64(t.AirTemp) / 10.0) - 40
 }
 
 func (t *StackCoolantType) GetAmbientTemp() float64 {
-	return float64(t.AmbientTemp) / 10.0
+	return (float64(t.AmbientTemp) / 10.0) - 40
 }
 
-const CanAirFlowMsg = 0x961088A4
+const CanAirFlowMsg = 0x161088A4
 
 type AirFlowType struct {
 	Flow uint16 //Air flow Lpm * 10
@@ -370,7 +375,7 @@ func (t *AirFlowType) GetFlow() float64 {
 	return float64(t.Flow) / 10.0
 }
 
-const CanAlarmsMsg = 0x961088A5
+const CanAlarmsMsg = 0x161088A5
 
 type AlarmsType struct {
 	bitMap uint32
@@ -509,7 +514,7 @@ func (al *AlarmsType) Text() []string {
 	return alarmText
 }
 
-const CanStackOutputMsg = 0x961088A7
+const CanStackOutputMsg = 0x161088A7
 
 type StackOutputType struct {
 	Voltage uint16 //Stack voltage
@@ -567,7 +572,7 @@ func (t *CffMsgType) GetGasConcentration() int16 {
 	return (int16(t.GasConcentration) * 500) - 5500
 }
 
-const CanInsulationMsg = 0x98FEA3B2
+const CanInsulationMsg = 0x18FEA3B2
 
 type InsulationType struct {
 	InsulationStatusCode byte
@@ -620,16 +625,16 @@ func (t *InsulationType) getFault() string {
 	}
 }
 
-const CanStackCellsID1to4Msg = 0x9810A7B1
-const CanStackCellsID5to8Msg = 0x9811A7B1
-const CanStackCellsID9to12Msg = 0x9812A7B1
-const CanStackCellsID13to16Msg = 0x9813A7B1
-const CanStackCellsID17to20Msg = 0x9814A7B1
-const CanStackCellsID21to24Msg = 0x9815A7B1
-const CanStackCellsID25to28Msg = 0x9816A7B1
-const CanStackCellsID29to32Msg = 0x9817A7B1
-const CanMaxMinCellsMsg = 0x9801A7B1
-const CanTotalStackVoltageMsg = 0x9802A7B1
+const CanStackCellsID1to4Msg = 0x1810A7B1
+const CanStackCellsID5to8Msg = 0x1811A7B1
+const CanStackCellsID9to12Msg = 0x1812A7B1
+const CanStackCellsID13to16Msg = 0x1813A7B1
+const CanStackCellsID17to20Msg = 0x1814A7B1
+const CanStackCellsID21to24Msg = 0x1815A7B1
+const CanStackCellsID25to28Msg = 0x1816A7B1
+const CanStackCellsID29to32Msg = 0x1817A7B1
+const CanMaxMinCellsMsg = 0x1801A7B1
+const CanTotalStackVoltageMsg = 0x1802A7B1
 
 type StackCellsType struct {
 	StackCellVoltage           [5][32]uint16
@@ -738,7 +743,7 @@ func (t *StackCellsType) GetAvgCellVoltage() int16 {
 	return int16(t.AvgCellVolts) - 5000
 }
 
-const CanATSCoolingFanMsg = 0x99BBB701
+const CanATSCoolingFanMsg = 0x19BBB701
 
 type ATSCoolingFanType struct {
 	Enable uint16
@@ -754,7 +759,7 @@ func (t *ATSCoolingFanType) Load(data [8]byte) {
 	dbRecord.CoolantFanSpeed = t.Speed
 }
 
-const CanWaterPumpMsg = 0x98FAC503
+const CanWaterPumpMsg = 0x18FAC503
 
 type WaterPumpType struct {
 	Speed   uint16
@@ -782,7 +787,7 @@ func (t *WaterPumpType) getCurrent() float64 {
 	return float64(t.Current) * 0.2
 }
 
-const CanDCDCConverterMsg = 0x9029FF00
+const CanDCDCConverterMsg = 0x1029FF00
 
 type DCDCConverterType struct {
 	InputCurrent  uint16
@@ -820,7 +825,7 @@ func (t *DCDCConverterType) GetOutputVoltage() float64 {
 	return float64(t.OutputVoltage) / 100.0
 }
 
-const CanDCOutputMsg = 0x98FFB587
+const CanDCOutputMsg = 0x18FFB587
 
 type DCOutputType struct {
 	Temp         uint8
@@ -917,8 +922,8 @@ func (t *DCOutputType) GetFaultCode() string {
 	}
 }
 
-const CanKeyOnMsg = 0x961088AD
-const CanRunTimeMsg = 0x9610AAAB
+const CanKeyOnMsg = 0x161088AD
+const CanRunTimeMsg = 0x1610AAAB
 
 type SystemInfoType struct {
 	Run              bool
@@ -944,7 +949,7 @@ func (t *SystemInfoType) SetExhaustFlag() {
 	t.exhaustFlagTimer.Reset(time.Second)
 }
 
-const CanBMSSettingsMsg = 0x9610AAAA
+const CanBMSSettingsMsg = 0x1610AAAA
 
 type BMSSettingsType struct {
 	TargetPowerLevel uint8
@@ -1014,6 +1019,7 @@ func (fc *PANFuelCell) setTargetBattHigh(volts float64) error {
 	if (volts >= 35) && (volts <= 70) && (volts >= fc.Control.TargetBatteryLow) {
 		fc.Control.TargetBatteryHigh = volts
 		currentSettings.FuelCellSettings.HighBatterySetpoint = volts
+		dbRecord.MaxBattVolts = int16(volts * 10)
 		if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 			log.Println(err)
 		}
@@ -1029,6 +1035,7 @@ func (fc *PANFuelCell) setTargetBattLow(volts float64) error {
 			fc.Control.TargetBatteryHigh = fc.Control.TargetBatteryLow
 		}
 		currentSettings.FuelCellSettings.LowBatterySetpoint = volts
+		dbRecord.MinBattVolts = int16(volts * 10)
 		if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 			log.Println(err)
 		}
@@ -1042,6 +1049,15 @@ start sends the start command (1) NUMCOMMANDREPEATS times
 */
 func (fc *PANFuelCell) start() {
 	fc.Control.FuelCellOn = true
+	if file, err := os.Create("/FireflyService/Recordings/fc_running"); err != nil {
+		log.Println(err)
+	} else {
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Println(err)
+			}
+		}()
+	}
 	output.FuelCellRunEnable = FCStartUp
 	output.repeats = NUMCOMMANDREPEATS
 	if err := fc.updateOutput(); err != nil {
@@ -1061,6 +1077,10 @@ func (fc *PANFuelCell) stop() {
 		log.Println(err)
 	}
 	log.Println("Stop the fuel cell")
+
+	if err := os.Remove("/FireflyService/Recordings/fc_running"); err != nil {
+		log.Println(err)
+	}
 }
 
 func (fc *PANFuelCell) exhaustOpen() {
@@ -1117,7 +1137,10 @@ func (fc *PANFuelCell) updateOutput() error {
 		}
 		if fc.bus != nil {
 			if output.repeats > 0 {
-				output.repeats--
+				// If we are sending a stop command, wait for the run status goes away before counting down the repeats
+				if output.FuelCellRunEnable != FCShutDown || fc.PowerMode.PowerModeState != PMStartup {
+					output.repeats--
+				}
 			} else {
 				output.FuelCellRunEnable = FCNoCommand
 			}
@@ -1197,10 +1220,10 @@ func (fc *PANFuelCell) GetStatus() *PanStatus {
 	status.AirPressure = (float64(fc.Pressures.AirPressure) - 500) / 10.0
 	status.CoolantPressure = (float64(fc.Pressures.CoolantPressure) - 500) / 10.0
 	status.H2AirPressureDiff = (float64(fc.Pressures.H2AirPressureDiff) - 50) / 10.0
-	status.CoolantInletTemp = (float64(fc.StackCoolant.CoolantInTemp) - 400) / 10.0
-	status.CoolantOutletTemp = (float64(fc.StackCoolant.CoolantOutTemp) - 400) / 10.0
-	status.AirTemp = (float64(fc.StackCoolant.AirTemp) - 400) / 10.0
-	status.AmbientTemp = (float64(fc.StackCoolant.AmbientTemp) - 400) / 10.0
+	status.CoolantInletTemp = ((float64(fc.StackCoolant.CoolantInTemp)) / 10.0) - 40.0
+	status.CoolantOutletTemp = ((float64(fc.StackCoolant.CoolantOutTemp)) / 10.0) - 40.0
+	status.AirTemp = ((float64(fc.StackCoolant.AirTemp)) / 10.0) - 40.0
+	status.AmbientTemp = ((float64(fc.StackCoolant.AmbientTemp)) / 10.0) - 40.0
 	status.AirFlow = float64(fc.AirFlow.Flow) / 10.0
 	status.StackVolts = float64(fc.StackOutput.Voltage) / 10.0
 	status.StackCurrent = float64(fc.StackOutput.Current) / 10.0
@@ -1289,6 +1312,8 @@ type PANDatabaseRecordType struct {
 	CellVoltages          [32]int16
 	Alarms                uint32
 	PowerRequested        uint8
+	MaxBattVolts          int16
+	MinBattVolts          int16
 	mu                    sync.Mutex
 	stmt                  *sql.Stmt
 }
@@ -1312,7 +1337,7 @@ func (rec *PANDatabaseRecordType) saveToDatabase() error {
 		rec.CellVoltages[15], rec.CellVoltages[16], rec.CellVoltages[17], rec.CellVoltages[18], rec.CellVoltages[19],
 		rec.CellVoltages[20], rec.CellVoltages[21], rec.CellVoltages[22], rec.CellVoltages[23], rec.CellVoltages[24],
 		rec.CellVoltages[25], rec.CellVoltages[26], rec.CellVoltages[27], rec.CellVoltages[28], rec.CellVoltages[29],
-		rec.CellVoltages[30], rec.CellVoltages[31], rec.Alarms, rec.PowerRequested, rec.PowerModeState)
+		rec.CellVoltages[30], rec.CellVoltages[31], rec.Alarms, rec.PowerRequested, rec.MaxBattVolts, rec.MinBattVolts, rec.PowerModeState)
 	if err != nil {
 		log.Println(err)
 	}
@@ -1380,7 +1405,7 @@ func getFuelCellPressureData(w http.ResponseWriter, r *http.Request) {
 }
 
 func getFuelCellCoolantData(w http.ResponseWriter, r *http.Request) {
-	const DeviceString = "FuelCell Pressures Data"
+	const DeviceString = "FuelCell Coolant Data"
 
 	if pDB == nil {
 		ReturnJSONErrorString(w, DeviceString, "No Database", http.StatusInternalServerError, true)

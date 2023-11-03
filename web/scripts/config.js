@@ -193,6 +193,9 @@ function SetAnalogSettings(channel){
     $("#a"+channel.Port+"LowA2D").val(channel.LowerCalibrationAtoD);
     $("#a"+channel.Port+"HighVal").val(channel.UpperCalibrationActual);
     $("#a"+channel.Port+"HighA2D").val(channel.UpperCalibrationAtoD);
+    $("#a"+channel.Port+"MaxVal").val(channel.MaxVal);
+    $("#a"+channel.Port+"MinVal").val(channel.MinVal);
+
     // Add options for gas input and detector
     $("#GasInput").append(new Option(channel.Name, channel.Port));
     $("#GasDetectorInput").append((new Option(channel.Name, channel.Port)));

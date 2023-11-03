@@ -8,12 +8,14 @@
         <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
         <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
         <script type="text/ecmascript" src="scripts/admin.js"></script>
+        <script type="text/javascript" src="scripts/ELControl.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxbargauge.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxslider.js"></script>
         <script type="text/javascript" src="scripts/heartbeat.js"></script>
         <style>
             #leakAlarmDiv {
@@ -54,7 +56,7 @@
         </div>
         <div class="firefly">
             <h2  class="firefly AnalogueInputs">Analogue Inputs</h2>
-            <table class="AnalogueInputs">
+            <table class="AnalogueInputs" ondblclick="window.open('AnalogData.html');">
                 <tr class="AnalogueHeader">
                     <th class="AnalogueName">Name</th>
                     <th class="AnalogueData">Raw Value</th>
@@ -143,7 +145,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="ACData" id="AC1">
+                        <tr class="ACData" id="AC1" ondblclick="window.open('ACData.html?name=' + $('#acname1').text() + '&channel=A')">
                             <td class="ACName"><span id="acname1"></span></td>
                             <td class="ACData"><span id="acvolts1"></span>V</td>
                             <td class="ACData"><span id="acamps1"></span>A</td>
@@ -151,11 +153,11 @@
                             <td class="ACData"><span id="achz1"></span>Hz</td>
                             <td class="ACData"><span id="acpf1"></span></td>
                         </tr>
-                        <tr class="ACError" id="ACErr1">
+                        <tr class="ACError" id="ACErr1" ondblclick="window.open('ACData.html?name=' + $('#acname1').text() + '&channel=A')">
                             <td class="ACName"><span id="acnameerr1"></span></td>
                             <td class="ACError" colspan="6"><span class="error" id="acerr1"></span></td>
                         </tr>
-                        <tr class="ACData" id="AC2">
+                        <tr class="ACData" id="AC2" ondblclick="window.open('ACData.html?name=' + $('#acname2').text() + '&channel=B')">
                             <td class="ACName"><span id="acname2"></span></td>
                             <td class="ACData"><span id="acvolts2"></span>V</td>
                             <td class="ACData"><span id="acamps2"></span>A</td>
@@ -163,11 +165,11 @@
                             <td class="ACData"><span id="achz2"></span>Hz</td>
                             <td class="ACData"><span id="acpf2"></span></td>
                         </tr>
-                        <tr class="ACError" id="ACErr2">
+                        <tr class="ACError" id="ACErr2" ondblclick="window.open('ACData.html?name=' + $('#acname2').text() + '&channel=B')">
                             <td class="ACName"><span id="acnameerr2"></span></td>
                             <td class="ACError" colspan="6"><span class="error" id="acerr2"></span></td>
                         </tr>
-                        <tr class="ACData" id="AC3">
+                        <tr class="ACData" id="AC3" ondblclick="window.open('ACData.html?name=' + $('#acname3').text() + '&channel=C')">
                             <td class="ACName"><span id="acname3"></span></td>
                             <td class="ACData"><span id="acvolts3"></span>V</td>
                             <td class="ACData"><span id="acamps3"></span>A</td>
@@ -175,11 +177,11 @@
                             <td class="ACData"><span id="achz3"></span>Hz</td>
                             <td class="ACData"><span id="acpf3"></span></td>
                         </tr>
-                        <tr class="ACError" id="ACErr3">
+                        <tr class="ACError" id="ACErr3" ondblclick="window.open('ACData.html?name=' + $('#acname3').text() + '&channel=C')">
                             <td class="ACName"><span id="acnameerr3"></span></td>
                             <td class="ACError" colspan="6"><span class="error" id="acerr3"></span></td>
                         </tr>
-                        <tr class="ACData" id="AC4">
+                        <tr class="ACData" id="AC4" ondblclick="window.open('ACData.html?name=' + $('#acname4').text() + '&channel=D')">
                             <td class="ACName"><span id="acname4"></span></td>
                             <td class="ACData"><span id="acvolts4"></span>V</td>
                             <td class="ACData"><span id="acamps4"></span>A</td>
@@ -187,7 +189,7 @@
                             <td class="ACData"><span id="achz4"></span>Hz</td>
                             <td class="ACData"><span id="acpf4"></span></td>
                         </tr>
-                        <tr class="ACError" id="ACErr4">
+                        <tr class="ACError" id="ACErr4" ondblclick="window.open('ACData.html?name=' + $('#acname4').text() + '&channel=D')">
                             <td class="ACName"><span id="acnameerr4"></span></td>
                             <td class="ACError" colspan="6"><span class="error" id="acerr4"></span></td>
                         </tr>
@@ -205,39 +207,39 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="DCData" id="DC1">
+                        <tr class="DCData" id="DC1" ondblclick="window.open('DCData.html?name=' + $('#dcname1').text() + '&channel=A')">
                             <td class="DCName"><span id="dcname1"></span></td>
                             <td class="DCData"><span id="dcvolts1"></span>V</td>
                             <td class="DCData"><span id="dcamps1"></span>A</td>
                         </tr>
-                        <tr class="DCError" id="DCErr1">
+                        <tr class="DCError" id="DCErr1" ondblclick="window.open('DCData.html?name=' + $('#dcname1').text() + '&channel=A')">
                             <td class="DCName"><span id="dcnameerr1"></span></td>
                             <td class="DCError" colspan="6"><span class="error" id="dcerr1"></span></td>
                         </tr>
-                        <tr class="DCData" id="DC2">
+                        <tr class="DCData" id="DC2" ondblclick="window.open('DCData.html?name=' + $('#dcname2').text() + '&channel=B')">
                             <td class="DCName"><span id="dcname2"></span></td>
                             <td class="DCData"><span id="dcvolts2"></span>V</td>
                             <td class="DCData"><span id="dcamps2"></span>A</td>
                         </tr>
-                        <tr class="DCError" id="DCErr2">
+                        <tr class="DCError" id="DCErr2" ondblclick="window.open('DCData.html?name=' + $('#dcname2').text() + '&channel=B')">
                             <td class="DCName"><span id="dcnameerr2"></span></td>
                             <td class="DCError" colspan="6"><span class="error" id="dcerr2"></span></td>
                         </tr>
-                        <tr class="DCData" id="DC3">
+                        <tr class="DCData" id="DC3" ondblclick="window.open('DCData.html?name=' + $('#dcname3').text() + '&channel=C')">
                             <td class="DCName"><span id="dcname3"></span></td>
                             <td class="DCData"><span id="dcvolts3"></span>V</td>
                             <td class="DCData"><span id="dcamps3"></span>A</td>
                         </tr>
-                        <tr class="DCError" id="DCErr3">
+                        <tr class="DCError" id="DCErr3" ondblclick="window.open('DCData.html?name=' + $('#dcname3').text() + '&channel=C')">
                             <td class="DCName"><span id="dcnameerr3"></span></td>
                             <td class="DCError" colspan="6"><span class="error" id="dcerr3"></span></td>
                         </tr>
-                        <tr class="DCData" id="DC4">
+                        <tr class="DCData" id="DC4" ondblclick="window.open('DCData.html?name=' + $('#dcname4').text() + '&channel=D')">
                             <td class="DCName"><span id="dcname4"></span></td>
                             <td class="DCData"><span id="dcvolts4"></span>V</td>
                             <td class="DCData"><span id="dcamps4"></span>A</td>
                         </tr>
-                        <tr class="DCError" id="DCErr4">
+                        <tr class="DCError" id="DCErr4" ondblclick="window.open('DCData.html?name=' + $('#dcname4').text() + '&channel=D')">
                             <td class="DCName"><span id="dcnameerr4"></span></td>
                             <td class="DCError" colspan="6"><span class="error" id="dcerr4"></span></td>
                         </tr>
@@ -287,6 +289,9 @@
             }).fail(function() {
                 window.location = to_url;
             });
+        }
+        function openDCChart(name, channel) {
+            window.open('DCData.html?name=' + name + '&channel=' + channel)
         }
     </script>
 </html>

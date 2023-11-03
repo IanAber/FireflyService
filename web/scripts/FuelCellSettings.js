@@ -49,23 +49,23 @@ function HighBattDown(step) {
 }
 
 function LowBattUp() {
-    let ld = $("#LowBattDemand");
-    val = parseFloat(ld.val());
+    let lb = $("#LowBattDemand");
+    val = parseFloat(lb.val());
     if (val >= 70) {
         return;
     }
-    ld.val((val + 0.1).toFixed(1));
-    SendBattLowToFuelCell(hb.val());
+    lb.val((val + 0.1).toFixed(1));
+    SendBattLowToFuelCell(lb.val());
 }
 
 function LowBattDown() {
-    let ld = $("#LowBattDemand");
-    val = parseFloat(ld.val());
+    let lb = $("#LowBattDemand");
+    val = parseFloat(lb.val());
     if (val <= 35) {
         return;
     }
-    ld.val((val - 0.1).toFixed(1));
-    SendBattLowToFuelCell(hb.val());
+    lb.val((val - 0.1).toFixed(1));
+    SendBattLowToFuelCell(lb.val());
 }
 
 function SendPowerToFuelCell(power) {
@@ -129,14 +129,19 @@ function ExhaustClick() {
         alert("Control is disabled. Click the Enable button to allow control of the fuel cell.");
         return;
     }
-    let btn = $("#Exhaust");
-    btn.addClass("depressed");
-    if (btn.hasClass('swOn')) {
+    if ($("#FCStatus").text() === "Off") {
+        alert("Fuelcel is not on or is not responding.");
         url = "/setFuelCell/ExhaustClose";
     } else {
-        url = "/setFuelCell/ExhaustOpen";
+        let btn = $("#Exhaust");
+        btn.addClass("depressed");
+        if (btn.hasClass('swOn')) {
+            url = "/setFuelCell/ExhaustClose";
+        } else {
+            url = "/setFuelCell/ExhaustOpen";
+        }
+        btn.addClass("depressed");
     }
-    btn.addClass("depressed");
     $.ajax({
         method : "PUT",
         url: url
@@ -204,6 +209,7 @@ function RegisterWebSocket() {
         try {
             jsonData = JSON.parse(evt.data);
             $("#system").text(jsonData.System);
+            document.title=jsonData.System;
             $("#version").text(jsonData.Version);
             let sw = $("#Exhaust");
             sw.removeClass("depressed");

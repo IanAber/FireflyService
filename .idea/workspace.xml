@@ -1,10 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SPLITTER_PROPORTION" value="0.3677686" />
+    <option name="ANALYZE_INJECTED_CODE" value="false" />
+    <option name="SHOW_STRUCTURE" value="true" />
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Initial commit" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Updated Admin screens&#10;Added graphs for electrolysers and analog inputs plus AC and DC devices.&#10;Added logging for Fuel Cell CAN messages.&#10;Added persistent stop until Air Purge for fuel cell.">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/Install.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/UpdateFirefly.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Scripts/UpdateWeb.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/ACData.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/AnalogData.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/DCData.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/FireflyService.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FireflyService.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ACMeasurement.go" beforeDir="false" afterPath="$PROJECT_DIR$/ACMeasurement.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AnalogInputs.go" beforeDir="false" afterPath="$PROJECT_DIR$/AnalogInputs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CANBus.go" beforeDir="false" afterPath="$PROJECT_DIR$/CANBus.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DCMeasurement.go" beforeDir="false" afterPath="$PROJECT_DIR$/DCMeasurement.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FireflyService.service" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/FireflyService.service" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Install.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PAN Fuel Cell.go" beforeDir="false" afterPath="$PROJECT_DIR$/PAN Fuel Cell.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UpdateWeb.sh" beforeDir="false" afterPath="$PROJECT_DIR$/UpdateWeb.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSocket.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/Install.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/UpdateWeb.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/web.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/distribute.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/registration.go" beforeDir="false" afterPath="$PROJECT_DIR$/registration.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vendor/github.com/simonvetter/modbus/logger.go" beforeDir="false" afterPath="$PROJECT_DIR$/vendor/github.com/simonvetter/modbus/logger.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/DCCalibration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/DCCalibration.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/DCDC.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/dcdc.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/FuelCellCoolant.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellCoolant.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/FuelCellSettings.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellSettings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,6 +68,14 @@
   <component name="ChangesViewManager" show_ignored="true">
     <option name="groupingKeys">
       <option value="directory" />
+    </option>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="JavaScript File" />
+      </list>
     </option>
   </component>
   <component name="GOROOT" url="file:///usr/local/go" />
@@ -32,16 +95,31 @@
       </UrlAndAccount>
     </option>
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../../pkg/mod/github.com/simonvetter/modbus@v1.6.0/logger.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../pkg/mod/github.com/simonvetter/modbus@v1.6.0/logger_test.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/web/scripts/jqwidgets/styles/jqx.blue.css" root0="SKIP_HIGHLIGHTING" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="NamedScopeManager">
+    <scope name="No Inspection" pattern="!file[FireflyService]:.idea/*&amp;&amp;!file[FireflyService]:dist/*&amp;&amp;!file:web/scripts/jquery-3.6.0.min.js&amp;&amp;!file:web/scripts/jquery-ui.js&amp;&amp;!file:web/css/jquery-ui.min.css&amp;&amp;!file:web/css/jquery-ui.structure.min.css&amp;&amp;!file:web/css/jquery-ui.theme.min.css" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+    <option name="showPreview" value="true" />
+  </component>
   <component name="ProjectId" id="2W2HzmyDupXoVWQ2DXjLhnJKTnm" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
@@ -51,9 +129,14 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/ianaber&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/ianaber/Documents/Projects/Go_Home/src/FireflyService/web&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;
+    &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;rsyncConfigurable&quot;
   },
   &quot;keyToStringList&quot;: {
     &quot;DatabaseDriversLRU&quot;: [
@@ -61,6 +144,17 @@
     ]
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/web" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Scrpits" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/dist/release" />
+    </key>
+  </component>
   <component name="RunManager" selected="Go Build.Linux X86 Development">
     <configuration name="Linux X86 Development" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="FireflyService" />
@@ -80,6 +174,11 @@
     <configuration name="Linux X86 Release" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="FireflyService" />
       <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-v -o dist/release/FireflyService" />
+      <envs>
+        <env name="GOOS" value="linux" />
+        <env name="GOARCH" value="amd64" />
+      </envs>
       <kind value="PACKAGE" />
       <package value="FireflyService" />
       <directory value="$PROJECT_DIR$" />
@@ -87,6 +186,7 @@
       <option name="run" value="false" />
       <method v="2">
         <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Version Incrementer" />
+        <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Zip" />
       </method>
     </configuration>
     <list>
@@ -122,9 +222,24 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="LAST_COMMIT_MESSAGE" value="" />
+    <option name="CODE_SMELLS_PROFILE" value="Project Default" />
+    <MESSAGE value="Initial commit" />
+    <MESSAGE value="Updated Admin screens&#10;Added graphs for electrolysers and analog inputs plus AC and DC devices.&#10;Added logging for Fuel Cell CAN messages.&#10;Added persistent stop until Air Purge for fuel cell." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated Admin screens&#10;Added graphs for electrolysers and analog inputs plus AC and DC devices.&#10;Added logging for Fuel Cell CAN messages.&#10;Added persistent stop until Air Purge for fuel cell." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/web/scripts/default.js</url>
+          <line>161</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

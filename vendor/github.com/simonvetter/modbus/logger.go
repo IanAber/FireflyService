@@ -72,8 +72,10 @@ func (l *logger) Fatalf(format string, msg ...interface{}) {
 
 func (l *logger) write(msg string) {
 	if l.customLogger == nil {
+		log.Print("No Logger " + msg)
 		os.Stdout.WriteString(msg)
 	} else {
+		log.Print("Log : " + msg)
 		l.customLogger.Print(msg)
 	}
 

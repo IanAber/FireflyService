@@ -5,6 +5,44 @@ import (
 	"sync"
 )
 
+/*
+Query strings to return historical data
+*/
+const DCDataByMinute = `select UNIX_TIMESTAMP(logged) as logged
+						,avg(A_volts) as A_volts
+						,avg(A_amps) as A_amps
+     					,avg(A_amps * A_volts) as A_watts
+						,avg(B_volts) as B_volts
+						,avg(B_amps) as B_amps
+     					,avg(B_amps * B_volts) as B_watts
+						,avg(C_volts) as C_volts
+						,avg(C_amps) as C_amps
+     					,avg(C_amps * C_volts) as C_watts
+						,avg(D_volts) as D_volts
+						,avg(D_amps) as D_amps
+     					,avg(D_amps * D_volts) as D_watts
+					from DCValues
+				   where logged between ? and ?
+			    group by UNIX_TIMESTAMP(logged) div 60`
+
+const DCDataBySecond = `select UNIX_TIMESTAMP(logged) as logged
+						,A_volts
+						,A_amps
+     					,A_amps * A_volts as A_watts
+						,B_volts
+						,B_amps
+     					,B_amps * B_volts as B_watts
+						,C_volts
+						,C_amps
+     					,C_amps * C_volts as C_watts
+						,D_volts
+						,D_amps
+     					,D_amps * D_volts as D_watts
+					from DCValues
+				   where logged between ? and ?`
+
+const DCValuesInsertStatement = "INSERT INTO firefly.DCValues (`A_volts`, `A_amps`, `B_volts`, `B_amps`, `C_volts`, `C_amps`, `D_volts`, `D_amps`) VALUES(?, ?, ?, ?, ?, ?, ?, ?);"
+
 type DCMeasurementsType struct {
 	Name  string
 	Volts float32

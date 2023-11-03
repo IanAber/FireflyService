@@ -225,6 +225,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) (error, int) {
 
 	//	log.Println("Checking authorisation")
 	// Get the API key from the headers
+
 	if len(userCreds) == 0 {
 		if err := loadUserCreds(); err != nil {
 			log.Println(err)
@@ -255,8 +256,10 @@ func Authenticate(w http.ResponseWriter, r *http.Request) (error, int) {
 	}
 
 	//	log.Println("Checking for special URLs")
-	if strings.HasSuffix(r.RequestURI, "images/logo.png") ||
-		strings.HasSuffix(r.RequestURI, "/Login.html") {
+	if strings.HasSuffix(r.URL.Path, "/images/logo.png") ||
+		strings.HasSuffix(r.URL.Path, "/Login.html") ||
+		strings.HasSuffix(r.URL.Path, "/ping") ||
+		strings.HasPrefix(r.URL.Path, "/ws") {
 		return nil, 0
 	} else {
 		//		log.Println("Checking for action-login : ", r.RequestURI)
