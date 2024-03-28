@@ -171,30 +171,7 @@
                 </tr>
             </table>
         </div>
-        <div class="firefly">
-            <h2  class="firefly PowerInputs">Power Management</h2>
-            <table id="PowerInputs" class="PowerInputs">
-                <tr class="PowerHeader">
-                    <th class="PowerName" colspan="4">Battery</th>
-                    <th class="PowerName" colspan="2">Mains</th>
-                </tr>
-                <tr class="PowerHeader">
-                    <th class="PowerName">Source</th>
-                    <th class="PowerName">Current</th>
-                    <th class="PowerName">Voltage</th>
-                    <th class="PowerName">State of Charge</th>
-                    <th class="PowerName">Solar Power</th>
-                    <th class="PowerName">Frequency</th>
-                </tr>
-                <tr class="PowerData" ondblclick="openPowerChart(0)">
-                    <td class="PowerName"><span id="source0" >firefly</span></td>
-                    <td class="PowerData"><span id="iBatt0">0.0</span></td>
-                    <td class="PowerData"><span id="vBatt0">0.0</span></td>
-                    <td class="PowerData"><span id="socBatt0">0.0</span></td>
-                    <td class="PowerData"><span id="solar0">0.0</span></td>
-                    <td class="PowerData"><span id="hz0">0.0</span></td>
-                </tr>
-            </table>
+        <div id="PowerDiv" class="firefly">
         </div>
         <div class="measurementGrid">
             <div id="ACMeasurementsDiv">

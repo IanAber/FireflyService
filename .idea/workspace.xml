@@ -10,67 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.">
-      <change afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/PowerControl.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/Charting.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/PowerData.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/images/analyseClipboard.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/images/copy-to-clipboard-icon.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/images/favicon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/images/h2animation.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/scripts/fcAlarms.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/scripts/regression.min.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/scripts/utils.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/userControl.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ACMeasurement.go" beforeDir="false" afterPath="$PROJECT_DIR$/ACMeasurement.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AnalogInputs.go" beforeDir="false" afterPath="$PROJECT_DIR$/AnalogInputs.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CANBus.go" beforeDir="false" afterPath="$PROJECT_DIR$/CANBus.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DCMeasurement.go" beforeDir="false" afterPath="$PROJECT_DIR$/DCMeasurement.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data.go" beforeDir="false" afterPath="$PROJECT_DIR$/Data.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PAN Fuel Cell.go" beforeDir="false" afterPath="$PROJECT_DIR$/PAN Fuel Cell.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSocket.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/registration.go" beforeDir="false" afterPath="$PROJECT_DIR$/registration.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ACData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ACData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/AnalogData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/AnalogData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/DCCalibration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/DCCalibration.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/DCData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/DCData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ElectrolyserData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ErrorPage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ErrorPage.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/FuelCellCoolant.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellCoolant.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/FuelCellPressures.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellPressures.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/FuelCellSettings.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellSettings.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/StackVoltage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/StackVoltage.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/api.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/dcdc.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/dcdc.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/debug.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/debug.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/registration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/registration.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/ELControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/charts.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/charts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/heartbeat.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/userRegistration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userRegistration.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

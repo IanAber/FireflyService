@@ -171,21 +171,51 @@ function setupPage() {
 }
 
 function AddSource (source) {
-    strRow = '<tr class="PowerData" id="sourceRow%d"  ondblclick="openPowerChart"><td class="PowerName"><span id="source%d"></span></td><td class="PowerData"><span id="iBatt%d"></span></td><td class="PowerData"><span id="vBatt%d"></span></td><td class="PowerData"><span id="socBatt%d"></span></td><td class="PowerData"><span id="solar%d"></span></td><td class="PowerData"><span id="hz%d"></span></td></tr>';
-    let rows = 0;
-    let src = "#source";
-    for (; $(src).length; rows++){
 
+    let powerSourceTable = $("#PowerInputs");
+    let sourceNum;
+
+    if (powerSourceTable.length === 0) {
+        $("#PowerDiv").html(`
+    <h2 class="firefly PowerInputs" > Power Management </h2>
+    <table id="PowerInputs" class="PowerInputs">
+        <thead class="PowerHeader">
+            <tr class="PowerHeader">
+                <th class="PowerName" colSpan="4">Battery</th>
+                <th class="PowerName" colSpan="2">Mains</th>
+            </tr>
+            <tr class="PowerHeader">
+                <th class="PowerName">Source</th>
+                <th class="PowerName">Current</th>
+                <th class="PowerName">Voltage</th>
+                <th class="PowerName">State of Charge</th>
+                <th class="PowerName">Solar Power</th>
+                <th class="PowerName">Frequency</th>
+            </tr>
+        </thead>
+        <tbody class="PowerData">
+            <tr class="PowerData PowerRow" ondblclick="openPowerChart(0)">
+                <td class="PowerName"><span id="source0">firefly</span></td>
+                <td class="PowerData"><span id="iBatt0">0.0</span></td>
+                <td class="PowerData"><span id="vBatt0">0.0</span></td>
+                <td class="PowerData"><span id="socBatt0">0.0</span></td>
+                <td class="PowerData"><span id="solar0">0.0</span></td>
+                <td class="PowerData"><span id="hz0">0.0</span></td>
+            </tr>
+        </tbody>
+    </table>`);
+        sourceNum = 0;
+    } else {
+       sourceNum = $(".PowerRow").length;
+       let strRow = `<tr class="PowerData PowerRow" ondblclick="openPowerChart(${sourceNum})"><td class="PowerName"><span id="source${sourceNum}">${source}</span></td><td class="PowerData"><span id="iBatt${sourceNum}"></span></td><td class="PowerData"><span id="vBatt${sourceNum}"></span></td><td class="PowerData"><span id="socBatt${sourceNum}"></span></td><td class="PowerData"><span id="solar${sourceNum}"></span></td><td class="PowerData"><span id="hz${sourceNum}"></span></td></tr>`;
+       $("tbody.PowerData").append(strRow);
     }
-    strRow = strRow.replaceAll("%d", rows);
-    $("#PowerInputs tr:last").after(strRow);
-    $("#source"+rows).text(source);
-    return rows
+    return sourceNum;
 }
 
-function openPowerChart(event) {
-    let source = event.target.id.replace("Row","");
-    let url = 'PowerData.html?source=' + encodeURIComponent($(source).text());
+function openPowerChart(idx) {
+    let source = $("#source"+idx).text();
+    let url = 'PowerData.html?source=' + encodeURIComponent(source);
     window.open( url );
 }
 
