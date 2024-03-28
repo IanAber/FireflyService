@@ -7,11 +7,15 @@
     <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
     <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
     <script type="text/ecmascript" src="scripts/config.js"></script>
+    <script type="text/ecmascript" src="scripts/utils.js"></script>
 </head>
-<body onLoad=loadSettings() >
-    <div class="header">
-        <h1>Firefly IO settings<img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/></h1>
-    </div>
+<body onLoad="loadSettings(); PopulateTitle();" >
+    <header class="header">
+        <h1>
+            <span class="system" id="system">Loading...</span>
+            <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+        </h1>
+    </header>
     <div>
         <form class="settings" action="/setSettings" method="post" id="settingsForm">
             <label for="name">System Name</label><input type="text" id="name" name="name" value="Loading..."><br />
@@ -50,10 +54,10 @@
                             <input class="settings" type="text" id="a0HighA2D" name="a0HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a0MinVal" name="a0MinVal">
+                            <label for="a0MinVal"></label><input class="settings" type="text" id="a0MinVal" name="a0MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a0MaxVal" name="a0MaxVal">
+                            <label for="a0MaxVal"></label><input class="settings" type="text" id="a0MaxVal" name="a0MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -73,10 +77,10 @@
                             <input class="settings" type="text" id="a1HighA2D" name="a1HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a1MinVal" name="a1MinVal">
+                            <label for="a1MinVal"></label><input class="settings" type="text" id="a1MinVal" name="a1MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a1MaxVal" name="a1MaxVal">
+                            <label for="a1MaxVal"></label><input class="settings" type="text" id="a1MaxVal" name="a1MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -96,10 +100,10 @@
                             <input class="settings" type="text" id="a2HighA2D" name="a2HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a2MinVal" name="a2MinVal">
+                            <label for="a2MinVal"></label><input class="settings" type="text" id="a2MinVal" name="a2MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a2MaxVal" name="a2MaxVal">
+                            <label for="a2MaxVal"></label><input class="settings" type="text" id="a2MaxVal" name="a2MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -119,10 +123,10 @@
                             <input class="settings" type="text" id="a3HighA2D" name="a3HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a3MinVal" name="a3MinVal">
+                            <label for="a3MinVal"></label><input class="settings" type="text" id="a3MinVal" name="a3MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a3MaxVal" name="a3MaxVal">
+                            <label for="a3MaxVal"></label><input class="settings" type="text" id="a3MaxVal" name="a3MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -142,10 +146,10 @@
                             <input class="settings" type="text" id="a4HighA2D" name="a4HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a4MinVal" name="a4MinVal">
+                            <label for="a4MinVal"></label><input class="settings" type="text" id="a4MinVal" name="a4MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a4MaxVal" name="a4MaxVal">
+                            <label for="a4MaxVal"></label><input class="settings" type="text" id="a4MaxVal" name="a4MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -165,10 +169,10 @@
                             <input class="settings" type="text" id="a5HighA2D" name="a5HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a5MinVal" name="a5MinVal">
+                            <label for="a5MinVal"></label><input class="settings" type="text" id="a5MinVal" name="a5MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a5MaxVal" name="a5MaxVal">
+                            <label for="a5MaxVal"></label><input class="settings" type="text" id="a5MaxVal" name="a5MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -188,10 +192,10 @@
                             <input class="settings" type="text" id="a6HighA2D" name="a6HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a6MinVal" name="a6MinVal">
+                            <label for="a6MinVal"></label><input class="settings" type="text" id="a6MinVal" name="a6MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a6MaxVal" name="a6MaxVal">
+                            <label for="a6MaxVal"></label><input class="settings" type="text" id="a6MaxVal" name="a6MaxVal">
                         </td>
                     </tr>
                     <tr>
@@ -211,11 +215,55 @@
                             <input class="settings" type="text" id="a7HighA2D" name="a7HighA2D">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a7MinVal" name="a7MinVal">
+                            <label for="a7MinVal"></label><input class="settings" type="text" id="a7MinVal" name="a7MinVal">
                         </td>
                         <td>
-                            <input class="settings" type="text" id="a7MaxVal" name="a7MaxVal">
+                            <label for="a7MaxVal"></label><input class="settings" type="text" id="a7MaxVal" name="a7MaxVal">
                         </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="settings">
+                <thead>
+                <tr>
+                    <th class="settingsHeader" colspan="15">Button</th>
+                </tr>
+                <tr>
+                    <th class="settingsHeader"></th><th class="settingsHeader">Name</th><th class="settingsHeader">User</th>
+                    <th class="settingsHeader"></th><th class="settingsHeader">Name</th><th class="settingsHeader">User</th>
+                    <th class="settingsHeader"></th><th class="settingsHeader">Name</th><th class="settingsHeader">User</th>
+                    <th class="settingsHeader"></th><th class="settingsHeader">Name</th><th class="settingsHeader">User</th>
+                    <th class="settingsHeader"></th><th class="settingsHeader">Name</th><th class="settingsHeader">User</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><label for="btn0name">0</label></td><td><input class="settings" type="text" id="btn0name" name="btn0name" value="Loading..."></td><td><label for="btn0user"></label><input class="settings" id="btn0user" name="btn0user" type="checkbox"></td>
+                        <td><label for="btn4name">4</label></td><td><input class="settings" type="text" id="btn4name" name="btn4name" value="Loading..."></td><td><label for="btn4user"></label><input class="settings" id="btn4user" name="btn4user" type="checkbox"></td>
+                        <td><label for="btn8name">8</label></td><td><input class="settings" type="text" id="btn8name" name="btn8name" value="Loading..."></td><td><label for="btn8user"></label><input class="settings" id="btn8user" name="btn8user" type="checkbox"></td>
+                        <td><label for="btn12name">12</label></td><td><input class="settings" type="text" id="btn12name" name="btn12name" value="Loading..."></td><td><label for="btn12user"></label><input class="settings" id="btn12user" name="btn12user" type="checkbox"></td>
+                        <td><label for="btn16name">16</label></td><td><input class="settings" type="text" id="btn16name" name="btn16name" value="Loading..."></td><td><label for="btn16user"></label><input class="settings" id="btn16user" name="btn16user" type="checkbox"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="btn1name">1</label></td><td><input class="settings" type="text" id="btn1name" name="btn1name" value="Loading..."></td><td><label for="btn1user"></label><input class="settings" id="btn1user" name="btn1user" type="checkbox"></td>
+                        <td><label for="btn5name">5</label></td><td><input class="settings" type="text" id="btn5name" name="btn5name" value="Loading..."></td><td><label for="btn5user"></label><input class="settings" id="btn5user" name="btn5user" type="checkbox"></td>
+                        <td><label for="btn9name">9</label></td><td><input class="settings" type="text" id="btn9name" name="btn9name" value="Loading..."></td><td><label for="btn9user"></label><input class="settings" id="btn9user" name="btn9user" type="checkbox"></td>
+                        <td><label for="btn13name">13</label></td><td><input class="settings" type="text" id="btn13name" name="btn13name" value="Loading..."></td><td><label for="btn13user"></label><input class="settings" id="btn13user" name="btn13user" type="checkbox"></td>
+                        <td><label for="btn17name">17</label></td><td><input class="settings" type="text" id="btn17name" name="btn17name" value="Loading..."></td><td><label for="btn17user"></label><input class="settings" id="btn17user" name="btn17user" type="checkbox"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="btn2name">2</label></td><td><input class="settings" type="text" id="btn2name" name="btn2name" value="Loading..."></td><td><label for="btn2user"></label><input class="settings" id="btn2user" name="btn2user" type="checkbox"></td>
+                        <td><label for="btn6name">6</label></td><td><input class="settings" type="text" id="btn6name" name="btn6name" value="Loading..."></td><td><label for="btn6user"></label><input class="settings" id="btn6user" name="btn6user" type="checkbox"></td>
+                        <td><label for="btn10name">10</label></td><td><input class="settings" type="text" id="btn10name" name="btn10name" value="Loading..."></td><td><label for="btn10user"></label><input class="settings" id="btn10user" name="btn10user" type="checkbox"></td>
+                        <td><label for="btn14name">14</label></td><td><input class="settings" type="text" id="btn14name" name="btn14name" value="Loading..."></td><td><label for="btn14user"></label><input class="settings" id="btn14user" name="btn14user" type="checkbox"></td>
+                        <td><label for="btn18name">18</label></td><td><input class="settings" type="text" id="btn18name" name="btn18name" value="Loading..."></td><td><label for="btn18user"></label><input class="settings" id="btn18user" name="btn18user" type="checkbox"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="btn3name">3</label></td><td><input class="settings" type="text" id="btn3name" name="btn3name" value="Loading..."></td><td><label for="btn3user"></label><input class="settings" id="btn3user" name="btn3user" type="checkbox"></td>
+                        <td><label for="btn7name">7</label></td><td><input class="settings" type="text" id="btn7name" name="btn7name" value="Loading..."></td><td><label for="btn7user"></label><input class="settings" id="btn7user" name="btn7user" type="checkbox"></td>
+                        <td><label for="btn11name">11</label></td><td><input class="settings" type="text" id="btn11name" name="btn11name" value="Loading..."></td><td><label for="btn11user"></label><input class="settings" id="btn11user" name="btn11user" type="checkbox"></td>
+                        <td><label for="btn15name">15</label></td><td><input class="settings" type="text" id="btn15name" name="btn15name" value="Loading..."></td><td><label for="btn15user"></label><input class="settings" id="btn15user" name="btn15user" type="checkbox"></td>
+                        <td><label for="btn19name">19</label></td><td><input class="settings" type="text" id="btn19name" name="btn19name" value="Loading..."></td><td><label for="btn19user"></label><input class="settings" id="btn19user" name="btn19user" type="checkbox"></td>
                     </tr>
                 </tbody>
             </table>
@@ -667,10 +715,25 @@
             <div id="gasManagement" class="gasManagement">
                 <h2 class="firefly GasParams">Hydrogen Settings</h2>
                 <div class="GasSettings">
-                    <label for="GasUnits">Gas Pressure Units</label><select id="GasUnits" name="GasUnits" >
-                        <option value="Bar" selected>Bar</option>
-                        <option value="psi" selected>Pounds Per Square Inch</option>
+                    <label for="GasUnits">Gas Pressure Units</label>
+                    <select id="GasUnits" name="GasUnits" onchange="setGasDisplayOptions(null)">
+                        <option value="bar" selected>Bar</option>
+                        <option value="psi" >Pounds Per Square Inch</option>
                     </select>
+                </div>
+                <div class="GasSettings">
+                    <label for="GasDisplayUnits">Gas Display Units</label>
+                    <select id="GasDisplayUnits" name="GasDisplayUnits" >
+                        <option value="bar" selected>Bar</option>
+                        <option value="psi" >Pounds Per Square Inch</option>
+                        <option value="litres" >Litres</option>
+                        <option value="cuft" >Cubic Feet</option>
+                        <option value="kWhr" >Killowatt Hours (kWhr)</option>
+                    </select>
+                </div>
+                <div class="GasSettings">
+                    <label for="GasCapacity">Gas Volume (Normal Litres)</label>
+                    <input type="number" id="GasCapacity" name="GasCapacity" title="1 standard tank = 270Nl" />
                 </div>
                 <div class="GasSettings">
                     <label for="MaxGasPressure" >Maximum Gas Pressure</label>

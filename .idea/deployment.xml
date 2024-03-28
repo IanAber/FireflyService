@@ -14,7 +14,7 @@
       <paths name="Firefly">
         <serverdata>
           <mappings>
-            <mapping deploy="/FireflyService" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/FireflyService" local="$PROJECT_DIR$" web="/cloud.cedartechnology.com:41000" />
           </mappings>
         </serverdata>
       </paths>

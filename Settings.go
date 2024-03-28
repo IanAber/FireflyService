@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -39,6 +39,12 @@ type PortNameType struct {
 	Port uint8
 }
 
+type ButtonType struct {
+	Name           string
+	Pressed        bool
+	ShowOnCustomer bool
+}
+
 type ModbusNameType struct {
 	Name    string
 	SlaveID uint8
@@ -59,6 +65,7 @@ type ElectrolyserSettingType struct {
 	Serial     string `json:"serial"`
 	PowerRelay uint8  `json:"relay"`
 	HasDryer   bool   `json:"dryer"`
+	Enabled    bool   `json:"enabled"`
 }
 
 type SettingsType struct {
@@ -68,6 +75,7 @@ type SettingsType struct {
 	DigitalInputs                    [4]PortNameType           `json:"DigitalInputs"`
 	DigitalOutputs                   [6]PortNameType           `json:"DigitalOutputs"`
 	Relays                           [16]PortNameType          `json:"Relays"`
+	Buttons                          [20]ButtonType            `json:"Buttons"`
 	FuelCellSettings                 FuelCellSettingsType      `json:"FuelCellSettings"`
 	ACMeasurement                    [4]ModbusNameType         `json:"ACMeasurement"`
 	DCMeasurement                    [4]ModbusNameType         `json:"DCMeasurement"`
@@ -82,7 +90,9 @@ type SettingsType struct {
 	WaterDumpAction                  actionType                `json:"waterDumpAction"`
 	SessionKey                       string                    `json:"sessionKey"`
 	MaxGasPressure                   uint16                    `json:"maxGasPressure"`
+	GasCapacity                      uint32                    `json:"gasCapacity"`
 	GasUnits                         string                    `json:"gasUnits"`
+	GasDisplayUnits                  string                    `json:"gasDisplayUnits"`
 	GasPressureInput                 uint8                     `json:"gasPressureInput"`
 	GasDetectorThreshold             uint16                    `json:"gasDetectorThreshold"`
 	GasDetectorInput                 uint8                     `json:"gasDetectorInput"`
@@ -92,6 +102,7 @@ type SettingsType struct {
 	CoolingPumpStartTemperature      uint8                     `json:"coolingPumpStartTemperature"`
 	CoolingPumpStopTemperature       uint8                     `json:"coolingPumpStopTemperature"`
 	filepath                         string
+	acquiringElectrolysers           bool
 }
 
 func NewSettings() *SettingsType {
@@ -117,7 +128,10 @@ func NewSettings() *SettingsType {
 		settings.DigitalOutputs[idx].Port = uint8(idx)
 		settings.DigitalOutputs[idx].Name = fmt.Sprintf("Output-%d", idx)
 	}
-
+	for idx := range settings.Buttons {
+		settings.Buttons[idx].Name = fmt.Sprintf("Button-%d", idx)
+		settings.Buttons[idx].Pressed = false
+	}
 	for idx := range settings.Relays {
 		settings.Relays[idx].Port = uint8(idx)
 		settings.Relays[idx].Name = fmt.Sprintf("Relay-%d", idx)
@@ -141,8 +155,10 @@ func NewSettings() *SettingsType {
 	settings.WaterDumpRelay = 0
 	settings.WaterDumpSeconds = 10
 	settings.MaximumConductivity = 2.5
-	settings.GasUnits = "Bar"
+	settings.GasUnits = "bar"
+	settings.GasDisplayUnits = "bar"
 	settings.MaxGasPressure = 35
+	settings.GasCapacity = 74724 // 8 standard tanks @ 35Bar
 	settings.GasPressureInput = 0
 	settings.ConductivityYellowMax = 7.5
 	settings.ConductivityGreenMax = 3.5
@@ -153,9 +169,28 @@ func NewSettings() *SettingsType {
 	return settings
 }
 
-/**
-findExistingElByRelay returns a pointer to the matching electrolyser from the given array or null if not found
-*/
+// findButtonByName returns the button given the name
+func (settings *SettingsType) findButtonByName(name string) (idx int, pressed bool) {
+	for idx, btn := range settings.Buttons {
+		if strings.EqualFold(btn.Name, name) {
+			return idx, btn.Pressed
+		}
+	}
+	return -1, false
+}
+
+// setButtonByName sets the button to the given value
+func (settings *SettingsType) setButtonByName(name string, pressed bool) error {
+	for idx, btn := range settings.Buttons {
+		if strings.EqualFold(btn.Name, name) {
+			settings.Buttons[idx].Pressed = pressed
+			return nil
+		}
+	}
+	return fmt.Errorf("Button %s not found", name)
+}
+
+// findExistingElByRelay returns a pointer to the matching electrolyser from the given array or null if not found
 func (settings *SettingsType) findElByRelay(relay uint8) *ElectrolyserSettingType {
 	for el := range settings.Electrolysers {
 		if settings.Electrolysers[el].PowerRelay == relay {
@@ -165,9 +200,7 @@ func (settings *SettingsType) findElByRelay(relay uint8) *ElectrolyserSettingTyp
 	return nil
 }
 
-/**
-findExistingElByName returns a pointer to the matching electrolyser from the given array or null if not found
-*/
+// findExistingElByName returns a pointer to the matching electrolyser from the given array or null if not found
 func (settings *SettingsType) findElByName(name string) *ElectrolyserSettingType {
 	for el := range settings.Electrolysers {
 		if strings.ToLower(settings.Electrolysers[el].Name) == strings.ToLower(name) {
@@ -177,9 +210,7 @@ func (settings *SettingsType) findElByName(name string) *ElectrolyserSettingType
 	return nil
 }
 
-/**
-findExistingElByIP returns a pointer to the matching electrolyser from the given array or null if not found
-*/
+// findExistingElByIP returns a pointer to the matching electrolyser from the given array or null if not found
 func (settings *SettingsType) findElByIP(ip string) *ElectrolyserSettingType {
 	for el := range settings.Electrolysers {
 		if settings.Electrolysers[el].IP == ip {
@@ -189,21 +220,19 @@ func (settings *SettingsType) findElByIP(ip string) *ElectrolyserSettingType {
 	return nil
 }
 
-/**
-addElectrolyser adds a new electrolyser to the settings object
-*/
-func (settings *SettingsType) addElectrolyser(Relay uint8, Name string, HasDryer bool) {
+// addElectrolyser adds a new electrolyser to the settings object
+func (settings *SettingsType) addElectrolyser(Relay uint8, Name string, HasDryer bool, Enabled bool) {
 	var el ElectrolyserSettingType
 
 	el.Name = Name
 	el.PowerRelay = Relay
 	el.HasDryer = HasDryer
-
+	el.Enabled = Enabled
 	settings.Electrolysers = append(settings.Electrolysers, el)
 }
 
 func (settings *SettingsType) LoadSettings(filepath string) error {
-	if file, err := ioutil.ReadFile(filepath); err != nil {
+	if file, err := os.ReadFile(filepath); err != nil {
 		log.Println(err)
 		if err := settings.SaveSettings(filepath); err != nil {
 			return err
@@ -265,6 +294,8 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 				}
 				elect.status.Name = el.Name
 				elect.status.PowerRelay = el.PowerRelay
+				elect.status.Enabled = el.Enabled
+				elect.enabled = el.Enabled
 			} else {
 				// We did not find an electrolyser on that relay, so we should add a new one
 				IP := net.IPv4zero
@@ -279,6 +310,8 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 				newEl.status.Name = el.Name
 				newEl.status.PowerRelay = el.PowerRelay
 				newEl.hasDryer = el.HasDryer
+				newEl.status.Enabled = el.Enabled
+				newEl.enabled = el.Enabled
 				Electrolysers.Arr = append(Electrolysers.Arr, newEl)
 			}
 		}
@@ -298,11 +331,11 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 
 func (settings *SettingsType) SaveSettings(filepath string) error {
 	settings.filepath = filepath
-	if bData, err := json.Marshal(settings); err != nil {
+	if bData, err := json.MarshalIndent(settings, "", "    "); err != nil {
 		log.Println("Error converting settings to text -", err)
 		return err
 	} else {
-		if err = ioutil.WriteFile(settings.filepath, bData, 0644); err != nil {
+		if err = os.WriteFile(settings.filepath, bData, 0644); err != nil {
 			log.Println("Error writing JSON settings file -", err)
 			return err
 		}
@@ -331,7 +364,8 @@ func (settings *SettingsType) SendSettingsJSON(w http.ResponseWriter) {
 	}
 }
 
-/**
+/*
+*
 validateSettings will adjust any values that are obviously out of range and bring them withing the limits defined
 */
 func (settings *SettingsType) validateSettings() {
@@ -408,8 +442,13 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		settings.DigitalInputs[din].Name = r.FormValue(fmt.Sprintf("di%dname", din))
 	}
 	// Digital output names
-	for dout := 0; dout < 4; dout++ {
+	for dout := 0; dout < 6; dout++ {
 		settings.DigitalOutputs[dout].Name = r.FormValue(fmt.Sprintf("do%dname", dout))
+	}
+	// Buttons
+	for btn := range settings.Buttons {
+		settings.Buttons[btn].Name = r.FormValue(fmt.Sprintf("btn%dname", btn))
+		settings.Buttons[btn].ShowOnCustomer = (r.FormValue(fmt.Sprintf("btn%duser", btn)) != "")
 	}
 	// Analogue names and settings
 	for analog := range settings.AnalogChannels {
@@ -465,7 +504,14 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	} else {
 		settings.MaxGasPressure = uint16(val)
 	}
+	if val, err := strconv.ParseInt(r.FormValue("GasCapacity"), 10, 32); err != nil {
+		ReturnJSONError(w, DeviceString+"GasCapacity", err, http.StatusInternalServerError, true)
+		return
+	} else {
+		settings.GasCapacity = uint32(val)
+	}
 	settings.GasUnits = r.FormValue("GasUnits")
+	settings.GasDisplayUnits = r.FormValue("GasDisplayUnits")
 	if val, err := strconv.ParseInt(r.FormValue("GasInput"), 10, 8); err != nil {
 		ReturnJSONError(w, DeviceString+"GasInput", err, http.StatusInternalServerError, true)
 		return
@@ -554,7 +600,9 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		ReturnJSONError(w, DeviceString+":Water Dump Action", err, http.StatusBadRequest, true)
 		return
 	} else {
-		log.Println("Water dump action = ", val)
+		if debugOutput {
+			log.Println("Water dump action = ", val)
+		}
 		settings.WaterDumpAction = actionType(val)
 	}
 	if val, err := strconv.ParseInt(r.FormValue("coolingPumpStartTemperature"), 10, 8); err != nil {
@@ -608,10 +656,13 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 					el.HasDryer = electrolyser.HasDryer
 					el.IP = ""
 					el.Serial = ""
+					el.Enabled = electrolyser.Enabled
 				}
+			} else {
+				el.Enabled = electrolyser.Enabled
 			}
 		} else {
-			// We did not find a match so we should try by name
+			// We did not find a match, so we should try by name
 			if el := settings.findElByRelay(electrolyser.Relay); el != nil {
 				// We found an electrolyser with a different name on the same relay.
 				if Relays.Relays[el.PowerRelay].On {
@@ -622,10 +673,11 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 					el.HasDryer = electrolyser.HasDryer
 					el.Serial = ""
 					el.IP = ""
+					el.Enabled = electrolyser.Enabled
 				}
 			} else {
-				// Cannot find a match so we should add this one in
-				settings.addElectrolyser(electrolyser.Relay, electrolyser.Name, electrolyser.HasDryer)
+				// Cannot find a match, so we should add this one in
+				settings.addElectrolyser(electrolyser.Relay, electrolyser.Name, electrolyser.HasDryer, electrolyser.Enabled)
 			}
 		}
 	}

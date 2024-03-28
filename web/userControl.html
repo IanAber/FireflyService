@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Firefly User Control</title>
+        <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
+        <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+        <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+        <script type="text/javascript" src="scripts/userControl.js"></script>
+        <script type="text/ecmascript" src="scripts/fcAlarms.js"></script>
+        <script type="text/javascript" src="scripts/ELControl.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
+        <script type="text/javascript" src="scripts/jqwidgets/jqxslider.js"></script>
+        <script type="text/ecmascript" src="scripts/utils.js"></script>
+    </head>
+    <body onload="PopulateTitle()">
+    <header class="header">
+        <h1>
+            <span class="system" id="system">Loading...</span>
+            <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+        </h1>
+    </header>
+        <div style="height: fit-content" >
+            <div id="systems" style="display: grid; grid-template-columns: 20% 20% 20% 20% 20%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">
+                <div class="centered">
+                    <div class="control" id="gas"></div>
+                    <div style="padding-bottom:25px">
+                        <label for="gas"><span id="gasTitle">Gas Pressure (Bar)</span></label>
+                    </div>
+                    <div class="control" id="conductivity"></div>
+                    <div>
+                        <label for="conductivity">Water Quality</label>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <table class="Buttons">
+                    <tr>
+                        <th id=button0 class="ButtonOff" onclick="clickButton(0)"><span id="buttonText0">Button 0</span></th>
+                        <th id=button1 class="ButtonOff" onclick="clickButton(1)"><span id="buttonText1">Button 1</span></th>
+                        <th id=button2 class="ButtonOff" onclick="clickButton(2)"><span id="buttonText2">Button 2</span></th>
+                        <th id=button3 class="ButtonOff" onclick="clickButton(3)"><span id="buttonText3">Button 3</span></th>
+                        <th id=button4 class="ButtonOff" onclick="clickButton(4)"><span id="buttonText4">Button 4</span></th>
+                        <th id=button5 class="ButtonOff" onclick="clickButton(5)"><span id="buttonText5">Button 5</span></th>
+                        <th id=button6 class="ButtonOff" onclick="clickButton(6)"><span id="buttonText6">Button 6</span></th>
+                        <th id=button7 class="ButtonOff" onclick="clickButton(7)"><span id="buttonText7">Button 7</span></th>
+                        <th id=button8 class="ButtonOff" onclick="clickButton(8)"><span id="buttonText8">Button 8</span></th>
+                        <th id=button9 class="ButtonOff" onclick="clickButton(9)"><span id="buttonText9">Button 9</span></th>
+                    </tr>
+                    <tr>
+                        <th id=button10 class="ButtonOff" onclick="clickButton(10)"><span id="buttonText10">Button 10</span></th>
+                        <th id=button11 class="ButtonOff" onclick="clickButton(11)"><span id="buttonText11">Button 11</span></th>
+                        <th id=button12 class="ButtonOff" onclick="clickButton(12)"><span id="buttonText12">Button 12</span></th>
+                        <th id=button13 class="ButtonOff" onclick="clickButton(13)"><span id="buttonText13">Button 13</span></th>
+                        <th id=button14 class="ButtonOff" onclick="clickButton(14)"><span id="buttonText14">Button 14</span></th>
+                        <th id=button15 class="ButtonOff" onclick="clickButton(15)"><span id="buttonText15">Button 15</span></th>
+                        <th id=button16 class="ButtonOff" onclick="clickButton(16)"><span id="buttonText16">Button 16</span></th>
+                        <th id=button17 class="ButtonOff" onclick="clickButton(17)"><span id="buttonText17">Button 17</span></th>
+                        <th id=button18 class="ButtonOff" onclick="clickButton(18)"><span id="buttonText18">Button 18</span></th>
+                        <th id=button19 class="ButtonOff" onclick="clickButton(19)"><span id="buttonText19">Button 19</span></th>
+                    </tr>
+                </table>
+            </div>
+            <div id="fcAlarms" class="alarm"></div>
+        </div>
+        <footer>
+            <span class="version">Version </span><span class="version" id="version"></span>
+            <div id="leakAlarmDiv" style="display: none;">
+                <h1 style="color:red;">Possible Hydrogen Leak Detected!</h1>
+            </div>
+            <div id="conductivityAlarmDiv" style="display: none;">
+                <h1 style="color:red;">Water quality is bad, conductivity is too high!</h1>
+            </div>
+            <div id="ErrorTextDiv">
+                <p id="ErrorText"></p>
+            </div>
+            <menu>
+                <!--adminLink-->
+                <li><a href="/registration" target="_blank">User management</a></li>
+                <li>Logout&nbsp;<img src="images/logout.png" alt="Logout" title="Logout" style="width: 2em;" onclick="logout('/')" /></li>
+                <li><a id="noderedui" href="/NodeRedUI" target="_blank" rel="noopener noreferrer" style="target-new: tab;">Node-<span style="color: red">RED User Interface</span></a></li>
+            </menu>
+        </footer>
+    </body>
+    <script type="text/javascript">
+        $(document).ready(setupPage);
+
+        function logout(to_url) {
+            dt = new Date();
+            var out = "/Logout.html?time=" + dt;
+            $.get(out).done(function() {
+                window.location = to_url;
+            }).fail(function() {
+                window.location = to_url;
+            });
+        }
+
+    </script>
+</html>

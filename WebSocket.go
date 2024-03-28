@@ -104,9 +104,6 @@ func (pool *Pool) StartBroadcast() {
 					if !(message.service == wsElectrolyser && client.Device != message.device) {
 						// This is either the right electrolyser or the service is not wsElectrolyser
 						// We will give it 3 seconds to complete
-						if debugOutput {
-							log.Print("Sending to ", client.Device)
-						}
 						// If we hit an error, log it and drop the client. The client will have to reconnect.
 						if err := client.Conn.SetWriteDeadline(time.Now().Add((time.Second * 3))); err != nil {
 							log.Printf(ErrorText, err)

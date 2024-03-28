@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sync"
 )
 
@@ -197,6 +198,8 @@ func (ac *ACMeasurementsType) getError() string {
 func (ac *ACMeasurementsType) setError(err uint8) {
 	ac.mu.Lock()
 	defer ac.mu.Unlock()
-
 	ac.Error = err
+	if err != 0 {
+		log.Println(ac.Name, " - ", ac.getError())
+	}
 }

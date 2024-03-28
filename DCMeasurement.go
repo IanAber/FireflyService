@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sync"
 )
 
@@ -125,4 +126,7 @@ func (dc *DCMeasurementsType) setError(err uint8) {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 	dc.Error = err
+	if err != 0 {
+		log.Println(dc.Name, " - ", dc.getError())
+	}
 }

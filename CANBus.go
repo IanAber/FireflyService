@@ -48,7 +48,7 @@ const FlagsCanId = 0x010
 const RelaysAndDigitalOutCanId = 0x011
 const RelaysOutputsAndHeartbeat = 0x016
 
-//  const DigitalInCanId = 0x012
+const TemperatureCanId = 0x012
 const AnalogInputs0to3CanId = 0x013
 const AnalogInputs4to7CanId = 0x014
 const AnalogInputsInternalCanId = 0x015
@@ -85,12 +85,20 @@ const DcErrorCanId3 = 0x4F
 
 const DCVolts0CanID = 0x50
 const DCAmps0CanID = 0x51
-const DCVolts1CanID = 0x54
-const DCAmps1CanID = 0x55
-const DCVolts2CanID = 0x58
-const DCAmps2CanID = 0x59
-const DCVolts3CanID = 0x5C
-const DCAmps3CanID = 0x5D
+const DCVolts1CanID = 0x58
+const DCAmps1CanID = 0x59
+const DCVolts2CanID = 0x60
+const DCAmps2CanID = 0x61
+const DCVolts3CanID = 0x68
+const DCAmps3CanID = 0x69
+const DCVolts4CanID = 0x70
+const DCAmps4CanID = 0x71
+const DCVolts5CanID = 0x88
+const DCAmps5CanID = 0x89
+const DCVolts6CanID = 0x90
+const DCAmps6CanID = 0x91
+const DCVolts7CanID = 0xA8
+const DCAmps7CanID = 0xA9
 
 // handleCANFrame figures out what to do with each CAN frame received
 func (canBus *CANBus) handleCANFrame(frm can.Frame) {
@@ -102,7 +110,8 @@ func (canBus *CANBus) handleCANFrame(frm can.Frame) {
 
 /*
 NewCANBus
- connects to the given interface and starts receiving frames.
+
+	connects to the given interface and starts receiving frames.
 */
 func NewCANBus(interfaceName string) (*CANBus, error) {
 	canBus := new(CANBus)
@@ -117,6 +126,7 @@ func NewCANBus(interfaceName string) (*CANBus, error) {
 		//canBus.FrameHandlers[RelaysAndDigitalOutCanId] = framesWeSend
 		//canBus.FrameHandlers[DCCalibration] = framesWeSend
 		//canBus.FrameHandlers[FlagsCanId] = flagsHandler
+		canBus.FrameHandlers[TemperatureCanId] = temperatureHandler
 		canBus.FrameHandlers[RelaysOutputsAndHeartbeat] = relayHandler
 		canBus.FrameHandlers[AnalogInputs0to3CanId] = analogInputs0to3Handler
 		canBus.FrameHandlers[AnalogInputs4to7CanId] = analogInputs4to7Handler
@@ -182,6 +192,14 @@ func NewCANBus(interfaceName string) (*CANBus, error) {
 		canBus.FrameHandlers[DCAmps2CanID] = CanDCMeasurementHandler
 		canBus.FrameHandlers[DCVolts3CanID] = CanDCMeasurementHandler
 		canBus.FrameHandlers[DCAmps3CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts4CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps4CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts5CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps5CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts6CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps6CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCVolts7CanID] = CanDCMeasurementHandler
+		canBus.FrameHandlers[DCAmps7CanID] = CanDCMeasurementHandler
 
 		go ConnectAndPublish(canBus)
 	}
@@ -262,80 +280,95 @@ func CanKeyOnHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.SystemInfo.Run = frame.Data[0] != 0
+	FuelCell.LastMessageReceived = time.Now()
 }
 
 func CanRunTimeHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.SystemInfo.SetRunTime(frame.Data[2], frame.Data[3])
+	FuelCell.LastMessageReceived = time.Now()
 }
 
 func CanPowerModeHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.PowerMode.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanPressuresHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.Pressures.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanStackCoolantHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.StackCoolant.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanAirFlowHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.AirFlow.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanAlarmsHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.Alarms.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanStackOutputHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.StackOutput.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanCff1Handler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.CffMsg.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanInsulationHanddler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.Insulation.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanStackHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
+	FuelCell.LastMessageReceived = time.Now()
 	FuelCell.StackCells.Load(frame.ID, frame.Data)
 }
 func CanATSCoolingFanHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.ATSCoolingFan.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 
 func CanWaterPumpHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.WaterPump.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 
 func CanDCDCConverterHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.DCDCConverter.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanDCOutputHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.DCOutput.Load(frame.Data)
+	FuelCell.LastMessageReceived = time.Now()
 }
 func CanBMSSettingsHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
@@ -346,16 +379,14 @@ func CanBMSSettingsHandler(frame can.Frame, _ *CANBus) {
 		FuelCell.SystemInfo.SetExhaustFlag()
 	}
 	FuelCell.SystemInfo.exhaustLastValue = frame.Data[6] != 0
+	FuelCell.LastMessageReceived = time.Now()
 }
 
-//func framesWeSend(_ can.Frame, _ *CANBus) {
-//	// Dummy handler for all the frames that are echoed back to us
-//}
-//
-//func flagsHandler(_ can.Frame, _ *CANBus) {
-//	// Not used yet.
-//}
-//
+func temperatureHandler(frame can.Frame, _ *CANBus) {
+	temp := int16((uint16(frame.Data[0]) + (uint16(frame.Data[1]) * 256)))
+	AnalogInputs.SetTemperature(float64(temp) / 100.0)
+}
+
 func relayHandler(frame can.Frame, _ *CANBus) {
 	Relays.mu.Lock()
 	defer Relays.mu.Unlock()

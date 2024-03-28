@@ -3,10 +3,11 @@
     <head>
         <meta charset="UTF-8">
         <title>Fuel Cell Settings</title>
+        <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
         <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
         <script type="text/ecmascript" src="scripts/FuelCellSettings.js"></script>
-        <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
-        <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+        <script type="text/ecmascript" src="scripts/fcAlarms.js"></script>
         <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
@@ -14,15 +15,15 @@
         <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxbargauge.js"></script>
-        <script type="text/javascript" src="scripts/heartbeat.js"></script>
+        <script type="text/ecmascript" src="scripts/utils.js"></script>
     </head>
-    <body>
-        <div class="header">
+    <body onload="PopulateTitle()">
+        <header class="header">
             <h1>
                 <span class="system" id="system">Loading...</span>
-                <img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+                <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
             </h1>
-        </div>
+        </header>
         <div style="display: grid; grid-template-columns: 33% 66%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">
             <div class="centered">
                 <table>
@@ -51,6 +52,11 @@
                     <tr>
                         <td style="border-top-style: solid">Status</td>
                         <td style="border-top-style: solid"><span id="FCStatus"></span></td>
+                        <td> </td>
+                        <td class="buttonLabel">Heater</td>
+                        <td class="inputField">
+                            <img id="Heater" class="swOn" src="images/power-on.png" alt="Enable Heater" onclick="HeaterClick()" />
+                        </td>
                     </tr>
                     <tr>
                         <td>DC Output</td>
@@ -133,10 +139,8 @@
                 <div class="centered">
                     <div id="fcCurrent" ondblclick="window.open('dcdc.html')"></div>
                 </div>
-                <div id="InsulationDiv" class="centered">
-                    <div id="fcInsulation"></div><br />
-                    <span class="statusText" id="fcInsulationStatus"></span><br />
-                    <span class="statusText" id="fcInsulationFault"></span>
+                <div class="centered">
+                    <div id="fcPower" ondblclick="window.open('dcdc.html')"></div>
                 </div>
             </div>
             <div id="fcStack" style="display: grid; grid-template-columns: 20% 20% 20% 20% 20%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">

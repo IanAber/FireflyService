@@ -215,8 +215,10 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, webFiles+"/Logout.html")
 }
 
-/**
+/*
+*
 Authenticate checks the session cookie. If a matches with an active cookie cannot be found or there was no session cookie it returns (nil, StatusUnauthorised)
+
 	Any errors are returned with an http status code
 	If a matching session is found it is refreshed and Authenticate returns (nil, 0)
 */
@@ -259,7 +261,8 @@ func Authenticate(w http.ResponseWriter, r *http.Request) (error, int) {
 	if strings.HasSuffix(r.URL.Path, "/images/logo.png") ||
 		strings.HasSuffix(r.URL.Path, "/Login.html") ||
 		strings.HasSuffix(r.URL.Path, "/ping") ||
-		strings.HasPrefix(r.URL.Path, "/ws") {
+		strings.HasPrefix(r.URL.Path, "/ws") ||
+		strings.HasSuffix(r.URL.Path, "/refreshCertificates") {
 		return nil, 0
 	} else {
 		//		log.Println("Checking for action-login : ", r.RequestURI)

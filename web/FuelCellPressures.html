@@ -3,6 +3,7 @@
     <title id='Description'>Fuel Cell Coolant</title>
     <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
     <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.web.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
     <script type="text/javascript" src="scripts/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
     <script type="text/javascript" src="scripts/jqwidgets/jqxchart.core.js"></script>
@@ -12,6 +13,7 @@
     <script type="text/javascript" src="scripts/jqwidgets/jqxdatetimeinput.js"></script>
     <script type="text/javascript" src="scripts/jqwidgets/jqxcalendar.js"></script>
     <script type="text/javascript" src="scripts/charts.js"></script>
+    <script type="text/ecmascript" src="scripts/utils.js"></script>
     <script type="text/javascript">
 
         function buildURLForTimes(start, end) {
@@ -86,7 +88,13 @@
 
     </script>
 </head>
-<body style="background:white;">
+<body style="background:white;" onload="PopulateTitle()">
+<header class="header">
+    <h1>
+        <span class="system" id="system">Loading...</span>
+        <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+    </h1>
+</header>
 <div id='ChartContainer' style="width:100%; height: 96%" ></div>
 <div style="text-align:center; height: 4%">
     <div style="float:left">

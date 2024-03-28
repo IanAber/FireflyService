@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title id='Description'>Charting</title>
+    <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+    <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.web.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
+    <script type="text/javascript" src="scripts/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxchart.core.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxchart.api.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+    <script type="text/ecmascript" src="scripts/regression.min.js"></script>
+    <script type="text/ecmascript" src="scripts/utils.js"></script>
+    <style>
+        table.coords {
+            border-width: 1px;
+            border-style: solid;
+        }
+        th.coords {
+            border-width: 1px;
+            border-style: solid;
+            width: 10em;
+        }
+        td.coords {
+            border-width: 1px;
+            border-style: solid;
+            width: 10em;
+            height: 1em;
+        }
+        input.coords {
+            width: fit-content;
+        }
+        button {
+            background-color: #04AA6D; /* Green */
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+    </style>
+    <script type="text/javascript">
+
+        var data = [
+            {xval: 0, highVal : 10, lowVal : 5, sample : 0},
+            {xval: 10, highVal : 20, lowVal : 10, sample : 0},
+            {xval: 20, highVal : 25, lowVal : 10, sample : 0},
+            {xval: 30, highVal : 28, lowVal : 10, sample : 0},
+            {xval: 40, highVal : 28, lowVal : 13, sample : 0},
+            {xval: 50, highVal : 25, lowVal : 18, sample : 0},
+            {xval: 60, highVal : 20, lowVal : 16, sample : 0},
+            {xval: 70, highVal : 15, lowVal : 13, sample : 0},
+            {xval: 80, highVal : 10, lowVal : 0, sample : 0},
+            {xval: 90, highVal : 5, lowVal : -3, sample : 0},
+            {xval: 100, highVal : 0, lowVal : -10, sample : 0},
+        ]
+        var highCoefficients = { a: 0, b: 0, c: 0, d: 0, e: 0};
+        var lowCoefficients  = { a: 0, b: 0, c: 0, d: 0, e: 0};
+
+        function buildChart(minXVal, maxXVal, minYVal, maxYVal) {
+            let settings = {
+                title: "Polynomial Solving",
+                description: "Interactive polynomial solving.",
+                enableAnimations: true,
+                animationDuration: 1000,
+                enableAxisTextAnimation: true,
+                showLegend: true,
+                source: data,
+                padding: { left: 5, top: 5, right: 5, bottom: 5 },
+                titlePadding: { left: 90, top: 0, right: 0, bottom: 10 },
+                xAxis: {
+                    dataField: 'xval',
+                    showGridLines: false,
+                    textRotationAngle: 270,
+                    minValue: minXVal,
+                    maxValue: maxXVal * 1.01,
+                },
+                colorScheme: 'scheme01',
+                seriesGroups: [{
+                    type: 'spline',
+                    valueAxis: {
+                        unitInterval: 5,
+                        minValue: minYVal,
+                        maxValue: maxYVal,
+                        gridLines: {
+                            visible: true,
+                            step: 2,
+                        },
+                        labels: {
+                            formatSettings: {
+                                decimalPlaces: 1,
+                            },
+                            visible: true,
+                            step: 2,
+                        },
+                        description: 'Values',
+                    },
+                    mouseover: mouseoverHandler,
+                    mouseout: mouseoutHandler,
+                    series: [{
+                        dataField: 'highVal',
+                        symbolType: 'square',
+                        displayText: 'High Value'
+                    },{
+                        dataField: 'lowVal',
+                        symbolType: 'triangle',
+                        displayText: 'Low Value'
+                    },{
+                        dataField: 'sample',
+                        displayText: 'Sample Value'
+                    }]
+                }]
+            }
+            let chart = $('#ChartContainer');
+            chart.jqxChart(settings);
+            chart.jqxChart('showToolTips', false);
+            chart.on('mousedown',mouseDown);
+            chart.on('mouseup',mouseUp);
+        }
+
+        function setupInputs(minX, maxX, minY, maxY) {
+            let minXVal = $("#minXVal");
+            let maxXVal = $("#maxXVal");
+            let minYVal = $("#minYVal");
+            let maxYVal = $("#maxYVal");
+            minXVal.val(minX);
+            maxXVal.val(maxX);
+            minYVal.val(minY);
+            maxYVal.val(maxY);
+        }
+        var dataField;
+        var startY;
+        var dragging = false;
+
+        function mouseoverHandler(e) {
+            // We are over a data point
+            if ((e.serie.dataField === 'lowVal' || e.serie.dataField === 'highVal') && !dragging) {
+                dataField = e.serie.dataField;
+                dataIndex = e.elementIndex;
+//                $('#solutionLow').html(e.serie.dataField);
+            }
+        }
+        function mouseoutHandler(_e) {
+            // We are no longer over a data point
+            if (!dragging) {
+                dataField = null;
+//                $('#solutionLow').html(dataField);
+            }
+        }
+        function mouseDown(e) {
+            // Record the Y position at which the mouse down even occurred
+            startY = e.clientY;
+            dragging = true;
+//            $('#solutionHigh').html('Mouse Down');
+        }
+        function mouseUp(e) {
+            dragging = false;
+            // Get the chart and find the plot height
+            let chart = $('#ChartContainer').jqxChart('getInstance');
+            let plotHeight = chart._plotRect.height;
+            let valAxisHeight = (chart.seriesGroups[0].valueAxis.maxValue - chart.seriesGroups[0].valueAxis.minValue);
+//            $('#solutionHigh').html('Mouse Up');
+            let distance = startY - e.clientY;
+            if (distance !== 0) {
+                if (dataField != null) {
+                    // We have moved a data point up or down. Calculate how much to change the value
+                    let valChange = (distance / plotHeight) * valAxisHeight;
+                    // Update the correct data point data
+                    if (dataField === 'highVal') {
+                        data[dataIndex].highVal += valChange;
+                        valChange = data[dataIndex].highVal;
+                    } else {
+                        data[dataIndex].lowVal += valChange;
+                        valChange = data[dataIndex].lowVal
+                    }
+                    let MaxYVal = $("#maxYVal");
+                    let MinYVal = $("#minYVal");
+                    if (valChange > MaxYVal.val()) {
+                        MaxYVal.val(valChange);
+                        updateChartAxes();
+                        return;
+                    } else if (valChange < MinYVal.val()) {
+                        MinYVal.val(valChange);
+                        updateChartAxes();
+                        return;
+                    }
+                    // Update the chart
+                    chart.update();
+                }
+            }
+        }
+        function updateChartAxes() {
+            let minXVal = parseFloat($("#minXVal").val());
+            let maxXVal = parseFloat($("#maxXVal").val());
+            let minYVal = parseFloat($("#minYVal").val());
+            let maxYVal = parseFloat($("#maxYVal").val());
+            let Xstep = (maxXVal - minXVal) / 10;
+            for (i = 0; i < data.length; i++) {
+                data[i].xval = i * Xstep;
+                if (data[i].highVal > maxYVal) {
+                    data[i].highVal = maxYVal;
+                }
+                if (data[i].highVal < minYVal) {
+                    data[i].highVal = minYVal;
+                }
+                if (data[i].lowVal > maxYVal) {
+                    data[i].lovVal = maxYVal;
+                }
+                if (data[i].lowVal < minYVal) {
+                    data[i].lowVal = minYVal;
+                }
+            }
+            buildChart(minXVal, maxXVal, minYVal, maxYVal);
+        }
+        function calculateCoefficients() {
+            let sampleDataHigh = [[]];
+            let sampleDataLow = [[]];
+
+            for (i = 0; i < data.length; i++) {
+                sampleDataHigh[i] = [data[i].xval, data[i].highVal];
+                sampleDataLow[i] = [data[i].xval, data[i].lowVal];
+            }
+            let solutionHigh = regression.polynomial(sampleDataHigh, { order: 4, precision: 8});
+            let solutionLow = regression.polynomial(sampleDataLow, { order: 4, precision: 8});
+            let xVar = $("#xVar").val();
+            let yVar = $("#yVar").val();
+            $("#solutionHigh").text(solutionHigh.string);
+            $("#solutionLow").text(solutionLow.string);
+            $("#highE").val(solutionHigh.equation[0]);
+            $("#highD").val(solutionHigh.equation[1]);
+            $("#highC").val(solutionHigh.equation[2]);
+            $("#highB").val(solutionHigh.equation[3]);
+            $("#highA").val(solutionHigh.equation[4]);
+            $("#lowE").val(solutionLow.equation[0]);
+            $("#lowD").val(solutionLow.equation[1]);
+            $("#lowC").val(solutionLow.equation[2]);
+            $("#lowB").val(solutionLow.equation[3]);
+            $("#lowA").val(solutionLow.equation[4]);
+            let a1 = solutionHigh.equation[4];
+            let b1 = solutionHigh.equation[3];
+            let c1 = solutionHigh.equation[2];
+            let d1 = solutionHigh.equation[1];
+            let e1 = solutionHigh.equation[0];
+            let a2 = solutionLow.equation[4];
+            let b2 = solutionLow.equation[3];
+            let c2 = solutionLow.equation[2];
+            let d2 = solutionLow.equation[1];
+            let e2 = solutionLow.equation[0];
+            let xIn = xVar.val();
+            let yIn = yVar.val();
+            let xParam = xIn.split(".");
+            xParam = xParam[xParam.length - 1];
+            let yParam = yIn.split(".");
+            yParam = yParam[yParam.length - 1];
+            let functionTemplate = `// high = |${a1}|${b1}|${c1}|${d1}|${e1}
+// low = |${a2}|${b2}|${c2}|${d2}|${e2}
+// inputs = |${xIn}|${yIn}
+// outputs are high, mid, low
+// Enable three outputs for this formula
+let x = ${xIn};
+let y = ${yIn};
+
+msg.targetHigh = ${a1} + (${b1} * x) + (${c1} * (x**2)) + (${d1} * (x**3)) + (${e1} * (x**4));
+msg.targetLow =  ${a2} + (${b2} * x) + (${c2} * (x**2)) + (${d2} * (x**3)) + (${e2} * (x**4));
+
+if (y > msg.targetHigh) {
+    // Above the high mark
+    node.status({fill:"green",shape:"dot",text:("high ${xParam}:" + x + "; ${yParam}:" + y)});
+    return [msg, null, null];
+} else if (y < msg.targetLow) {
+    msg.action = 'decrease';
+    node.status({fill:"red",shape:"dot",text:("low ${xParam}:" + x + "; ${yParam}:" + y)});
+    return [null, null, msg];
+} else {
+    // We are in the zone to leave it alone!
+    node.status({fill:"green",shape:"ring",text:("in band ${xParam}:" + x + "; ${yParam}:" + y)});
+    return [null, msg, null];
+}`;
+            $("#function").val(functionTemplate);
+        }
+        function showSample(Coefficients) {
+            for (i = 0; i < data.length; i++) {
+                data[i].sample = Coefficients.a + (Coefficients.b * data[i].xval) + (Coefficients.c * data[i].xval**2) + (Coefficients.d * data[i].xval**3) + (Coefficients.e * data[i].xval**4);
+            }
+            let chart = $('#ChartContainer').jqxChart('getInstance');
+            chart.update();
+        }
+        function showHigh() {
+            let HighA = $("#highA");
+            if (HightA.val() === "") {
+                alert("Please use solve to create the function first.");
+                return;
+            }
+            let Coefficients = {
+                a: parseFloat(HighA.val()),
+                b: parseFloat($("#highB").val()),
+                c: parseFloat($("#highC").val()),
+                d: parseFloat($("#highD").val()),
+                e: parseFloat($("#highE").val())
+            };
+            showSample(Coefficients);
+        }
+        function showLow() {
+            LowA = $("#lowA");
+            if (LowA.val() === "") {
+                alert("Please use solve to create the function first.");
+                return;
+            }
+            let Coefficients = {
+                a: parseFloat(LowA.val()),
+                b: parseFloat($("#lowB").val()),
+                c: parseFloat($("#lowC").val()),
+                d: parseFloat($("#lowD").val()),
+                e: parseFloat($("#lowE").val())
+            };
+            showSample(Coefficients);
+        }
+        function copyToClip() {
+            let func = $("#function")
+            var textToCopy = func.val();
+
+            // Check if there is text to copy
+            if (textToCopy.trim() !== "") {
+                // Select the text in the textarea
+                func.select();
+
+                // Copy the selected text to the clipboard
+                document.execCommand("copy");
+
+                // Optionally, provide feedback to the user
+                alert("Function copied to clipboard");
+            } else {
+                // Provide feedback if there is no text to copy
+                alert("Please use solve to create the function first.");
+            }
+        }
+        function CalculateDataPoints() {
+            let Coefficients = {
+                a: parseFloat($("#lowA").val()),
+                b: parseFloat($("#lowB").val()),
+                c: parseFloat($("#lowC").val()),
+                d: parseFloat($("#lowD").val()),
+                e: parseFloat($("#lowE").val())
+            };
+            for (i = 0; i < data.length; i++) {
+                data[i].lowVal = Coefficients.a + (Coefficients.b * data[i].xval) + (Coefficients.c * data[i].xval**2) + (Coefficients.d * data[i].xval**3) + (Coefficients.e * data[i].xval**4);
+            }
+
+            Coefficients = {
+                a: parseFloat($("#highA").val()),
+                b: parseFloat($("#highB").val()),
+                c: parseFloat($("#highC").val()),
+                d: parseFloat($("#highD").val()),
+                e: parseFloat($("#highE").val())
+            };
+            for (i = 0; i < data.length; i++) {
+                data[i].highVal = Coefficients.a + (Coefficients.b * data[i].xval) + (Coefficients.c * data[i].xval**2) + (Coefficients.d * data[i].xval**3) + (Coefficients.e * data[i].xval**4);
+            }
+            let chart = $('#ChartContainer').jqxChart('getInstance');
+            chart.update();
+        }
+        function analyse() {
+            let txt = $("#function").val().trim();
+            if (txt === "") {
+                alert("Please past your function into the text area first.");
+                return;
+            }
+            if (txt.search("// high = |") !== 0) {
+                alert("Function should begin with // high = |");
+                return;
+            }
+            let lines = txt.split("\n");
+            let vals = lines[0].split("|");
+            if (vals.length !== 6) {
+                alert("Looking for 5 terms for high but only found " + high.length);
+                return;
+            }
+            $("#highA").val(parseFloat(vals[1]));
+            $("#highB").val(parseFloat(vals[2]));
+            $("#highC").val(parseFloat(vals[3]));
+            $("#highD").val(parseFloat(vals[4]));
+            $("#highE").val(parseFloat(vals[5]));
+            vals = lines[1].split("|");
+            $("#lowA").val(parseFloat(vals[1]));
+            $("#lowB").val(parseFloat(vals[2]));
+            $("#lowC").val(parseFloat(vals[3]));
+            $("#lowD").val(parseFloat(vals[4]));
+            $("#lowE").val(parseFloat(vals[5]));
+            vals = lines[2].split("|");
+            $("#xVar").val(vals[1]);
+            $("#yVar").val(vals[2]);
+            CalculateDataPoints();
+        }
+    </script>
+</head>
+<body onload="PopulateTitle()">
+    <div id='ChartContainer' style="width:1200px; height:400px; position: relative; left: 0; top: 0;"></div>
+    <div style="display:inline-block">
+        <div style="float:left; padding-right:10px">
+            <div><label for="minXVal">Minimum X value</label><input type="number" id="minXVal" onchange="updateChartAxes()" /></div>
+            <div><label for="maxXVal">Maximum X value</label><input type="number" id="maxXVal" onchange="updateChartAxes()" /></div>
+            <div><label for="minYVal">Minimum Y value</label><input type="number" id="minYVal" onchange="updateChartAxes()" /></div>
+            <div><label for="maxYVal">Maximum Y value</label><input type="number" id="maxYVal" onchange="updateChartAxes()" /></div>
+            <div><label for="xVar">X Variable</label><input type="text" id="xVar" value="msg.xVal" /></div>
+            <div><label for="yVar">Y Variable</label><input type="text" id="yVar" value="msg.YVal" /></div>
+            <div><button onclick="calculateCoefficients()">Solve</button></div>
+        </div>
+        <div style="float:left">
+            <div>
+                <table class="coords">
+                    <thead>
+                        <tr>
+                            <th class="coords">A</th>
+                            <th class="coords">B</th>
+                            <th class="coords">C</th>
+                            <th class="coords">D</th>
+                            <th class="coords">E</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="coords"><label for="highA"></label><input class="coords" id="highA"></td>
+                            <td class="coords"><label for="highB"></label><input class="coords" id="highB"></td>
+                            <td class="coords"><label for="highC"></label><input class="coords" id="highC"></td>
+                            <td class="coords"><label for="highD"></label><input class="coords" id="highD"></td>
+                            <td class="coords"><label for="highE"></label><input class="coords" id="highE"></td>
+                        </tr>
+                        <tr>
+                            <td class="coords"><label for="lowA"></label><input class="coords" id="lowA"></td>
+                            <td class="coords"><label for="lowB"></label><input class="coords" id="lowB"></td>
+                            <td class="coords"><label for="lowC"></label><input class="coords" id="lowC"></td>
+                            <td class="coords"><label for="lowD"></label><input class="coords" id="lowD"></td>
+                            <td class="coords"><label for="lowE"></label><input class="coords" id="lowE"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div><b>High Function</b>&nbsp;<button onclick='showHigh()' >Show</button>&nbsp;<span id="solutionHigh"></span></div>
+            <div><b>Low Function</b>&nbsp;<button onclick='showLow()' >Show</button>&nbsp;<span id="solutionLow"></span></div>
+        </div>
+    </div>
+    <div style="float:none"><span><b>Function for use in NodeRed</b>&nbsp;<img title="Copy to clipboard" alt='Copy to clipboard' src='images/copy-to-clipboard-icon.jpg' onclick='copyToClip()' style='width: 25px' />&nbsp;<img title="Parse Function" alt='Parse Function' src='images/analyseClipboard.png' onclick='analyse()' style='width: 25px' /></span><br />
+        <textarea id="function" rows="23" cols="130" title="function for NodRed"></textarea><br />
+    </div>
+</body>
+<script>
+    setupInputs(0, 100, -100, 100);
+    buildChart(0, 100, -100, 100);
+</script>
+</html>

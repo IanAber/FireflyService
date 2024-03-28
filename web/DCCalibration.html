@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="/css/fireflyio.css">
     <script type="text/ecmascript" src="/scripts/jquery-3.6.0.min.js"></script>
     <script type="text/ecmascript" src="/scripts/jquery-ui.js"></script>
+    <script type="text/ecmascript" src="scripts/utils.js"></script>
     <style>
       .saveButton {
         background-color:#44c767;
@@ -67,10 +68,13 @@
       }
     </script>
   </head>
-  <body>
-    <div class="header">
-      <h1>Firefly DC Calibration - <!--Name--><img class="logo" src="/images/logo.png" alt="ElektrikGreen Logo"/></h1>
-    </div>
+  <body onload="PopulateTitle()">
+    <header class="header">
+      <h1>
+        <span class="system" id="system">Loading...</span>
+        <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+      </h1>
+    </header>
     <div>
       <div>
         <h3>Enter the measured voltage or current into the appropriate box and click the save button to set the calibration value</h3>

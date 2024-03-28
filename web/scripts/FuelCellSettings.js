@@ -48,23 +48,23 @@ function HighBattDown(step) {
     SendBattHighToFuelCell(hb.val());
 }
 
-function LowBattUp() {
+function LowBattUp(step) {
     let lb = $("#LowBattDemand");
-    val = parseFloat(lb.val());
-    if (val >= 70) {
-        return;
+    val = parseFloat(lb.val()) + step;
+    if (val >= 60) {
+        val = 60;
     }
-    lb.val((val + 0.1).toFixed(1));
+    lb.val((val).toFixed(1));
     SendBattLowToFuelCell(lb.val());
 }
 
-function LowBattDown() {
+function LowBattDown(step) {
     let lb = $("#LowBattDemand");
-    val = parseFloat(lb.val());
-    if (val <= 35) {
-        return;
+    val = parseFloat(lb.val()) - step;
+    if (val <= 30) {
+        val = 30;
     }
-    lb.val((val - 0.1).toFixed(1));
+    lb.val((val).toFixed(1));
     SendBattLowToFuelCell(lb.val());
 }
 
@@ -122,6 +122,20 @@ function ClearFaultClick() {
     } else {
         alert("The fuel cell system must be in Standby to clear faults.");
     }
+}
+
+function HeaterClick() {
+    let btn = $("#Heater");
+    let onOff = btn.hasClass("swOn");
+    btn.addClass("depressed");
+    let url = "/setFuelCell/TurnOnHeater";
+    if (onOff) {
+        url = "/setFuelCell/TurnOffHeater"
+    }
+    $.ajax({
+        method : "PUT",
+        url: url
+    });
 }
 
 function ExhaustClick() {
@@ -222,16 +236,6 @@ function RegisterWebSocket() {
                 sw.removeClass("swOn");
             }
 
-            let onOff = $("#SwitchOnOff");
-            onOff.removeClass("depressed");
-            if (jsonData.Start) {
-                onOff.addClass("swOn");
-                onOff.removeClass("swOff");
-            } else {
-                onOff.addClass("swOff");
-                onOff.removeClass("swOn");
-            }
-
             let en = $("#Enable");
             en.removeClass("depressed");
             if (jsonData.Enable) {
@@ -247,6 +251,16 @@ function RegisterWebSocket() {
                 cf.removeClass("depressed");
             }
 
+            let htr = $("#Heater");
+            htr.removeClass("depressed")
+            if (!jsonData.HeaterOn) {
+                htr.addClass("swOff");
+                htr.removeClass("swOn");
+            } else {
+                htr.addClass("swOn");
+                htr.removeClass("swOff");
+            }
+
             highBattDemand = $("#HighBattDemand");
             if (!highBattDemand.is(":focus")) {
                 highBattDemand.val(jsonData.BMSTargetHigh.toFixed(1));
@@ -260,9 +274,66 @@ function RegisterWebSocket() {
                 powerDemand.val(jsonData.BMSTargetPower.toFixed(1));
             }
             $("#FCStatus").text(jsonData.RunStatus);
+
+            let onOff = $("#SwitchOnOff");
+            let on = false;
+            let onOffBtnEnable = true;
+
+            switch (jsonData.RunStatus) {
+                case "Standby" :
+                    on = false;
+                    onOffBtnEnable = true;
+                    break;
+                case "Hydrogen leak check" :
+                    on = true;
+                    onOffBtnEnable = false;
+                    break;
+                case "Hydrogen intake" :
+                    on = true;
+                    onOffBtnEnable = false;
+                    break;
+                case "Start" :
+                    on = true;
+                    onOffBtnEnable = true;
+                    break;
+                case "AirPurge" :
+                    on = false;
+                    onOffBtnEnable = false;
+                    break;
+                case "manual" :
+                    on = false;
+                    onOffBtnEnable = false;
+                    break;
+                case "emergency stop" :
+                    on = false;
+                    onOffBtnEnable = false;
+                    break;
+                case "fault" :
+                    on = false;
+                    onOffBtnEnable = false;
+                    break;
+                case "shutdown" :
+                    on = false;
+                    onOffBtnEnable = false;
+                    break;
+                default :
+            }
+            onOff.removeClass("depressed");
+            if (on) {
+                onOff.addClass("swOn");
+                onOff.removeClass("swOff");
+            } else {
+                onOff.addClass("swOff");
+                onOff.removeClass("swOn");
+            }
+
+            if (onOffBtnEnable) {
+                onOff.prop("disabled", false);
+            } else {
+                onOff.prop("disabled", true);
+            }
             $("#FCDCOutputStatus").text(jsonData.DCOutputStatus);
             UpdateGauges(jsonData);
-
 
         } catch (e) {
             alert(e);
@@ -306,44 +377,67 @@ function UpdateGauges(jsonData) {
     CurrentsNewVals = [jsonData.DCInAmps, jsonData.DCOutAmps];
     Currents = $("#fcCurrent");
     CurrentsVals = Currents.val();
-    if ((CurrentsVals[0] !== CurrentsNewVals[0]) || (CurrentsVals[1] !== CurrentsNewVals[1]))
+    if ((CurrentsVals[0] !== CurrentsNewVals[0]) || (CurrentsVals[1] !== CurrentsNewVals[1])) {
         Currents.val(CurrentsNewVals);
-
-    if (jsonData.InsulationResistance === 65535) {
-        $("#InsulationDiv").hide();
-    } else {
-        $('#fcInsulation').val(jsonData.InsulationResistance);
-        $('#fcInsulationStatus').text(jsonData.InsulationStatus);
-        $("#fcInsulationFault").text(jsonData.InsulationFault);
     }
+
+    PowersNewVals = [jsonData.BMSTargetPower, jsonData.BMSCurrentPower];
+    Powers = $("#fcPower");
+    PowersVals = Powers.val();
+    if ((PowersVals[0] !== PowersNewVals[0]) || (PowersVals[1] !== PowersNewVals[1])) {
+        Powers.val(PowersNewVals);
+    }
+
     $("#fcStackPower").val(jsonData.StackPower);
     $("#fcStackVolts").val(jsonData.StackVolts);
     $("#fcStackCurrent").val(jsonData.StackCurrent);
     $("#fcWaterPumpSpeed").val(jsonData.WaterPumpSpeed);
     $("#fcCoolingFanSpeed").val(jsonData.CoolingFanSpeed);
-    var alarmText;
-    let alarmDiv = $("#fcAlarms");
-    if (jsonData.Alarms.length > 0) {
-        alarmText = '<span class="alarm">';
-        alarmText += jsonData.Alarms.join('</span><br /><span class="alarm">')
-        alarmText += '</span>'
-    } else {
-        alarmText = "";
-    }
-    if (jsonData.DCOutputStatus === "fault") {
-        alarmText += '<span class="alarm">' + jsonData.DCOutputFault + '</span><br />'
-    }
-    if (alarmText !== "") {
-        alarmDiv.html(alarmText);
-        alarmDiv.show();
-    } else {
-        alarmDiv.hide();
+
+    try {
+        showFuelCellAlarms(jsonData, $("#fcAlarms"));
+    } catch(e) {
+        console.log(e);
     }
 }
 
 function setUpFuelCellGauges() {
+    let power = $('#fcPower');
+    let size = smallest(power.width(), power.height());
+    power.jqxBarGauge({
+        width: size,
+        height: size,
+        values: [0.0, 0.0],
+        min: 0,
+        max: 12,
+        animationDuration: 0,
+        startAngle: 265,
+        endAngle: 275,
+        title:	{
+            text: 'Power',
+            font: { size: 12, color: 'black', weight: 'bold', family:"Segoi-UI"},
+            margin: { top: 0, bottom: 2, left: 0, right: 0},
+            verticalAlignment: 'bottom'
+        },
+        labels: {
+            font: {size: 8,},
+            precision: 1,
+        },
+        colorScheme: 'customColors',
+        customColorScheme: { name: 'customColors', colors: ['#000066', '#006600'] },
+        tooltip: {visible: true,
+            precision: 1,
+            formatFunction: function (value, index){
+                switch(index)
+                {
+                    case 0 : return("Setpoint = " + value + 'kW');
+                    default : return ("Actual = " + value + 'kW');
+                }
+            }}
+    });
+
     let pressures = $("#fcPressures");
-    let size = smallest(pressures.width(), pressures.height());
+    size = smallest(pressures.width(), pressures.height());
     pressures.jqxBarGauge({
         width: size,
         height: size,
@@ -477,27 +571,6 @@ function setUpFuelCellGauges() {
                     default : return ("Out = " + value + 'A');
                 }
             }}
-    });
-    insulation = $('#fcInsulation');
-    size = smallest(insulation.width(), insulation.height());
-    insulation.jqxGauge({
-        height: size,
-        width: size,
-        radius: (size / 2) - 25,
-        ticksMinor: {interval: 50, size: '5%'},
-        ticksMajor: {interval: 250,size: '9%'},
-        labels: {interval:250},
-        min: 0,
-        max: 1000,
-        value: 0,
-        ranges: [
-            {startValue: 0, endValue: 100, style: {fill: 'RED', stroke: 'RED'}, startWidth: 9, endWidth: 7},
-            {startValue: 100, endValue: 500, style: {fill: 'ORANGE', stroke: 'ORANGE'}, startWidth: 7, endWidth: 5},
-            {startValue: 500, endValue: 5000, style: {fill: 'GREEN', stroke: 'GREEN'}, startWidth: 5, endWidth: 2}
-        ],
-        animationDuration: 500,
-        cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
-        caption: {value: 'Insulation', position: 'bottom', offset: [0, 10], visible: true},
     });
     stackPower = $('#fcStackPower');
     size = smallest(stackPower.width(), stackPower.height());

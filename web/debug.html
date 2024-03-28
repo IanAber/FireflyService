@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-<!--    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-    <meta http-equiv="Pragma" content="no-cache"/>
-    <meta http-equiv="Expires" content="0"/> -->
-    <title>ElektrikGreen FFIO Debug Enable</title>
-</head>
-<body>
-  <h1>Debugging Output Control</h1>
-  <p>Output to the log file at /var/log/FireflyIO can be controlled here to add extra output when chasing bugs.<br />
-    You can monitor this file from a terminal window by running the command tail /var/log/FireflyIO -F</p>
-  <ul>
-      <li><a href="/debug/on">Turn debug output on</a></li>
-      <li><a href="/debug/off">Turn debug output off (Error messages are still logged)</a></li>
-      <li><a href="/logCalls/on">Turn on logging for all web calls</a></li>
-      <li><a href="/logCalls/off">Turn off web call logging</a></li>
-  </ul>
-</body>
+    <head>
+        <meta charset="UTF-8">
+    <!--    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+        <meta http-equiv="Pragma" content="no-cache"/>
+        <meta http-equiv="Expires" content="0"/> -->
+        <title>ElektrikGreen FFIO Debug Enable</title>
+        <link rel="stylesheet" type="text/css" href="/css/fireflyio.css">
+        <script type="text/ecmascript" src="/scripts/jquery-3.6.0.min.js"></script>
+        <script type="text/ecmascript" src="/scripts/jquery-ui.js"></script>
+        <script type="text/ecmascript" src="/scripts/utils.js"></script>
+    </head>
+    <body onload="PopulateTitle()">
+        <header class="header">
+            <h1>
+                <span class="system" id="system">Loading...</span>
+                <img id="logo" class="logo" src="/images/logo.png" alt="ElektrikGreen Logo"/>
+            </h1>
+        </header>
+        <div>
+            <h1>Debugging Output Control</h1>
+            <p>Output to the log file at /var/log/FireflyIO can be controlled here to add extra output when chasing bugs.<br />
+            You can monitor this file from a terminal window by running the command tail /var/log/FireflyIO -F</p>
+            <ul>
+                <li><a href="/debug/on">Turn debug output on</a></li>
+                <li><a href="/debug/off">Turn debug output off (Error messages are still logged)</a></li>
+                <li><a href="/logCalls/on">Turn on logging for all web calls</a></li>
+                <li><a href="/logCalls/off">Turn off web call logging</a></li>
+            </ul>
+        </div>
+    </body>
 </html>

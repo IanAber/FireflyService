@@ -14,7 +14,8 @@ import (
 	"time"
 )
 
-/**********************************************************
+/*
+*********************************************************
 CAN bus must be enabled before this service can be started
 https://www.pragmaticlinux.com/2021/07/automatically-bring-up-a-socketcan-interface-on-boot/
 */
@@ -34,18 +35,21 @@ var (
 	ACMeasurements        [4]ACMeasurementsType
 	DCMeasurements        [4]DCMeasurementsType
 	Electrolysers         ElectrolysersType
+	PowerControl          []*PowerControlType
 	jsonSettings          string
 	currentSettings       *SettingsType
 	webFiles              string
 	pDB                   *sql.DB
 	ElectrolyserStatement *sql.Stmt
+	DryerStatement        *sql.Stmt
 	ACStatement           *sql.Stmt
 	DCStatement           *sql.Stmt
+	PowerStatement        *sql.Stmt
 	FuelCell              PANFuelCell
 	logFile               *os.File
 	logFileName           string
-	callLogging           bool = false
-	debugOutput           bool = false
+	callLogging           = false
+	debugOutput           = false
 	store                 *sessions.CookieStore
 )
 
@@ -72,7 +76,15 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 		pDB = nil
 		return nil, nil, err
 	}
-	logAnalog, err := db.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, inputs, outputs, relays) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+	PowerStatement, err = db.Prepare(InsertPowerSQL)
+	if err != nil {
+		log.Println(err)
+		if closeErr := db.Close(); closeErr != nil {
+			log.Println(closeErr)
+		}
+		return nil, nil, err
+	}
+	logAnalog, err := db.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, temperature, inputs, outputs, relays) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		log.Println(err)
 		if closeErr := db.Close(); closeErr != nil {
@@ -81,9 +93,9 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 		return nil, nil, err
 	}
 	const fuelCellLogStatement = `INSERT INTO firefly.PANFuelCell (
-		StackCurrent, StackVoltage, CoolantInTemp, CoolantOutTemp, OutputVoltage,
-		OutputCurrent, CoolantFanSpeed, CoolantPumpSpeed, CoolantPumpVolts, CoolantPumpAmps,
-		InsulationResistance, HydrogenPressure, AirPressure, CoolantPressure, AirinletTemp,
+		StackCurrent, StackVoltage, OutputVoltage, OutputCurrent,
+        CoolantInTemp, CoolantOutTemp, CoolantPressure, CoolantFanSpeed, CoolantPumpSpeed, CoolantPumpVolts, CoolantPumpAmps,
+		InsulationResistance, HydrogenPressure, AirPressure, AirinletTemp,
 		AmbientTemp,  AirFlow, HydrogenConcentration, DCDCTemp, DCDCInVolts,
 		DCDCOutVolts, DCDCInAmps, DCDCOutAmps, MinCellVolts, MaxCellVolts,
 		AvgCellVolts, IdxMaxCell, IdxMinCell, RunStage, FaultLevel, 
@@ -93,7 +105,8 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 		Cell15Volts	, Cell16Volts	, Cell17Volts	, Cell18Volts	, Cell19Volts,
 		Cell20Volts	, Cell21Volts	, Cell22Volts	, Cell23Volts	, Cell24Volts,
 		Cell25Volts	, Cell26Volts	, Cell27Volts	, Cell28Volts	, Cell29Volts,
-		Cell30Volts	, Cell31Volts	, Alarms		, PowerRequested, MaxBattVolts, MinBattVolts, PowerModeState)
+		Cell30Volts	, Cell31Volts	, Alarms		, PowerRequested, PowerDelivered,
+        MaxBattVolts, MinBattVolts, PowerModeState)
         VALUES (
 			?,?,?,?,?,
 			?,?,?,?,?,
@@ -107,7 +120,8 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 			?,?,?,?,?,
 			?,?,?,?,?,
 			?,?,?,?,?,
-			?,?,?,?,?,?,?)`
+			?,?,?,?,?,
+            ?,?,?)`
 
 	if pStmt, err := db.Prepare(fuelCellLogStatement); err != nil {
 		log.Println("Failed to prepare the fuel cell log statement -", err)
@@ -116,7 +130,11 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 		dbRecord.stmt = pStmt
 	}
 
-	ElectrolyserStatement, err = db.Prepare(`INSERT INTO firefly.Electrolyser (name, flow, volts, amps, temperature, errors, waterPressure, rate) VALUES(?, ?, ?, ?, ?, ?, ?, ?);`)
+	ElectrolyserStatement, err = db.Prepare(ElectrolyserInsertStatement)
+	if err != nil {
+		return logAnalog, nil, err
+	}
+	DryerStatement, err = db.Prepare(DryerInsertStatement)
 	if err != nil {
 		return logAnalog, nil, err
 	}
@@ -199,9 +217,7 @@ func init() {
 	go setUpLocalWebSocket()
 }
 
-/**
-ClientLoop ticks every second and logs values to the database. It also broadcasts the values to any registered web socket clients.
-*/
+// ClientLoop ticks every second and logs values to the database. It also broadcasts the values to any registered web socket clients.
 func ClientLoop() {
 	// Set up the sync to send data to waiting web socket clients every second
 	broadcastTime := time.NewTicker(time.Second)
@@ -227,8 +243,8 @@ func ClientLoop() {
 					canBus = ConnectCANBus()
 					FuelCell.bus = canBus
 				}
-				// Get the full staatus
-				if bytes, err := getJsonStatus(); err != nil {
+				// Get the full status
+				if bytes, err := getJsonStatus(false); err != nil {
 					log.Print("Error marshalling the full data - ", err)
 				} else {
 					select {
@@ -310,7 +326,7 @@ func DatabaseLogger() {
 				rawTemp, cpuTemp := AnalogInputs.GetCPUTemperature()
 				if _, err := logAnalog.Exec(AnalogInputs.GetRawInput(0), AnalogInputs.GetRawInput(1), AnalogInputs.GetRawInput(2), AnalogInputs.GetRawInput(3),
 					AnalogInputs.GetRawInput(4), AnalogInputs.GetRawInput(5), AnalogInputs.GetRawInput(6), AnalogInputs.GetRawInput(7),
-					AnalogInputs.GetVREF(), cpuTemp, rawTemp,
+					AnalogInputs.GetVREF(), cpuTemp, rawTemp, AnalogInputs.GetTemperature(),
 					Inputs.GetAllInputs(), Outputs.GetAllOutputs(), Relays.GetAllRelays()); err != nil {
 					log.Println(err)
 					if closeErr := pDB.Close(); closeErr != nil {
@@ -349,6 +365,9 @@ func DatabaseLogger() {
 					pDB = nil
 					DCStatement = nil
 				}
+				for _, pc := range PowerControl {
+					pc.logData(PowerStatement)
+				}
 			} else {
 				log.Println("Database is not connected")
 			}
@@ -369,6 +388,8 @@ func DatabaseLogger() {
 					WaterDumpHoldoff = time.Now().Add(time.Minute * 30)
 				}
 			}
+
+			FuelCell.checkOffLine()
 		}
 	} // Log data to the database
 }
@@ -402,27 +423,66 @@ func CANHeartbeat() {
 	}
 }
 
-/**
-ElectrolyserLoop reads the electrolysers every two seconds when they are powered on
-and writes the data collected tot he database.
-*/
+// ElectrolyserLoop reads the electrolysers every two seconds when they are powered on
+//
+//	and writes the data collected to the database.
 func ElectrolyserLoop() {
 	electrolyserHeartbeat := time.NewTicker(time.Second * 2)
 	for {
 		select {
 		case <-electrolyserHeartbeat.C:
 			{
-				for _, el := range Electrolysers.Arr {
-					// Is this electrolyser switched on?
-					if el.IsSwitchedOn() {
-						// We must have a valid IP address
-						if !el.status.IP.Equal(net.IPv4zero) {
-							// Get the values for this electrolyser
-							el.ReadValues()
-							// Write the data to the database
-							if _, err := ElectrolyserStatement.Exec(el.status.Name, el.status.H2Flow, el.status.StackVoltage, el.status.StackCurrent, el.status.ElectrolyteTemp, strings.Join(el.GetErrors(), "\r\n"), el.status.WaterPressure, el.status.CurrentProductionRate); err != nil {
-								log.Println(err)
+				if !currentSettings.acquiringElectrolysers {
+					for _, el := range Electrolysers.Arr {
+						// Is this electrolyser switched on?
+						if el.IsSwitchedOn() {
+							// We must have a valid IP address
+							if !el.status.IP.Equal(net.IPv4zero) {
+								// Get the values for this electrolyser
+								if debugOutput {
+									log.Println("polling electrolyser ", el.GetIPString())
+								}
+								if err := el.ReadValues(); err != nil {
+									log.Print(err)
+								} else {
+									// Write the data to the database
+									if _, err := ElectrolyserStatement.Exec(el.status.Name,
+										el.status.H2Flow,
+										el.status.StackVoltage,
+										el.status.StackCurrent,
+										el.status.ElectrolyteTemp,
+										el.GetErrorText(),
+										el.GetWarningText(),
+										el.status.WaterPressure,
+										el.status.CurrentProductionRate); err != nil {
+
+										log.Println(err)
+									}
+									if el.hasDryer {
+										if _, err := DryerStatement.Exec(el.GetDryerTemp(0),
+											el.GetDryerTemp(1),
+											el.GetDryerTemp(2),
+											el.GetDryerTemp(3),
+											el.status.Dryer.InputPressure,
+											el.status.Dryer.OutputPressure,
+											el.GetDryerErrorText(),
+											el.GetDryerWarningText()); err != nil {
+
+											log.Println(err)
+										}
+									}
+								}
+							} else {
+								log.Println("electrolyser has no ip address")
+								if !el.CheckConnected() {
+									log.Println("cannot find electrolyser....")
+								} else {
+									log.Println("Connected")
+								}
 							}
+						} else {
+							el.status.ClearErrors()
+							el.status.ClearWarnings()
 						}
 					}
 				}
@@ -431,9 +491,7 @@ func ElectrolyserLoop() {
 	}
 }
 
-/**
-ElectrolyserPumpManagement controls the pump relay.
-*/
+// ElectrolyserPumpManagement controls the pump relay.
 func ElectrolyserPumpManagement() {
 	pumpTicker := time.NewTicker(time.Second * 5)
 	for {
@@ -461,10 +519,9 @@ func ElectrolyserPumpManagement() {
 	}
 }
 
-/**
-LeakDetection sets up a timer to check the hydrogen sensor and conductivity every second.
-If five consecutive readings are higher than the threshold the electrolysers are powered down.
-*/
+// LeakDetection sets up a timer to check the hydrogen sensor and conductivity every second.
+//
+//	If five consecutive readings are higher than the threshold the electrolysers are powered down.
 func LeakDetection() {
 	leakTimer := time.NewTicker(time.Second)
 	alarmCount := 0
@@ -524,7 +581,7 @@ func DatabaseMaintenance() {
 	Cell10Volts, Cell11Volts, Cell12Volts, Cell13Volts, Cell14Volts, Cell15Volts, Cell16Volts, Cell17Volts, Cell18Volts, Cell19Volts,
 	Cell20Volts, Cell21Volts, Cell22Volts, Cell23Volts, Cell24Volts, Cell25Volts, Cell26Volts, Cell27Volts, Cell28Volts, Cell29Volts,
 	Cell30Volts, Cell31Volts,
-	Alarms, PowerRequested)
+	Alarms, PowerRequested, PowerDelivered)
 SELECT
 	avg(StackCurrent), avg(StackVoltage), avg(CoolantInTemp), avg(CoolantOutTemp), round(min(logged)),
 	avg(OutputVoltage), avg(OutputCurrent), avg(CoolantFanSpeed), avg(CoolantPumpSpeed), avg(CoolantPumpVolts), avg(CoolantPumpAmps),
@@ -541,11 +598,65 @@ SELECT
 	avg(Cell20Volts), avg(Cell21Volts), avg(Cell22Volts), avg(Cell23Volts), avg(Cell24Volts),
 	avg(Cell25Volts), avg(Cell26Volts), avg(Cell27Volts), avg(Cell28Volts), avg(Cell29Volts),
 	avg(Cell30Volts), avg(Cell31Volts),
-	min(Alarms), avg(PowerRequested)
+	min(Alarms), avg(PowerRequested), avg(PowerDelivered)
    FROM firefly.PANFuelCell where logged < DATE(DATE_ADD( now(), interval -1 month))
-   group by UNIX_TIMESTAMP(logged) DIV 60
-`
+   group by UNIX_TIMESTAMP(logged) DIV 60`
 	const FuelCellDataCleanupStatement = `delete FROM firefly.PANFuelCell where logged < DATE(DATE_ADD( now(), interval -1 month))`
+
+	const IOValuesArchiveStatement = `INSERT INTO firefly.IOValues_Archive (logged, a0, a1, a2, a3, a4, a5, a6, a7, inputs, outputs, relays, vref, cpuTemp, rawCpuTemp, temperature)
+SELECT min(logged), avg(a0), avg(a1), avg(a2), avg(a3), avg(a4), avg(a5), avg(a6), avg(a7), 
+       min(inputs), min(outputs), min(relays), avg(vref), avg(cpuTemp), avg(rawCpuTemp), avg(temperature)
+      FROM firefly.IOValues
+      WHERE logged < DATE(DATE_ADD( now(), interval -1 month))
+      GROUP BY UNIX_TIMESTAMP(logged) DIV 60`
+
+	const IOValuesCleanupStatement = `DELETE FROM IOValues WHERE logged < DATE(DATE_ADD( now(), interval -1 month))`
+
+	const ElectrolyserArchiveStatement = `INSERT INTO firefly.Electrolyser_Archive (logged, name, flow, volts, amps, temperature, errors, waterPressure, rate)
+SELECT min(logged), min(name), avg(flow), avg(volts), avg(amps), avg(temperature), min(errors), avg(waterPressure), avg(rate)
+  FROM firefly.Electrolyser
+ WHERE logged < DATE(DATE_ADD( now(), interval -1 month))
+ GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
+
+	const ElectrolyserCleanupStatement = `DELETE FROM Electrolyser WHERE logged < DATE(DATE_ADD( now(), interval -1 month))`
+
+	const DryerArchiveStatement = `INSERT INTO firefly.Dryer (logged, temp1, temp2, temp3, temp4, inputPressure, outputPressure, warnings, errors)
+SELECT min(logged), avg(temp1), avg(temp2), avg(temp3), avg(temp4), avg(inputPressure), avg(outputPressure), max(warnings), max(errors)
+  FROM firefly.Dryer
+WHERE logged < DATE(DATE_ADD( now(), interval -1 month))
+ GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
+
+	const DryerCleanupStatement = `DELETE FROM Dryer WHERE logged < DATE(DATE_ADD( now(), interval -1 month))`
+
+	const ACValuesArchiveStatement = `INSERT INTO firefly.ACValues_Archive (logged, A_volts, A_amps, A_watts, A_hertz, A_powerFactor
+			, B_volts, B_amps, B_watts, B_hertz, B_powerFactor
+			, C_volts, C_amps, C_watts, C_hertz, C_powerFactor
+			, D_volts, D_amps, D_watts, D_hertz, D_powerFactor)
+       SELECT min(logged), avg(A_volts), avg(A_amps), avg(A_watts), avg(A_hertz), avg(A_powerFactor), 
+        avg(B_volts), avg(B_amps), avg(B_watts), avg(B_hertz), avg(B_powerFactor), 
+        avg(C_volts), avg(C_amps), avg(C_watts), avg(C_hertz), avg(C_powerFactor), 
+        avg(D_volts), avg(D_amps), avg(D_watts), avg(D_hertz), avg(D_powerFactor)
+  FROM firefly.ACValues
+ WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
+ GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
+
+	const ACValuesCleanupStatement = `DELETE FROM ACValues WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))`
+
+	const DCValuesArchiveStatement = `INSERT INTO firefly.DCValues_Archive (logged, A_volts, A_amps, B_volts, B_amps, C_volts, C_amps, D_volts, D_amps)
+SELECT min(logged), avg(A_volts), avg(A_amps), avg(B_volts), avg(B_amps), avg(C_volts), avg(C_amps), avg(D_volts), avg(D_amps)
+  FROM firefly.DCValues
+WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
+ GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
+
+	const DCValuesCleanupStatement = `DELETE FROM firefly.DCValues WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH));`
+
+	const PowerArchiveStatement = `INSERT INTO firefly.Power_Archive (logged, volts, amps, soc, frequency, solar)
+  SELECT min(logged), avg(volts), avg(amps), avg(soc), avg(frequency), avg(solar)
+    FROM firefly.Power
+WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
+ GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
+
+	const PowerCleanupStatement = `DELETE FROM firefly.Power WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH));`
 
 	maintenanceTimer := time.NewTicker(time.Hour)
 
@@ -553,6 +664,7 @@ SELECT
 		select {
 		case <-maintenanceTimer.C:
 			{
+				// Fuel Cell
 				if trans, err := pDB.Begin(); err != nil {
 					log.Print("Fuel Cell Archive transaction failed - ", err)
 				} else {
@@ -570,6 +682,139 @@ SELECT
 						} else {
 							if err := trans.Commit(); err != nil {
 								log.Print("Fuel Cell Archive transaction failed - ", err)
+							}
+						}
+					}
+
+				}
+				// IOValues
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("Fuel Cell Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(IOValuesArchiveStatement); err != nil {
+						log.Println("IO Values Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back IOValues Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(IOValuesCleanupStatement); err != nil {
+							log.Println("IOValues Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back IOValues Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("IOValues Archive transaction failed - ", err)
+							}
+						}
+					}
+				}
+				// Electrolyser
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("Electrolyser Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(ElectrolyserArchiveStatement); err != nil {
+						log.Println("Electrolyser Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back Electrolyser Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(ElectrolyserCleanupStatement); err != nil {
+							log.Println("Electrolyser Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back Electrolyser Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("Electrolyser Archive transaction failed - ", err)
+							}
+						}
+					}
+				}
+				// Dryer
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("Dryer Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(DryerArchiveStatement); err != nil {
+						log.Println("Dryer Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back Dryer Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(DryerCleanupStatement); err != nil {
+							log.Println("Dryer Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back Dryer Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("Dryer Archive transaction failed - ", err)
+							}
+						}
+					}
+				}
+				// DCValues
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("DCValues Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(DCValuesArchiveStatement); err != nil {
+						log.Println("DCValues Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back DCValues Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(DCValuesCleanupStatement); err != nil {
+							log.Println("DCValues Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back DCValues Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("DCValues Archive transaction failed - ", err)
+							}
+						}
+					}
+				}
+				// ACValues
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("ACValues Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(ACValuesArchiveStatement); err != nil {
+						log.Println("ACValues Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back ACValues Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(ACValuesCleanupStatement); err != nil {
+							log.Println("ACValues Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back ACValues Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("ACValues Archive transaction failed - ", err)
+							}
+						}
+					}
+				}
+				// Power
+				if trans, err := pDB.Begin(); err != nil {
+					log.Print("Power Archive transaction failed - ", err)
+				} else {
+					if _, err := trans.Exec(PowerArchiveStatement); err != nil {
+						log.Println("Power Archive failed - ", err)
+						if err := trans.Rollback(); err != nil {
+							log.Print("Failed to roll back Power Archive transaction - ", err)
+						}
+					} else {
+						if _, err := trans.Exec(PowerCleanupStatement); err != nil {
+							log.Println("Power Cleanup failed - ", err)
+							if err := trans.Rollback(); err != nil {
+								log.Print("Failed to roll back Power Archive transaction - ", err)
+							}
+						} else {
+							if err := trans.Commit(); err != nil {
+								log.Print("Power Archive transaction failed - ", err)
 							}
 						}
 					}

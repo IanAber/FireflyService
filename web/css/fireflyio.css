@@ -11,7 +11,14 @@ div.control {
     text-align: center;
     width: 100%;
 }
-div.header {
+div.co2 {
+    float:none;
+    text-align:center;
+    width: 100%;
+    background-color: #4b9a1f;
+    color: white;
+}
+header.header {
     background-color: black;
     color: lightcyan;
     padding: 5px;
@@ -135,6 +142,20 @@ div.SystemSettings{
     border-bottom-style: solid;
     text-align: center;
 }
+div.errors {
+    background-color: red;
+    color: white;
+}
+div.warnings {
+    background-color: orange;
+    color: blue;
+}
+div.menu {
+    float: left;
+}
+div.chart {
+    float: left;
+}
 img.logo {
     float: right;
     height: 1.5em;
@@ -148,8 +169,17 @@ h2.firefly {
     text-align:center;
     background-color: black;
 }
+h2.PowerInputs{
+    color: mediumaquamarine;
+}
 h2.AnalogueInputs{
     color: #dad55e;
+}
+h2.Relays{
+    color: #dad55e;
+}
+h2.Buttons{
+    color: #c5ddfc;
 }
 h2.DigitalInputs{
     color: antiquewhite;
@@ -182,6 +212,13 @@ h2.Error {
     color: red;
 }
 table.Relays {
+    border-color: darkslategray;
+    border-width: medium;
+    border-style: solid;
+    background-color: lightseagreen;
+    margin: auto;
+}
+table.Buttons {
     border-color: darkslategray;
     border-width: medium;
     border-style: solid;
@@ -232,6 +269,9 @@ table.Water {
 table.AnalogueInputs {
     margin: auto;
 }
+table.PowerInputs {
+    margin: auto;
+}
 
 table.digitalInputs {
     margin: auto;
@@ -273,6 +313,13 @@ table.ElectrolyserParams {
 tr.ElectrolyserParams {
 
 }
+tr.PowerHeader{
+    background-color: black;
+    color: mediumaquamarine;
+}
+tr.PowerData{
+    background-color: mediumaquamarine;
+}
 tr.AnalogueHeader{
     background-color: black;
     color: #fffa90;
@@ -288,6 +335,14 @@ th.AnalogueName{
     padding-right: 20px;
 }
 th.AnalogueData{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+th.PowerName{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+th.PowerData{
     padding-left: 20px;
     padding-right: 20px;
 }
@@ -308,6 +363,21 @@ th.DOHigh {
 }
 th.DOLow {
     background-color:red;
+    color:white;
+    padding:10px
+}
+th.ButtonOn {
+    background-color:green;
+    color:white;
+    padding:10px
+}
+th.ButtonOff {
+    background-color:red;
+    color:white;
+    padding:10px
+}
+th.ButtonChanging {
+    background-color:orange;
     color:white;
     padding:10px
 }
@@ -352,7 +422,7 @@ td.left {
 }
 td.ElectrolyserAdd{
     font-style: italic;
-    text-underline: #003eff;
+    text-decoration: underline;
 }
 td.buttonLabel {
     width:5em;
@@ -380,6 +450,13 @@ td.AnalogueName {
 td.AnalogueData {
     text-align: center;
 }
+td.PowerName {
+    text-align: right;
+    font-weight: bold;
+}
+td.PowerData {
+    text-align: center;
+}
 tr.ACHeader {
     background-color: black;
     color: greenyellow;
@@ -399,6 +476,14 @@ tr.DCData {
 }
 tr.DCError {
     background-color: paleturquoise;
+}
+tr.errors {
+    background-color:red;
+    color: white;
+}
+tr.warnings {
+    background-color: orange;
+    color:blue;
 }
 th.settings {
     background-color: blue;
@@ -553,3 +638,11 @@ span.parameter {
 
 }
 
+span.warnings {
+    background-color: orange;
+    color: blue;
+}
+span.errors {
+    background-color: red;
+    color: white;
+}

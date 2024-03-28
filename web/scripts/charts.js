@@ -10,7 +10,8 @@ var range = {from:start, to:end};
 
 function buildURL() {
     end = new Date();
-    end = new Date(end.getTime() + 60000);
+    end.setSeconds(0, 0);
+    end = new Date(end.getTime() + 60000); // add 1 minute
     start = new Date(end - document.getElementById("timeRange").value);
     return buildURLForTimes(start, end);
 }
@@ -42,14 +43,23 @@ function xAxisFormatFunction(value, _itemIndex, _series, _group) {
     return value.toLocaleTimeString();
 }
 
-function xAxisSelectorFormatFunction(value, itemIndex, series, group) {
+function xAxisFormatDateFunction(value, _itemIndex, _series, _group) {
+    return value.toLocaleDateString();
+}
+
+function xAxisFormatDateTimeFunction(value, _itemIndex, _series, _group) {
+    return value.toLocaleString();
+}
+
+function xAxisSelectorFormatFunction(value, _itemIndex, _series, _group) {
     return value.toLocaleString();
 }
 
 function setupChart(Settings) {
     // select the chartContainer DIV element and render the chart.
-    $('#ChartContainer').jqxChart(Settings);
-    $('#ChartContainer').on('rangeSelectionChanged', function(evt) {
+    let chart = $('#ChartContainer');
+    chart.jqxChart(Settings);
+    chart.on('rangeSelectionChanged', function(evt) {
         range.from = evt.args.minValue;
         range.to = evt.args.maxValue;
     })
@@ -74,20 +84,40 @@ function refresh(url) {
                         data.forEach(function (part, index) {
                             this[index].logged = new Date(part.logged * 1000);
                         }, data);
-                        end = Math.trunc($("#endAt").jqxDateTimeInput('value')); // / 1000);
-                        start = ($("#startAt").jqxDateTimeInput('value') ); /// 1000)
-                        interval = Math.round((end - start) / 30);
-                        range.min = start;
-                        range.max = end;
+
+                        let start = data[0].logged;
+                        let end = data[data.length - 1].logged;
+
+                        end.setSeconds(0);
+                        start.setSeconds(0);
 
                         let Chart = $('#ChartContainer');
                         let xAxis = Chart.jqxChart('xAxis');
                         xAxis.minValue = start;
                         xAxis.maxValue = end;
-                        Chart.jqxChart({'source':data});
+                        let scale = Math.round((end - start) / 600000) * 10;  // Scale in minutes
+                        if (scale >= 5760) {
+                            xAxis.unitInterval = Math.round(scale / 600);
+                            xAxis.baseUnit = 'hour';
+                            xAxis.formatFunction = xAxisFormatDateFunction;
+                        } else if (scale >= 1440) {
+                            xAxis.unitInterval = Math.round(scale / 600);
+                            xAxis.baseUnit = 'hour';
+                            xAxis.formatFunction = xAxisFormatDateTimeFunction;
+                        } else {
+//                            xAxis.unitInterval = Math.round(scale / 600);
+                            xAxis.unitInterval = Math.round(scale / 10);
+//                            xAxis.baseUnit = 'hour';
+                            xAxis.baseUnit = 'minute';
+                            xAxis.formatFunction = xAxisFormatFunction;
+                        }
                         Chart.jqxChart('getInstance')._selectorRange = [];
                         Chart.jqxChart('update');
+                        Chart.jqxChart({'source':data});
                         $("#waiting").hide();
+                        if (typeof postUpdate === "function") {
+                            postUpdate(data);
+                        }
                     });
             }
         })
@@ -108,7 +138,8 @@ function goBack() {
 }
 
 function getCurrent() {
-    let tr = parseInt($("#timeRange").val());
+    let TimeRange = $("#timeRange");
+    let tr = parseInt(TimeRange.val());
     if (tr === 0)  {
         $("#customDateTimes").show();
         $("#waiting").show();
@@ -117,12 +148,12 @@ function getCurrent() {
         $("#customDateTimes").show();
         $("#waiting").show();
         refresh(buildURLFocusTimes());
-        $("#timeRange").val(0);
+        TimeRange.val(0);
     } else if (tr === 2) {
         $("#customDateTimes").show();
         $("#waiting").show();
         refresh(buildURLDoubleFocusTimes());
-        $("#timeRange").val(0);
+        TimeRange.val(0);
     } else {
         $("#customDateTimes").hide();
         $("#waiting").show();

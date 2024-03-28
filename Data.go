@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/bdwilliams/go-jsonify/jsonify"
+	"log"
 	"net/http"
 	"time"
 )
 
-/**
+/*
+*
 GetTimeRange returns the start and end times passed as query parameters.
 */
 func GetTimeRange(r *http.Request) (start time.Time, end time.Time, err error) {
@@ -43,12 +45,6 @@ func GetTimeRange(r *http.Request) (start time.Time, end time.Time, err error) {
 	return
 }
 
-//type DCDCData struct {
-//	Logged float64 `json:"logged"`
-//	VOut   float64 `json:"volts"`
-//	IOut   float64 `json:"amps"`
-//}
-
 func getDatabaseRowsAsJSON(pdb *sql.DB, qry string, args ...any) ([]string, error) {
 	if pDB == nil {
 		return nil, fmt.Errorf("the database is not connected")
@@ -64,6 +60,8 @@ func SendDataAsJSON(w http.ResponseWriter, function string, sqlQry string, args 
 	if data, err := getDatabaseRowsAsJSON(pDB, sqlQry, args...); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 	} else {
-		fmt.Fprint(w, data)
+		if _, err := fmt.Fprint(w, data); err != nil {
+			log.Println(err)
+		}
 	}
 }

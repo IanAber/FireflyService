@@ -9,56 +9,68 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Updated Admin screens&#10;Added graphs for electrolysers and analog inputs plus AC and DC devices.&#10;Added logging for Fuel Cell CAN messages.&#10;Added persistent stop until Air Purge for fuel cell.">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/Install.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/UpdateFirefly.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Scripts/UpdateWeb.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/ACData.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/AnalogData.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/DCData.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/FireflyService.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FireflyService.iml" afterDir="false" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.">
+      <change afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/PowerControl.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/Charting.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/PowerData.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/images/analyseClipboard.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/images/copy-to-clipboard-icon.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/images/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/images/h2animation.gif" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/scripts/fcAlarms.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/scripts/regression.min.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/scripts/utils.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/userControl.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ACMeasurement.go" beforeDir="false" afterPath="$PROJECT_DIR$/ACMeasurement.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AnalogInputs.go" beforeDir="false" afterPath="$PROJECT_DIR$/AnalogInputs.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CANBus.go" beforeDir="false" afterPath="$PROJECT_DIR$/CANBus.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DCMeasurement.go" beforeDir="false" afterPath="$PROJECT_DIR$/DCMeasurement.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data.go" beforeDir="false" afterPath="$PROJECT_DIR$/Data.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FireflyService.service" beforeDir="false" afterPath="$PROJECT_DIR$/Scripts/FireflyService.service" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Install.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PAN Fuel Cell.go" beforeDir="false" afterPath="$PROJECT_DIR$/PAN Fuel Cell.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UpdateWeb.sh" beforeDir="false" afterPath="$PROJECT_DIR$/UpdateWeb.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSocket.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/Install.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/UpdateWeb.sh" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/web.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/distribute.sh" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/registration.go" beforeDir="false" afterPath="$PROJECT_DIR$/registration.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vendor/github.com/simonvetter/modbus/logger.go" beforeDir="false" afterPath="$PROJECT_DIR$/vendor/github.com/simonvetter/modbus/logger.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ACData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ACData.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/AnalogData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/AnalogData.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/DCCalibration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/DCCalibration.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/DCDC.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/dcdc.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/DCData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/DCData.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ElectrolyserData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ErrorPage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ErrorPage.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/FuelCellCoolant.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellCoolant.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/FuelCellPressures.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellPressures.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/FuelCellSettings.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellSettings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/StackVoltage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/StackVoltage.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/api.html" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/dcdc.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/dcdc.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/debug.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/debug.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/registration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/registration.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/ELControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/charts.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/charts.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/heartbeat.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/userRegistration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userRegistration.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,8 +85,10 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Go Application" />
         <option value="HTML File" />
         <option value="JavaScript File" />
+        <option value="Go File" />
       </list>
     </option>
   </component>
@@ -111,14 +125,18 @@
     <option name="showPreview" value="true" />
   </component>
   <component name="ProjectId" id="2W2HzmyDupXoVWQ2DXjLhnJKTnm" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
@@ -147,6 +165,8 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/web" />
+      <recent name="$PROJECT_DIR$/web/images" />
+      <recent name="$PROJECT_DIR$/web/scripts" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -201,6 +221,11 @@
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
+        <entry key="45a70471-f2c2-4ce9-89ad-2266733bcf1c">
+          <value>
+            <State />
+          </value>
+        </entry>
         <entry key="MAIN">
           <value>
             <State>
@@ -220,12 +245,21 @@
         </entry>
       </map>
     </option>
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="45a70471-f2c2-4ce9-89ad-2266733bcf1c" value="TOOL_WINDOW" />
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CODE_SMELLS_PROFILE" value="Project Default" />
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Updated Admin screens&#10;Added graphs for electrolysers and analog inputs plus AC and DC devices.&#10;Added logging for Fuel Cell CAN messages.&#10;Added persistent stop until Air Purge for fuel cell." />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated Admin screens&#10;Added graphs for electrolysers and analog inputs plus AC and DC devices.&#10;Added logging for Fuel Cell CAN messages.&#10;Added persistent stop until Air Purge for fuel cell." />
+    <MESSAGE value="Added automatic rescan if an electrylyser is lost." />
+    <MESSAGE value="Version 3&#10;Added API to gather battery and solar data&#10;Added display of new data and graphing of the data" />
+    <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
@@ -235,9 +269,19 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/default.js</url>
-          <line>161</line>
-          <properties lambdaOrdinal="-1" />
+          <line>444</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/web/scripts/fcAlarms.js</url>
+          <line>4</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/web/scripts/ELControl.js</url>
+          <line>98</line>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

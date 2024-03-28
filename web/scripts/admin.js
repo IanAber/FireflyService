@@ -17,6 +17,13 @@ function RegisterWebSocket() {
             jsonData.DigitalIn.Inputs.forEach(UpdateInput);
             jsonData.DigitalOut.Outputs.forEach(UpdateOutput);
             jsonData.Analog.Inputs.forEach(UpdateAnalog);
+            jsonData.Buttons.forEach(UpdateButton);
+            $("#temperature").html(jsonData.Analog.GasTemperature + "&deg;C");
+            if (jsonData.kgH2 > 1.0) {
+                $("#kgH2").text(jsonData.kgH2.toFixed(3) + "kg");
+            } else {
+                $("#kgH2").text((jsonData.kgH2 * 1000).toFiged(0) + "g")
+            }
             if (jsonData.ACMeasurements.length > 0) {
                 $("#ACMeasurementsDiv").show();
                 jsonData.ACMeasurements.forEach(updateAC);
@@ -37,7 +44,17 @@ function RegisterWebSocket() {
             } else {
                 $("#DCMeasurementsDiv").hide();
             }
+            let dialCount = jsonData.Electrolysers.length;
+            let gridTemplate = "";
+            fcStackPower = $("#fcStackPower");
+            StackContainer = $("#StackContainer");
+            Systems = $("#systems");
             if (jsonData.PanFuelCellStatus != null) {
+                dialCount++;
+                for (i = 0; i < dialCount; i++) {
+                    gridTemplate += " " + (100 / dialCount) + "%";
+                }
+                Systems.css("grid-template-columns: 20% 20% 20% 20% 20%")
                 $("#BMSPower").text(jsonData.PanFuelCellStatus.BMSPower);
                 $("#BMSHigh").text(jsonData.PanFuelCellStatus.BMSHigh);
                 $("#BMSLow").text(jsonData.PanFuelCellStatus.BMSLow);
@@ -47,43 +64,40 @@ function RegisterWebSocket() {
                 $("#BMSTargetLow").text(jsonData.PanFuelCellStatus.BMSTargetLow);
                 $("#FCStatus").text(jsonData.PanFuelCellStatus.RunStatus);
                 $("#FCDCOutputStatus").text(jsonData.PanFuelCellStatus.DCOutputStatus);
-                $("#fcStackPower").val(jsonData.PanFuelCellStatus.StackPower);
+                let gauge = {
+                    caption: {
+                        value: 'Stack Power ' + jsonData.PanFuelCellStatus.StackPower.toFixed(1) + ' kW'
+                    },
+                    width: "100%" //,
+//                    height: "100%"
+                };
+                fcStackPower.jqxGauge(gauge);
+
+                if ((jsonData.PanFuelCellStatus.RunStatus === 'Start') ||
+                    (jsonData.PanFuelCellStatus.RunStatus === 'Hydrogen intake') ||
+                    (jsonData.PanFuelCellStatus.RunStatus === 'AirPurge') ||
+                    (jsonData.PanFuelCellStatus.RunStatus === 'Hydrogen leak check') ||
+                    (jsonData.PanFuelCellStatus.RunStatus === 'manual')) {
+                    fcStackPower.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#00e100'}, visible: true }, width: "100%"});
+                } else {
+                    fcStackPower.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#e10000'}, visible: true }, width: "100%"});
+                }
+
+                fcStackPower.val(jsonData.PanFuelCellStatus.StackPower);
+                showFuelCellAlarms(jsonData.PanFuelCellStatus, $("#fcAlarms"));
             } else {
-                $("#fcStackPower").hide();
+                fcStackPower.hide();
+                for (i = 0; i < dialCount; i++) {
+                    gridTemplate += " " + (100 / dialCount) + "%";
+                }
+            }
+            Systems.css({"grid-template-columns": gridTemplate});
+            jsonData.Electrolysers.forEach((currentElement, index) => updateElectrolyser(currentElement, index));
+
+            if (jsonData.Power !== null) {
+                jsonData.Power.forEach(UpdatePower);
             }
 
-            jsonData.Electrolysers.forEach((currentElement, index) => updateElectrolyser(currentElement, index));
-//             jsonData.Electrolysers.forEach((currentElement, index) => {
-//                 // noinspection JSUnresolvedFunction,JSJQueryEfficiency
-//                 el = $("#el" + index);
-//                 if (el.length === 0) {
-//                     el = addElectrolyser(index, currentElement.name);
-// //                    el = $("#el" + index);
-//                     el.jqxGauge({
-//                         height: size,
-//                         width: size,
-//                         radius: (size / 2) - 25,
-//                         ticksMinor: {interval: 25, size: '5%'},
-//                         ticksMajor: {interval: 100,size: '9%'},
-//                         labels: {interval:100},
-//                         min: 0,
-//                         max: 525,
-//                         value: 0,
-//                         animationDuration: 500,
-//                         cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
-//                         caption: {value: currentElement.name + ' NL/hr', position: 'bottom', offset: [0, 10], visible: true},
-//                     });
-//
-//                 }
-//                 if (currentElement.on) {
-//                     el.attr('on', "1");
-//                     el.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#00e100'}, visible: true }});
-//                 } else {
-//                     el.attr('on', "0");
-//                     el.jqxGauge({ border: { showGradient: true, size: '15%', style: { stroke: '#e10000'}, visible: true }});
-//                 }
-//                 el.val(currentElement.h2Flow);
-//             });
         } catch (e) {
             alert(e);
         }
@@ -105,42 +119,6 @@ function conductivityDetection(alarm) {
         $("#conductivityAlarmDiv").hide();
     }
 }
-
-// const ELDIV = `<div class="centered">
-//     <div class="control" id="el{{id}}" ondblclick="openElectrolyser('{{name}}', 'el{{id}}')">
-//     </div>
-//     <div class="control" id="elControls{{id}}">
-//         <div class="control">
-//             <label class="parameters" for="elRate{{id}}">Production Rate</label><br \>
-//             <div style="margin:auto" id="elRate{{id}}"></div>
-//         </div>
-//         <div class="control" style="display: grid; grid-template-columns: 40% 20% 40%" >
-//             <div class="control">
-//                 <img id="ELPower{{id}}" class="swOff" src="images/power-off.png" alt="Enable" onclick="PowerClick({{relay}}, 'ELPower{{id}}')" />
-//                 <label for="ELPower{{id}}">Power</label></td>
-//             </div>
-//             <div class="control">
-//                 <span id="ELStatus{{id}}">Off</span>
-//             </div>
-//             <div class="control">
-//                 <img id="ELRun{{id}}" class="swOff" src="images/power-off.png" alt="Enable" onclick="RunClick({{id}}, 'ELRun{{id}}', '{{name}}')" />
-//                 <label for="ELRun{{id}}">Run</label></td>
-//             </div>
-//         </div>
-//     </div>
-// </div>`
-//
-// function addElectrolyser(id, name, relay) {
-//     sCode = ELDIV.replace(/{{id}}/g, id).replace(/{{name}}/g, name).replace(/{{relay}}/g, relay);
-//     jQuery('#systems').append(sCode);
-//     return $("#el" + id);
-// }
-//
-// function addElectrolyser(id, name) {
-//     sCode = '<div class="centered"><div id="el' + id + '" ondblclick="openElectrolyser(\'' + name + '\', event)"></div></div>\n';
-//     jQuery('#systems').append(sCode);
-//     return $("#el" + id);
-// }
 
 function openElectrolyser(name, id) {
 
@@ -166,11 +144,11 @@ function smallest(x, y) {
 
 function setupPage() {
     stackPower = $('#fcStackPower');
-    size = smallest(stackPower.width(), stackPower.height());
+//    size = smallest(stackPower.width(), stackPower.height());
     stackPower.jqxGauge({
-        height: size,
-        width: size,
-        radius: (size / 2) - 25,
+        // height: size,
+        // width: size,
+        // radius: (size / 2) - 25,
         ticksMinor: {interval: 500, size: '5%'},
         ticksMajor: {interval: 1000,size: '9%'},
         labels: {interval:5000},
@@ -179,7 +157,7 @@ function setupPage() {
         value: 0,
         animationDuration: 500,
         cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
-        caption: {value: 'Stack Power', position: 'bottom', offset: [0, 10], visible: true},
+        caption: {value: 'Stack Power 0.0 kW', position: 'bottom', offset: [0, 10], visible: true},
     });
 
     $(window).resize(function () {
@@ -192,6 +170,48 @@ function setupPage() {
     RegisterWebSocket();
 }
 
+function AddSource (source) {
+    strRow = '<tr class="PowerData" id="sourceRow%d"  ondblclick="openPowerChart"><td class="PowerName"><span id="source%d"></span></td><td class="PowerData"><span id="iBatt%d"></span></td><td class="PowerData"><span id="vBatt%d"></span></td><td class="PowerData"><span id="socBatt%d"></span></td><td class="PowerData"><span id="solar%d"></span></td><td class="PowerData"><span id="hz%d"></span></td></tr>';
+    let rows = 0;
+    let src = "#source";
+    for (; $(src).length; rows++){
+
+    }
+    strRow = strRow.replaceAll("%d", rows);
+    $("#PowerInputs tr:last").after(strRow);
+    $("#source"+rows).text(source);
+    return rows
+}
+
+function openPowerChart(event) {
+    let source = event.target.id.replace("Row","");
+    let url = 'PowerData.html?source=' + encodeURIComponent($(source).text());
+    window.open( url );
+}
+
+function findPowerRow (source) {
+    let row = 0;
+    for (;;) {
+        let src = $("#source" + row);
+        if (src.length) {
+            if (src.text() === source) {
+                return row;
+            }
+            row++;
+        } else {
+            return AddSource(source);
+        }
+    }
+}
+
+function UpdatePower(Power) {
+    idx = findPowerRow(Power.source)
+    $("#hz"+idx).text((Power.hz).toFixed(1) + "hz");
+    $("#iBatt"+idx).text((Power.amps).toFixed(2) + "A");
+    $("#vBatt"+idx).text((Power.volts).toFixed(2) + "V");
+    $("#socBatt"+idx).text((Power.soc).toFixed(2) + "%");
+    $("#solar"+idx).text((Power.solar / 1000).toFixed(3) + "kW");
+}
 
 function UpdateRelay(Relay, idx) {
     td_relay = $("#relay" + idx);
@@ -217,6 +237,25 @@ function UpdateInput(Input, idx) {
         td_input.addClass("DILow");
     }
     $("#InputText"+idx).text(Input.Name);
+}
+
+function UpdateButton(Button, idx) {
+    td_button = $("#button" + idx);
+    if (Button.Name.startsWith("Button-")) {
+        td_button.hide();
+    } else {
+        if (Button.Pressed) {
+            td_button.removeClass("ButtonOff");
+            td_button.removeClass("ButtonChanging");
+            td_button.addClass("ButtonOn");
+        } else {
+            td_button.removeClass("ButtonOn");
+            td_button.removeClass("ButtonChanging");
+            td_button.addClass("ButtonOff");
+        }
+        $("#buttonText"+idx).text(Button.Name);
+        td_button.show();
+    }
 }
 
 function UpdateOutput(Output, idx) {

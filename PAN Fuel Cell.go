@@ -19,6 +19,7 @@ const FuelCellDCDCVoltagesBySecond = `select UNIX_TIMESTAMP(logged) as logged
                        ,(DCDCOutAmps / 100) as current
 					   ,((DCDCOutVolts * DCDCOutAmps) / 1000) as power
 					   ,(PowerRequested * 100) as requestedPower
+     				   ,(PowerDelivered * 1000) as deliveredPower
 					   ,(MaxBattVolts / 10) as MaxBattVolts
 					   ,(MinBattVolts / 10) as MinBattVolts
                    from firefly.PANFuelCell
@@ -29,6 +30,7 @@ const FuelCellDCDCVoltagesByMinute = `select min(UNIX_TIMESTAMP(logged)) as logg
                        ,(avg(DCDCOutAmps) / 100) as current
 					   ,(avg(DCDCOutVolts * DCDCOutAmps) / 1000) as power
 					   ,(avg(PowerRequested) * 100) as requestedPower
+     				   ,(avg(PowerDelivered) * 1000) as deliveredPower
 					   ,(avg(MaxBattVolts) / 10) as MaxBattVolts
 					   ,(avg(MinBattVolts) / 10) as MinBattVolts
                    from firefly.PANFuelCell
@@ -147,13 +149,21 @@ const FuelCellCoolantByMinute = `select min(UNIX_TIMESTAMP(logged)) as logged
 const NUMCOMMANDREPEATS = 10 // Send Start/Stop 10 times
 
 type PanSettingsType struct {
-	TargetPower       float64 // Power output requested
-	TargetBatteryHigh float64 // High voltage target value
-	TargetBatteryLow  float64 // Low voltage target value
-	FuelCellOn        bool    // Flag to tell the unit to turn on
-	Exhaust           bool    // Flag to indicate that an Exhaust command is requested
-	PumpActive        bool    // Flag to show if the water pump is running
-	//	PumpTimer         *time.Timer // The timer to detect that no water pump messages have been received
+	TargetPower float64 // Power output requested
+	// Change to fixed values
+	//TargetBatteryHigh float64 // High voltage target value
+	//TargetBatteryLow  float64 // Low voltage target value
+	FuelCellOn bool // Flag to tell the unit to turn on
+	Exhaust    bool // Flag to indicate that an Exhaust command is requested
+	HeaterOn   bool //Flag to indicate that the PTC heater is requested
+	PumpActive bool // Flag to show if the water pump is running
+}
+
+func (t *PanSettingsType) Clear() {
+	t.Exhaust = false
+	t.HeaterOn = false
+	t.PumpActive = false
+	t.TargetPower = 0
 }
 
 var heartbeat uint16
@@ -174,13 +184,29 @@ const (
 	ExhaustOpen
 )
 
+type HeaterModeType byte
+
+const (
+	HeaterOff = iota
+	HeaterOn
+)
+
 const CanOutputControlMsg = 0x161088C1
 
 type OutputControlType struct {
 	FuelCellRunEnable RunCommandType  // Startup / Shutdown
 	PowerDemand       uint8           // kW x 10
 	ExhaustMode       ExhaustModeType // Open / Closed
+	Heater            HeaterModeType
 	repeats           uint8
+}
+
+func (t *OutputControlType) Clear() {
+	t.ExhaustMode = ExhaustClosed
+	t.FuelCellRunEnable = FCNoCommand
+	t.repeats = 0
+	t.PowerDemand = 0
+	t.Heater = 0
 }
 
 func (t *OutputControlType) GetPowerDemand() float64 {
@@ -193,13 +219,14 @@ func (t *OutputControlType) UpdateFuelCell(bus *CANBus) error {
 	frame.ID = CanOutputControlMsg
 	frame.IsExtended = true
 	frame.Length = 8
-	if t.repeats > 0 {
-		frame.Data[0] = byte(t.FuelCellRunEnable)
-	} else {
-		frame.Data[0] = 0
-	}
+	//	if t.repeats > 0 {
+	frame.Data[0] = byte(t.FuelCellRunEnable)
+	//	} else {
+	//		frame.Data[0] = 0
+	//	}
 	frame.Data[1] = t.PowerDemand
 	frame.Data[2] = byte(t.ExhaustMode)
+	frame.Data[3] = byte(t.Heater)
 	t.repeats--
 	return bus.Publish(frame)
 }
@@ -271,6 +298,13 @@ type PowerModeType struct {
 	RunStage       byte
 }
 
+func (t *PowerModeType) Clear() {
+	t.PowerModeState = PowerModeStateType(PMOff)
+	t.FaultCode = 0
+	t.FaultLevel = 0
+	t.RunStage = 0
+}
+
 func (t *PowerModeType) Load(data [8]byte) {
 	t.PowerModeState = PowerModeStateType(data[0])
 	t.FaultLevel = data[1]
@@ -292,6 +326,13 @@ type PressuresType struct {
 	H2AirPressureDiff uint16 // Hydrogen air pressure difference
 }
 
+func (t *PressuresType) Clear() {
+	t.H2AirPressureDiff = 0
+	t.H2Pressure = 0
+	t.AirPressure = 0
+	t.CoolantPressure = 0
+}
+
 func (t *PressuresType) Load(data [8]byte) {
 	t.H2Pressure = binary.LittleEndian.Uint16(data[0:2])
 	t.AirPressure = binary.LittleEndian.Uint16(data[2:4])
@@ -305,19 +346,19 @@ func (t *PressuresType) Load(data [8]byte) {
 }
 
 func (t *PressuresType) GetH2Pressure() float64 {
-	return float64(t.H2Pressure) / 10.0
+	return (float64(t.H2Pressure) / 10.0) - 50.0
 }
 
 func (t *PressuresType) GetAirPressure() float64 {
-	return float64(t.AirPressure) / 10.0
+	return (float64(t.AirPressure) / 10.0) - 50.0
 }
 
 func (t *PressuresType) GetCoolantPressure() float64 {
-	return float64(t.CoolantPressure) / 10.0
+	return (float64(t.CoolantPressure) / 10.0) - 50.0
 }
 
 func (t *PressuresType) GetH2AirPressureDiff() float64 {
-	return float64(t.H2AirPressureDiff) / 10.0
+	return (float64(t.H2AirPressureDiff) / 10.0) - 5.0
 }
 
 const CanStackCoolantMsg = 0x161088A3
@@ -327,6 +368,13 @@ type StackCoolantType struct {
 	CoolantOutTemp uint16 // Coolant temperature at the outlet of the stack
 	AirTemp        uint16 // Air temperature at the inlet of the stack
 	AmbientTemp    uint16 // Ambient temperature
+}
+
+func (t *StackCoolantType) Clear() {
+	t.AmbientTemp = 0
+	t.AirTemp = 0
+	t.CoolantInTemp = 0
+	t.CoolantOutTemp = 0
 }
 
 func (t *StackCoolantType) Load(data [8]byte) {
@@ -364,6 +412,10 @@ type AirFlowType struct {
 	Flow uint16 //Air flow Lpm * 10
 }
 
+func (t *AirFlowType) Clear() {
+	t.Flow = 0
+}
+
 func (t *AirFlowType) Load(data [8]byte) {
 	t.Flow = binary.LittleEndian.Uint16(data[4:6])
 	dbRecord.mu.Lock()
@@ -379,6 +431,10 @@ const CanAlarmsMsg = 0x161088A5
 
 type AlarmsType struct {
 	bitMap uint32
+}
+
+func (t *AlarmsType) Clear() {
+	t.bitMap = 0
 }
 
 func (al *AlarmsType) Load(data [8]byte) {
@@ -522,6 +578,12 @@ type StackOutputType struct {
 	Power   uint32 //Stack power
 }
 
+func (t *StackOutputType) Clear() {
+	t.Voltage = 0
+	t.Current = 0
+	t.Power = 0
+}
+
 func (t *StackOutputType) Load(data [8]byte) {
 	t.Voltage = binary.LittleEndian.Uint16(data[0:2])
 	t.Current = binary.LittleEndian.Uint16(data[2:4])
@@ -546,7 +608,7 @@ func (t *StackOutputType) GetPower() float64 {
 	return float64(t.Power) / 10.0
 }
 
-const CanCff1Msg = 0x8CFF1C91
+const CanCff1Msg = 0x8CFF1C90
 
 type CffMsgType struct {
 	GasConcentration uint8
@@ -554,6 +616,14 @@ type CffMsgType struct {
 	CycleCounter     uint8
 	SensorFaultCode  byte
 	LSBCheckSumq     byte
+}
+
+func (t *CffMsgType) Clear() {
+	t.LSBCheckSumq = 0
+	t.MSBSide = 0
+	t.CycleCounter = 0
+	t.GasConcentration = 0
+	t.SensorFaultCode = 0
 }
 
 func (t *CffMsgType) Load(data [8]byte) {
@@ -569,7 +639,7 @@ func (t *CffMsgType) Load(data [8]byte) {
 }
 
 func (t *CffMsgType) GetGasConcentration() int16 {
-	return (int16(t.GasConcentration) * 500) - 5500
+	return (int16(t.GasConcentration) - 10) * 500
 }
 
 const CanInsulationMsg = 0x18FEA3B2
@@ -580,6 +650,14 @@ type InsulationType struct {
 	InsulationResistance uint16
 	IsolationBattVolt    uint16
 	IsolationLife        uint8
+}
+
+func (t *InsulationType) Clear() {
+	t.InsulationStatus = 0
+	t.InsulationStatusCode = 0
+	t.InsulationResistance = 0
+	t.IsolationBattVolt = 0
+	t.IsolationLife = 0
 }
 
 func (t *InsulationType) Load(data [8]byte) {
@@ -638,7 +716,7 @@ const CanTotalStackVoltageMsg = 0x1802A7B1
 
 type StackCellsType struct {
 	StackCellVoltage           [5][32]uint16
-	TotakStackVoltage          uint16
+	TotalStackVoltage          uint16
 	StdDeviation               uint16
 	Temperature                uint16
 	StackControllerFaultStatus byte
@@ -649,6 +727,25 @@ type StackCellsType struct {
 	IndexMaxVoltsCell          uint8
 	IndexMinVoltsCell          uint8
 	loop                       uint8
+}
+
+func (t *StackCellsType) Clear() {
+	for validx, val := range t.StackCellVoltage {
+		for cell := range val {
+			t.StackCellVoltage[validx][cell] = 0
+		}
+	}
+	t.AvgCellVolts = 0
+	t.IndexMaxVoltsCell = 0
+	t.MaxCellVolts = 0
+	t.IndexMinVoltsCell = 0
+	t.LifeSignal = 0
+	t.MinCellVolts = 0
+	t.StackControllerFaultStatus = 0
+	t.StdDeviation = 0
+	t.Temperature = 0
+	t.TotalStackVoltage = 0
+	t.loop = 0
 }
 
 func (t *StackCellsType) Load(id uint32, data [8]byte) {
@@ -715,7 +812,7 @@ func (t *StackCellsType) Load(id uint32, data [8]byte) {
 			}
 		}
 	case CanTotalStackVoltageMsg:
-		t.TotakStackVoltage = binary.LittleEndian.Uint16(data[0:2])
+		t.TotalStackVoltage = binary.LittleEndian.Uint16(data[0:2])
 		t.StdDeviation = binary.LittleEndian.Uint16(data[2:4])
 		t.Temperature = binary.LittleEndian.Uint16(data[4:6])
 		t.StackControllerFaultStatus = data[6]
@@ -750,6 +847,11 @@ type ATSCoolingFanType struct {
 	Speed  uint16
 }
 
+func (t *ATSCoolingFanType) Clear() {
+	t.Speed = 0
+	t.Enable = 0
+}
+
 func (t *ATSCoolingFanType) Load(data [8]byte) {
 	t.Enable = binary.LittleEndian.Uint16(data[0:2])
 	t.Speed = binary.LittleEndian.Uint16(data[2:4])
@@ -765,6 +867,12 @@ type WaterPumpType struct {
 	Speed   uint16
 	Voltage uint8
 	Current uint8
+}
+
+func (t *WaterPumpType) Clear() {
+	t.Speed = 0
+	t.Voltage = 0
+	t.Current = 0
 }
 
 func (t *WaterPumpType) Load(data [8]byte) {
@@ -794,6 +902,13 @@ type DCDCConverterType struct {
 	InputVoltage  uint16
 	OutputCurrent uint16
 	OutputVoltage uint16
+}
+
+func (t *DCDCConverterType) Clear() {
+	t.OutputCurrent = 0
+	t.InputVoltage = 0
+	t.InputCurrent = 0
+	t.OutputVoltage = 0
 }
 
 func (t *DCDCConverterType) Load(data [8]byte) {
@@ -837,6 +952,17 @@ type DCOutputType struct {
 	InputVoltage uint8
 	InternalTest uint8
 	LIFE         uint8
+}
+
+func (t *DCOutputType) Clear() {
+	t.Temp = 0
+	t.Status = 0
+	t.FaultLevel = 0
+	t.ErrorCode = 0
+	t.OutVolltage = 0
+	t.InputVoltage = 0
+	t.InternalTest = 0
+	t.LIFE = 0
 }
 
 func (t *DCOutputType) Load(data [8]byte) {
@@ -934,6 +1060,14 @@ type SystemInfoType struct {
 	exhaustLastValue bool
 }
 
+func (t *SystemInfoType) Clear() {
+	t.Run = false
+	t.ExhaustFlag = false
+	t.Hours = 0
+	t.Mins = 0
+	t.exhaustLastValue = false
+}
+
 func (t *SystemInfoType) SetRunFlag(data byte) {
 	t.Run = data != 0
 }
@@ -958,37 +1092,75 @@ type BMSSettingsType struct {
 	CurrentPower     uint8
 }
 
+func (t *BMSSettingsType) Clear() {
+	t.BMSLow = 0
+	t.BMSHigh = 0
+	t.CurrentPower = 0
+	t.TargetPowerLevel = 0
+}
+
 func (t *BMSSettingsType) Load(data [8]byte) {
 	t.BMSHigh = binary.LittleEndian.Uint16(data[0:2])
 	t.BMSLow = binary.LittleEndian.Uint16(data[2:4])
 	t.TargetPowerLevel = data[4]
 	t.CurrentPower = data[5]
+	dbRecord.PowerDelivered = t.CurrentPower
 }
 
 type PANFuelCell struct {
-	mu            sync.Mutex
-	bus           *CANBus
-	SystemInfo    SystemInfoType
-	PowerMode     PowerModeType
-	Pressures     PressuresType
-	StackCoolant  StackCoolantType
-	AirFlow       AirFlowType
-	Alarms        AlarmsType
-	StackOutput   StackOutputType
-	CffMsg        CffMsgType
-	Insulation    InsulationType
-	StackCells    StackCellsType
-	ATSCoolingFan ATSCoolingFanType
-	WaterPump     WaterPumpType
-	DCDCConverter DCDCConverterType
-	DCOutput      DCOutputType
-	BMSSettings   BMSSettingsType
-	Control       PanSettingsType
+	mu                  sync.Mutex
+	bus                 *CANBus
+	SystemInfo          SystemInfoType
+	PowerMode           PowerModeType
+	Pressures           PressuresType
+	StackCoolant        StackCoolantType
+	AirFlow             AirFlowType
+	Alarms              AlarmsType
+	StackOutput         StackOutputType
+	CffMsg              CffMsgType
+	Insulation          InsulationType
+	StackCells          StackCellsType
+	ATSCoolingFan       ATSCoolingFanType
+	WaterPump           WaterPumpType
+	DCDCConverter       DCDCConverterType
+	DCOutput            DCOutputType
+	BMSSettings         BMSSettingsType
+	Control             PanSettingsType
+	LastMessageReceived time.Time // This is the last time a CAN message from the fuel cell was received
+}
+
+func (t *PANFuelCell) Clear() {
+	t.Alarms.Clear()
+	t.AirFlow.Clear()
+	t.ATSCoolingFan.Clear()
+	t.BMSSettings.Clear()
+	t.CffMsg.Clear()
+	t.Control.Clear()
+	t.DCDCConverter.Clear()
+	t.DCOutput.Clear()
+	t.Insulation.Clear()
+	t.PowerMode.Clear()
+	t.SystemInfo.Clear()
+	t.Pressures.Clear()
+	t.StackOutput.Clear()
+	t.StackCells.Clear()
+	t.StackCoolant.Clear()
+	t.WaterPump.Clear()
 }
 
 func (fc *PANFuelCell) init(canBus *CANBus) {
 	fc.bus = canBus
 	fc.SystemInfo.exhaustFlagTimer = time.AfterFunc(time.Second, func() { fc.SystemInfo.ExhaustFlag = false })
+}
+
+// checkOffLine periodicall checks to see if the fuel cell is sending CAN bus information and marks it OffLine if it is not.
+func (fc *PANFuelCell) checkOffLine() {
+	fc.mu.Lock()
+	defer fc.mu.Unlock()
+
+	if time.Now().Sub(fc.LastMessageReceived) > time.Duration(time.Second*5) {
+		fc.Clear()
+	}
 }
 
 func (fc *PANFuelCell) getJSON() (string, error) {
@@ -1016,8 +1188,8 @@ func (fc *PANFuelCell) setTargetPower(kw float64) error {
 }
 
 func (fc *PANFuelCell) setTargetBattHigh(volts float64) error {
-	if (volts >= 35) && (volts <= 70) && (volts >= fc.Control.TargetBatteryLow) {
-		fc.Control.TargetBatteryHigh = volts
+	if (volts >= 35) && (volts <= 70) && (volts >= currentSettings.FuelCellSettings.LowBatterySetpoint) {
+		//		fc.Control.TargetBatteryHigh = volts
 		currentSettings.FuelCellSettings.HighBatterySetpoint = volts
 		dbRecord.MaxBattVolts = int16(volts * 10)
 		if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
@@ -1030,10 +1202,10 @@ func (fc *PANFuelCell) setTargetBattHigh(volts float64) error {
 
 func (fc *PANFuelCell) setTargetBattLow(volts float64) error {
 	if (volts >= 35) && (volts <= 70) {
-		fc.Control.TargetBatteryLow = volts
-		if volts > fc.Control.TargetBatteryHigh {
-			fc.Control.TargetBatteryHigh = fc.Control.TargetBatteryLow
-		}
+		//		fc.Control.TargetBatteryLow = volts
+		//		if volts > fc.Control.TargetBatteryHigh {
+		//			fc.Control.TargetBatteryHigh = fc.Control.TargetBatteryLow
+		//		}
 		currentSettings.FuelCellSettings.LowBatterySetpoint = volts
 		dbRecord.MinBattVolts = int16(volts * 10)
 		if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
@@ -1044,7 +1216,8 @@ func (fc *PANFuelCell) setTargetBattLow(volts float64) error {
 	return fmt.Errorf("valid range for battery voltage low is 35V to 70V and must be below or equal to battery voltage high. %01fV was requested", volts)
 }
 
-/**
+/*
+*
 start sends the start command (1) NUMCOMMANDREPEATS times
 */
 func (fc *PANFuelCell) start() {
@@ -1066,7 +1239,8 @@ func (fc *PANFuelCell) start() {
 	log.Println("Start the fuel cell")
 }
 
-/**
+/*
+*
 start sends the stop command (2) NUMCOMMANDREPEATS times
 */
 func (fc *PANFuelCell) stop() {
@@ -1096,10 +1270,33 @@ func (fc *PANFuelCell) exhaustClose() {
 	if err := fc.updateOutput(); err != nil {
 		log.Println(err)
 	}
-	log.Println("Exhaust is closed")
+	if debugOutput {
+		log.Println("Exhaust is closed")
+	}
 }
 
-/**
+func (fc *PANFuelCell) startHeater() {
+	fc.Control.HeaterOn = true
+	if err := fc.updateOutput(); err != nil {
+		log.Println(err)
+	}
+	if debugOutput {
+		log.Println("Start the coolant heater")
+	}
+}
+
+func (fc *PANFuelCell) stopHeater() {
+	fc.Control.HeaterOn = false
+	if err := fc.updateOutput(); err != nil {
+		log.Println(err)
+	}
+	if debugOutput {
+		log.Println("Stop the coolant heater")
+	}
+}
+
+/*
+*
 updateSettings sends the can control messages to the fuel cell
 */
 var limits BatteryVoltageLimitsType
@@ -1108,8 +1305,10 @@ func (fc *PANFuelCell) updateSettings() error {
 
 	// Only send settings if the fuel cell is enabled
 	if currentSettings.IsFuelCellEnabled() {
-		limits.BMSHighVoltage = uint16(fc.Control.TargetBatteryHigh * 10)
-		limits.BMSLowVoltage = uint16(fc.Control.TargetBatteryLow * 10)
+		// limits.BMSHighVoltage = uint16(fc.Control.TargetBatteryHigh * 10)
+		// limits.BMSLowVoltage = uint16(fc.Control.TargetBatteryLow * 10)
+		limits.BMSHighVoltage = 700
+		limits.BMSLowVoltage = 350
 		limits.IsoFlag = currentSettings.FuelCellSettings.IgnoreIsoLow
 		if fc.bus != nil {
 			return limits.UpdateFuelCell(fc.bus)
@@ -1135,13 +1334,29 @@ func (fc *PANFuelCell) updateOutput() error {
 		} else {
 			output.ExhaustMode = ExhaustClosed
 		}
+		if fc.Control.HeaterOn {
+			output.Heater = HeaterOn
+		} else {
+			output.Heater = HeaterOff
+		}
 		if fc.bus != nil {
-			if output.repeats > 0 {
-				// If we are sending a stop command, wait for the run status goes away before counting down the repeats
-				if output.FuelCellRunEnable != FCShutDown || fc.PowerMode.PowerModeState != PMStartup {
-					output.repeats--
-				}
-			} else {
+			//if output.repeats > 0 {
+			//	// If we are sending a stop command, wait for the run status goes away before counting down the repeats
+			//	if output.FuelCellRunEnable != FCShutDown || fc.PowerMode.PowerModeState != PMStartup {
+			//		output.repeats--
+			//	}
+			//} else {
+			//	output.FuelCellRunEnable = FCNoCommand
+			//}
+
+			// if we are sending a start. Continue to send it as long as the fuel cell says it is in standby
+			if output.FuelCellRunEnable == FCStartUp && fc.PowerMode.PowerModeState != PMInit {
+				output.FuelCellRunEnable = FCNoCommand
+			}
+			if output.FuelCellRunEnable == FCShutDown &&
+				(fc.PowerMode.PowerModeState == PM_Shutdown ||
+					fc.PowerMode.PowerModeState == PMInit ||
+					fc.PowerMode.PowerModeState == PMOff) {
 				output.FuelCellRunEnable = FCNoCommand
 			}
 			return output.UpdateFuelCell(fc.bus)
@@ -1187,6 +1402,7 @@ type PanStatus struct {
 	DCOutputFaultCode    string
 	Start                bool
 	ExhaustOpen          bool
+	HeaterOn             bool
 	Enable               bool
 	InsulationResistance uint16
 	InsulationStatus     string
@@ -1215,6 +1431,7 @@ func (fc *PANFuelCell) GetStatus() *PanStatus {
 	status.RunTimeMinutes = fc.SystemInfo.Mins
 	status.ExhaustOpen = fc.SystemInfo.ExhaustFlag
 	status.RunState = fc.SystemInfo.Run
+	status.HeaterOn = fc.Control.HeaterOn
 	status.Enable = currentSettings.FuelCellSettings.Enabled
 	status.H2Pressure = (float64(fc.Pressures.H2Pressure) - 500) / 10.0
 	status.AirPressure = (float64(fc.Pressures.AirPressure) - 500) / 10.0
@@ -1237,8 +1454,10 @@ func (fc *PANFuelCell) GetStatus() *PanStatus {
 	status.BMSLow = float64(fc.BMSSettings.BMSLow) / 10.0
 	status.BMSCurrentPower = float64(fc.BMSSettings.CurrentPower)
 	status.BMSTargetPower = fc.Control.TargetPower
-	status.BMSTargetHigh = fc.Control.TargetBatteryHigh
-	status.BMSTargetLow = fc.Control.TargetBatteryLow
+	//status.BMSTargetHigh = fc.Control.TargetBatteryHigh
+	//status.BMSTargetLow = fc.Control.TargetBatteryLow
+	status.BMSTargetHigh = currentSettings.FuelCellSettings.HighBatterySetpoint
+	status.BMSTargetLow = currentSettings.FuelCellSettings.LowBatterySetpoint
 	status.RunStatus = fc.PowerMode.PowerModeState.String()
 	status.Alarms = fc.Alarms.Text()
 	status.DCOutputStatus = fc.DCOutput.GetStatus()
@@ -1260,7 +1479,6 @@ func (fc *PANFuelCell) GetStatus() *PanStatus {
 }
 
 func (fc *PANFuelCell) GetStatusAsJSON() ([]byte, error) {
-
 	jsonBytes, err := json.MarshalIndent(fc.GetStatus(), "", "  ")
 	if err != nil {
 		return make([]byte, 0), err
@@ -1274,7 +1492,9 @@ func (fc *PANFuelCell) ClearFaults() {
 	defer fc.mu.Unlock()
 	fc.stop()
 	limits.ClearFaults = true
+	fc.Control.FuelCellOn = false
 	limits.repeats = NUMCOMMANDREPEATS
+	output.FuelCellRunEnable = FCNoCommand
 }
 
 type PANDatabaseRecordType struct {
@@ -1312,6 +1532,7 @@ type PANDatabaseRecordType struct {
 	CellVoltages          [32]int16
 	Alarms                uint32
 	PowerRequested        uint8
+	PowerDelivered        uint8
 	MaxBattVolts          int16
 	MinBattVolts          int16
 	mu                    sync.Mutex
@@ -1325,9 +1546,9 @@ func (rec *PANDatabaseRecordType) saveToDatabase() error {
 	defer rec.mu.Unlock()
 
 	_, err := rec.stmt.Exec(
-		rec.StackCurrent, rec.StackVoltage, rec.CoolantPressure, rec.CoolantOutTemp, rec.DCDCOutVolts,
-		rec.DCDCOutAmps, rec.CoolantFanSpeed, rec.CoolantPumpSpeed, rec.CoolantPumpVolts, rec.CoolantPumpAmps,
-		rec.InsulationResistance, rec.HydrogenPressure, rec.AirPressure, rec.CoolantPressure, rec.AirinletTemp,
+		rec.StackCurrent, rec.StackVoltage, rec.DCDCOutVolts, rec.DCDCOutAmps,
+		rec.CoolantInlTemp, rec.CoolantOutTemp, rec.CoolantPressure, rec.CoolantFanSpeed, rec.CoolantPumpSpeed, rec.CoolantPumpVolts, rec.CoolantPumpAmps,
+		rec.InsulationResistance, rec.HydrogenPressure, rec.AirPressure, rec.AirinletTemp,
 		rec.AmbientTemp, rec.AirFlow, rec.HydrogenConcentration, rec.DCDCTemp, rec.DCDCInVolts,
 		rec.DCDCOutVolts, rec.DCDCInAmps, rec.DCDCOutAmps, rec.MinCellVolts, rec.MaxCellVolts,
 		rec.AvgCellVolts, rec.IdxMaxCell, rec.IdxMinCell, rec.RunStage, rec.FaultLevel,
@@ -1337,7 +1558,7 @@ func (rec *PANDatabaseRecordType) saveToDatabase() error {
 		rec.CellVoltages[15], rec.CellVoltages[16], rec.CellVoltages[17], rec.CellVoltages[18], rec.CellVoltages[19],
 		rec.CellVoltages[20], rec.CellVoltages[21], rec.CellVoltages[22], rec.CellVoltages[23], rec.CellVoltages[24],
 		rec.CellVoltages[25], rec.CellVoltages[26], rec.CellVoltages[27], rec.CellVoltages[28], rec.CellVoltages[29],
-		rec.CellVoltages[30], rec.CellVoltages[31], rec.Alarms, rec.PowerRequested, rec.MaxBattVolts, rec.MinBattVolts, rec.PowerModeState)
+		rec.CellVoltages[30], rec.CellVoltages[31], rec.Alarms, rec.PowerRequested, rec.PowerDelivered, rec.MaxBattVolts, rec.MinBattVolts, rec.PowerModeState)
 	if err != nil {
 		log.Println(err)
 	}

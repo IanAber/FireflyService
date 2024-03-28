@@ -15,6 +15,7 @@
         <script type="text/javascript" src="scripts/jqwidgets/jqxlistbox.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
         <script type="text/javascript" src="scripts/jqwidgets/jqxcombobox.js"></script>
+        <script type="text/ecmascript" src="scripts/utils.js"></script>
         <title>Title</title>
         <script type="text/javascript">
             function sendForm() {
@@ -61,7 +62,7 @@
                         $("#role").val(users.get(value));
                     }
                 });
-                $("#role").val(users.Get($("#names").val()));
+                $("#role").val(users.get($("#names").val()));
             })
         </script>
         <style>
@@ -73,10 +74,13 @@
             }
         </style>
     </head>
-    <body>
-        <div class="header">
-            <h1>Manage Firefly Users<img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/></h1>
-        </div>
+    <body onload="PopulateTitle()">
+        <header class="header">
+            <h1>
+                <span class="system" id="system">Loading...</span>
+                <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+            </h1>
+        </header>
         <div class="login">
             <form action="addUser" method="post" id="loginForm">
                 <!--suppress HtmlFormInputWithoutLabel -->

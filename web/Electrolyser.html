@@ -17,15 +17,15 @@
       <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
       <script type="text/javascript" src="scripts/jqwidgets/jqxbargauge.js"></script>
       <script type="text/javascript" src="scripts/jqwidgets/jqxslider.js"></script>
-      <script type="text/javascript" src="scripts/heartbeat.js"></script>
+      <script type="text/ecmascript" src="scripts/utils.js"></script>
   </head>
-  <body>
-      <div class="header">
-          <h1 class="firefly">
-              <span class="system" id="system">{{title}}</span>
-              <img class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+  <body onload="PopulateTitle()">
+      <header class="header">
+          <h1>
+              <span class="system" id="system">Loading...</span>
+              <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
           </h1>
-      </div>
+      </header>
       <div class="threegauges" >
           <div class="centered">
               <div id="production" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
@@ -56,6 +56,9 @@
                       <td class="label">Water Pressure</td><td class="parameter"><span class="parameter" id="waterPressure"></span></td>
                   </tr>
                   <tr class="parameters">
+                      <td class="label">Electrolyte Level</td><td class="parameter"><span class="parameter" id="electrolyteLevel"></span></td>
+                  </tr>
+                  <tr class="parameters">
                       <td class="label">Temperature</td><td class="parameter"><span class="parameter" id="temperature"></span></td>
                   </tr>
                   <tr class="parameters">
@@ -71,7 +74,16 @@
                       <td class="label">IP</td><td class="parameter"><span class="parameter" id="ip"></span></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="parameter" colspan="2"><span class="parameter" id="errors"></span></td>
+                      <td class="label">Stack Hrs</td><td class="parameter"><span class="parameter" id="stackHours"></span></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label">Total Production</td><td class="parameter"><span class="parameter" id="stackTotalProduction"></span></td>
+                  </tr>
+                  <tr class="warnings">
+                      <td class="warnings" colspan="2"><span class="warnings" id="warnings"></span></td>
+                  </tr>
+                  <tr class="errors">
+                      <td class="errors" colspan="2"><span class="errors" id="errors"></span></td>
                   </tr>
               </table>
           </div>
@@ -102,12 +114,19 @@
                       <td class="left"><label for="Preheat">Preheat</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Rescan" class="swOff" src="images/power-off.png" alt="Rescaan" onclick="RescanClick()" /></td>
+                      <td class="label"><img id="Rescan" class="swOff" src="images/power-off.png" alt="Rescan" onclick="RescanClick()" /></td>
                       <td class="left"><label for="Rescan">Rescan IP</label></td>
+                  </tr>
+                  <tr class="parameters">
+                      <td class="label"><img id="Reboot" class="swOff" src="images/power-off.png" alt="Reboot" onclick="RebootClick()" /></td>
+                      <td class="left"><label for="Reboot">Reboot</label></td>
                   </tr>
               </table>
           </div>
-          <div class="centered" id="DryerDiv">
+          <div class="centered" id="DryerError" style="display:none">
+              <span style="color: red; font-style: italic; font-size: large">The dryer is not responding!<br />Make sure it is powered on and that the dryer network is correctly configured.</span>
+          </div>
+          <div class="centered" id="DryerDiv" style="display:none">
               <table class="firefly">
                   <tr class="parameters">
                       <td class="label"><img id="DryerStart" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerStartClick()" /></td>
@@ -154,6 +173,6 @@
       </footer>
   </body>
   <script type="text/javascript">
-      $(document).ready(setupPage('{{name}}'));
+      $(document).ready(function() {setupPage('{{name}}');});
   </script>
 </html>

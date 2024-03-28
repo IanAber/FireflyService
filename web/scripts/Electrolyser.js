@@ -109,6 +109,11 @@ function RegisterWebSocket() {
 
     conn.onmessage = function (evt) {
         StartHeartbeat();
+
+        if ($("#electrolyserName").length < 1) {
+            let urlQueryString = new URLSearchParams(window.location.search);
+            $("#system").after('<span class="system" id="electrolyserName" > - ' + urlQueryString.get("name") + '</span>')
+        }
         try {
             jsonData = JSON.parse(evt.data);
 
@@ -117,6 +122,7 @@ function RegisterWebSocket() {
                 $("#connection").hide();
             }
 
+            $("#name").text(jsonData.name);
             production = $("#production");
             stackCurrent = $("#stackCurrent");
             stackVoltage = $("#stackVoltage");
@@ -145,12 +151,31 @@ function RegisterWebSocket() {
             if (!lockSlider) {
                 $("#rate").val(jsonData.rate.toFixed(1));
             }
+            let level = "Empty";
+            switch(jsonData.electrolyteLevel) {
+                case 1: level = "Low";
+                break;
+                case 2: level = "Medium";
+                break;
+                case 3: level = "High";
+                break;
+                case 4: level = "Too High";
+            }
+            $("#electrolyteLevel").text(level);
             $("#maxPressure").text(jsonData.maxPressure.toFixed(0));
             $("#restartPressure").text(jsonData.restartPressure.toFixed(0));
-            if (jsonData.errors.length > 0) {
-                $("#errors").text(jsonData.errors.codes.join("<br />"));
+            $("#stackHours").text((jsonData.stackTotalRunTime / 3600).toFixed(2));
+            $("#stackCycles").text(jsonData.stackStartStopCycles);
+            $("#stackTotalProduction").text(jsonData.stackTotalProduction.toFixed(2));
+            if (jsonData.errors != null) {
+                $("#errors").text(jsonData.errors.join("<br />"));
             } else {
                 $("#errors").text("");
+            }
+            if (jsonData.warnings != null) {
+                $("#warnings").text(jsonData.warnings.join("<br />"));
+            } else {
+                $("#warnings").text("");
             }
             state = $("#state");
             RunButton = $("#Run");
@@ -193,7 +218,11 @@ function RegisterWebSocket() {
             }
             if (jsonData.dryer == null) {
                 $("#DryerDiv").hide();
+                if (jsonData.dryerFailure !== "No Dryer") {
+                    $("#DryerError").show();
+                }
             } else {
+                $("#DryerError").hide();
                 $("#DryerDiv").show();
                 if (jsonData.dryer.temps[0] != null) {
                     $("#temp1").text(jsonData.dryer.temps[0].toFixed(1));
@@ -277,6 +306,16 @@ function MaintenanceClick() {
     });
 }
 
+function PreheatClick() {
+    let button = $("#Maintenance");
+    button.addClass("depressed");
+    url = "/setElectrolyser/Preheat/" + elName;
+    $.ajax({
+        method : "PUT",
+        url: url
+    }).done(function() {alert("Preheating " + elName)});
+}
+
 function BlowDownClick() {
     let button = $("#BlowDown");
     button.addClass("depressed");
@@ -323,6 +362,8 @@ function RefillClick() {
         $.ajax({
             method : "PUT",
             url: url
+        }).done(function() {
+            alert("Refill Requested");
         });
     }
     setTimeout(clearRefill, 5000);
@@ -343,27 +384,33 @@ function setRate(rate) {
     });
 }
 
-function stopDryer() {
+function DryerStopClick() {
     url = "/setDryer/Stop";
     $.ajax({
         method : "PUT",
         url: url
+    }).done(function() {
+        alert("Dryer Stop Requested");
     });
 }
 
-function startDryer() {
+function DryerStartClick() {
     url = "/setDryer/Start";
     $.ajax({
         method : "PUT",
         url: url
+    }).done(function() {
+        alert("Dryer Start Requested");
     });
 }
 
-function rebootDryer() {
+function DryerRebootClick() {
     url = "/setDryer/Reboot";
     $.ajax({
         method : "PUT",
         url: url
+    }).done(function() {
+        alert("Dryer Reboot Requested");
     });
 }
 
@@ -371,4 +418,27 @@ function StartHeartbeat() {
     let hb = $("#heartbeat")
     hb.css({width: "20px", height: "20px"})
     hb.animate({width: "15px", height: "15px"})
+}
+
+function RebootClick() {
+    let putString = "/setElectrolyser/Reboot/" + elName;
+    $.ajax({
+        url: putString,
+        type: 'put',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        dataType: 'json',
+        success: function() {
+            console.log("Electrolyser reboot sent OK");
+            alert(elName + " reboot command sent.");
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            if (xhr.status === 400) {
+                alert(xhr.responseJSON.errors[0].Err);
+            } else {
+                alert(xhr.status + " : " + thrownError);
+            }
+        }
+    });
 }

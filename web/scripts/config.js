@@ -4,6 +4,22 @@ Array.prototype.remove = function(index) {
     this.splice(index, 1);
 }
 
+function setGasDisplayOptions(opt) {
+    DisplaySelection = $("#GasDisplayUnits");
+    if (opt === null) {
+        opt = DisplaySelection.val();
+    }
+    // DisplaySelection.empty().append($('<option>').val("kWhr").text("Kilowatt Hours"));
+    // if ($("#GasUnits").val() === "bar") {
+    //     DisplaySelection.append($('<option>').val("bar").text("Bar"));
+    //     DisplaySelection.append($('<option>').val("litres").text("Litres"));
+    // } else {
+    //     DisplaySelection.append($('<option>').val("psi").text("Pounds per Suqare Inch"));
+    //     DisplaySelection.append($('<option>').val("cuft").text("Cubic Feet"));
+    // }
+    DisplaySelection.val(opt);
+}
+
 function loadSettings() {
     fetch("/getSettings")
         .then( function(response) {
@@ -17,6 +33,7 @@ function loadSettings() {
                         data.Relays.forEach(SetRelaySettings);
                         data.ACMeasurement.forEach(SetACMeasurementSettings);
                         data.DCMeasurement.forEach(SetDCMeasurementSettings);
+                        data.Buttons.forEach(SetButtonName);
                         if (data.FuelCell) {
                             $("#FuelCell").attr('checked', true);
                         }
@@ -57,7 +74,10 @@ function loadSettings() {
                         $("#GasDetectorInput").val(data.gasDetectorInput);
                         $("#GasDetectorThreshold").val(data.gasDetectorThreshold);
                         $("#MaxGasPressure").val(data.maxGasPressure);
+                        $("#GasCapacity").val(data.gasCapacity);
                         $("#GasUnits").val(data.gasUnits);
+                        setGasDisplayOptions(data.gasDisplayUnits);
+                        $("#GasDisplayUnits").val(data.gasDisplayUnits);
                         $("#GasInput").val(data.gasPressureInput);
                         $("#maxYellowConductivity").val(data.conductivityYellowMax);
                         $("#maxGreenConductivity").val(data.conductivityGreenMax);
@@ -78,17 +98,16 @@ function loadSettings() {
 function RenderElectrolysers() {
     $("#ElectrolysersBody").empty();
     if (Electrolysers != null) {
-        Electrolysers.forEach(function (el) { RenderElectrolyser(el.relay, el.name, el.dryer, el.ip);})
+        Electrolysers.forEach(function (el) { RenderElectrolyser(el.relay, el.name, el.dryer, el.ip, el.enabled);})
     }
     $('input[type=radio][name=Dryer]').change(function() {
-        debugger;
         for (el = 0; el < Electrolysers.length; el++) {
             Electrolysers[el].dryer = (el === this.value);
         }
     });
 }
 
-function RenderElectrolyser(relayNum, relayName, Dryer, ip) {
+function RenderElectrolyser(relayNum, relayName, Dryer, ip, enabled) {
     let numElectrolysers = $("#ElectrolysersBody tr").length;
     let selected = '';
     if (relayNum < 0) {
@@ -99,6 +118,7 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip) {
     let relayID = "el" + numElectrolysers + "Relay";
     let ipID = "el" + numElectrolysers + "IP";
     let dryerID = "Dryer" + numElectrolysers;
+    let elEnabledID = "el" + numElectrolysers + "Enabled";
     for (let rl = 0; rl < 16; rl++) {
         if (relayNum === rl) {
             selected = ' selected';
@@ -108,11 +128,13 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip) {
         let option = '<option value="' + rl + '"' + selected + ' >' + $("#relay" + rl + "name").val() + '</option>';
         selectOptions += option;
     }
+    let IsEnabled = enabled ? "checked" : "";
     let newRow = '<tr class="elSetting" id="el' + numElectrolysers + 'Row">';
     newRow += '<td class="elRelaySetting"><select id="' + relayID + '" name="' + relayID + '">' + selectOptions + '</select></td>';
     newRow += '<td class="elNameSetting"><input class="settings" type="text" id="' + nameID + '" name="' + nameID + '" value="' + relayName + '"></td>';
     newRow += '<td class="elDryerSetting"><input class="settings_cb" type="radio" id="' + dryerID + '" name="Dryer" value=' + numElectrolysers + '><label for="' + dryerID + '">Dryer Control</label></td>';
     newRow += '<td class="elIP"><span class="settings" id="' + ipID + '">' + ip + '</span></td>';
+    newRow += '<td class="elEnabled"><input class="settings" type="checkbox" id="' + elEnabledID + '" name="' + elEnabledID + '" value="Enabled" ' + IsEnabled + '></td>'
     newRow += '<td><img src="images/trash.png" alt="Delete" onclick="deleteElectrolyser(' + numElectrolysers + ')" class="button" /></td></tr>';
     $("#ElectrolysersBody").append(newRow);
     if (Dryer) {
@@ -124,6 +146,9 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip) {
     $('#'+nameID).on("change", function() {
         Electrolysers[numElectrolysers].name = $(this).val();
     });
+    $('#'+elEnabledID).on("change", function() {
+        Electrolysers[numElectrolysers].enabled = $(this).prop("checked");
+    })
 }
 
 function deleteElectrolyser(num) {
@@ -136,7 +161,7 @@ function deleteElectrolyser(num) {
 }
 
 function appendElectrolyser() {
-    Electrolysers.push({relay:-1, name:"", dryer:false});
+    Electrolysers.push({relay:-1, name:"", dryer:false, enabled:false});
     RenderElectrolysers();
 }
 
@@ -199,6 +224,11 @@ function SetAnalogSettings(channel){
     // Add options for gas input and detector
     $("#GasInput").append(new Option(channel.Name, channel.Port));
     $("#GasDetectorInput").append((new Option(channel.Name, channel.Port)));
+}
+
+function SetButtonName(button, idx) {
+    $("#btn"+idx+"name").val(button.Name);
+    $("#btn"+idx+"user").prop('checked',button.ShowOnCustomer);
 }
 
 function SetRelaySettings(channel) {
