@@ -49,14 +49,14 @@ func SendAnalogBySecond(w http.ResponseWriter, start time.Time, end time.Time) {
 	hp := NewHydrogenParams()
 	strSQL := strings.Replace(AnalogBySecond, "'h2'", hp.field, -1)
 	SendDataAsJSON(w, "GetAnalogBySecond", strSQL,
-		currentSettings.AnalogChannels[0].calibrationMultiplier, currentSettings.AnalogChannels[0].calibrationMultiplier,
-		currentSettings.AnalogChannels[1].calibrationMultiplier, currentSettings.AnalogChannels[1].calibrationMultiplier,
-		currentSettings.AnalogChannels[2].calibrationMultiplier, currentSettings.AnalogChannels[2].calibrationMultiplier,
-		currentSettings.AnalogChannels[3].calibrationMultiplier, currentSettings.AnalogChannels[3].calibrationMultiplier,
-		currentSettings.AnalogChannels[4].calibrationMultiplier, currentSettings.AnalogChannels[4].calibrationMultiplier,
-		currentSettings.AnalogChannels[5].calibrationMultiplier, currentSettings.AnalogChannels[5].calibrationMultiplier,
-		currentSettings.AnalogChannels[6].calibrationMultiplier, currentSettings.AnalogChannels[6].calibrationMultiplier,
-		currentSettings.AnalogChannels[7].calibrationMultiplier, currentSettings.AnalogChannels[7].calibrationMultiplier,
+		currentSettings.AnalogChannels[0].calibrationMultiplier, currentSettings.AnalogChannels[0].calibrationConstant,
+		currentSettings.AnalogChannels[1].calibrationMultiplier, currentSettings.AnalogChannels[1].calibrationConstant,
+		currentSettings.AnalogChannels[2].calibrationMultiplier, currentSettings.AnalogChannels[2].calibrationConstant,
+		currentSettings.AnalogChannels[3].calibrationMultiplier, currentSettings.AnalogChannels[3].calibrationConstant,
+		currentSettings.AnalogChannels[4].calibrationMultiplier, currentSettings.AnalogChannels[4].calibrationConstant,
+		currentSettings.AnalogChannels[5].calibrationMultiplier, currentSettings.AnalogChannels[5].calibrationConstant,
+		currentSettings.AnalogChannels[6].calibrationMultiplier, currentSettings.AnalogChannels[6].calibrationConstant,
+		currentSettings.AnalogChannels[7].calibrationMultiplier, currentSettings.AnalogChannels[7].calibrationConstant,
 		hp.m, hp.c, hp.pv,
 		start, end)
 }

@@ -9,10 +9,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors">
+      <change beforePath="$PROJECT_DIR$/AnalogInputs.go" beforeDir="false" afterPath="$PROJECT_DIR$/AnalogInputs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,7 +201,8 @@
     <MESSAGE value="Added automatic rescan if an electrylyser is lost." />
     <MESSAGE value="Version 3&#10;Added API to gather battery and solar data&#10;Added display of new data and graphing of the data" />
     <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error." />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error." />
+    <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
