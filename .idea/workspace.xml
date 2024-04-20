@@ -9,10 +9,30 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors">
-      <change beforePath="$PROJECT_DIR$/AnalogInputs.go" beforeDir="false" afterPath="$PROJECT_DIR$/AnalogInputs.go" afterDir="false" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors&#10;Corrected analog chart values for by-second output.">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ElectrolyserStatusType.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Relays.go" beforeDir="false" afterPath="$PROJECT_DIR$/Relays.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSiteRedirect.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ElectrolyserData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/StackVoltage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/StackVoltage.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/dcdc.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/dcdc.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/ELControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/charts.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/charts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +56,11 @@
   </component>
   <component name="GOROOT" url="file:///usr/local/go" />
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -202,7 +227,8 @@
     <MESSAGE value="Version 3&#10;Added API to gather battery and solar data&#10;Added display of new data and graphing of the data" />
     <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error." />
     <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors" />
+    <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors&#10;Corrected analog chart values for by-second output." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors&#10;Corrected analog chart values for by-second output." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
@@ -223,7 +249,6 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/ELControl.js</url>
           <line>98</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>

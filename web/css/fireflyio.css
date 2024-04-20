@@ -572,7 +572,7 @@ img.swOff {
     content: url("/images/power-off.png");
 }
 
-img.depressed {
+img.ButtonChanging {
     padding-top:3px;
     padding-left:3px;
     border: solid lightgrey;

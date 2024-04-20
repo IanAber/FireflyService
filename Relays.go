@@ -75,6 +75,16 @@ func (rl *RelaysType) SetRelayName(relay uint8, name string) {
 }
 
 func (rl *RelaysType) SetRelay(relay uint8, on bool) {
+	if !on && relay == uint8(currentSettings.DryerRelay) {
+		for _, el := range Electrolysers.Arr {
+			if el.IsSwitchedOn() && el.powerRelay != relay {
+				// We are trying to turn off the dryer relay but there is an electrolyser
+				// that is still powered on with a different relay, so ignore the request.
+				return
+			}
+		}
+	}
+
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 

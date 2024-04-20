@@ -1,12 +1,14 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -27,11 +29,11 @@ type AnalogSettingType struct {
 type actionType uint8
 
 const (
-	CONDUCTIVITYHIGH = iota + 1
-	ELPOWERANDCONDUCTIVITY
-	ELSTARTANDCONDUCTIVITY
-	ELPOWERED
-	ELSTART
+	ElConductivityHigh = iota + 1
+	ElPowerAndConductivity
+	ElStartAndConductivity
+	ElPowered
+	ElStart
 )
 
 type PortNameType struct {
@@ -64,8 +66,9 @@ type ElectrolyserSettingType struct {
 	IP         string `json:"ip"`
 	Serial     string `json:"serial"`
 	PowerRelay uint8  `json:"relay"`
-	HasDryer   bool   `json:"dryer"`
-	Enabled    bool   `json:"enabled"`
+	//	HasDryer   bool   `json:"dryer"`
+	Enabled   bool   `json:"enabled"`
+	StackTime uint32 `json:"stackTime"`
 }
 
 type SettingsType struct {
@@ -80,6 +83,9 @@ type SettingsType struct {
 	ACMeasurement                    [4]ModbusNameType         `json:"ACMeasurement"`
 	DCMeasurement                    [4]ModbusNameType         `json:"DCMeasurement"`
 	ElectrolyserMaxStackVoltsTurnOff int                       `json:"electrolyserMaxStackVoltsForShutdown"`
+	ElectrolyserStopToStartTime      int                       `json:"electrolyserStopToStartTime"`
+	ElectrolyserStartToStopTime      int                       `json:"electrolyserStartToStopTime"`
+	DryerRelay                       int                       `json:"dryerRelay"`
 	Electrolysers                    []ElectrolyserSettingType `json:"electrolysers"`
 	NodeRED                          string                    `json:"nodeRED"`
 	APIKey                           string                    `json:"apiKey"`
@@ -151,6 +157,8 @@ func NewSettings() *SettingsType {
 	// Default to just one AC measurement device and no DC measurement devices.
 	settings.ACMeasurement[0].Name = "Firefly"
 	settings.ElectrolyserMaxStackVoltsTurnOff = 30
+	settings.ElectrolyserStopToStartTime = 600
+	settings.ElectrolyserStartToStopTime = 600
 	settings.NodeRED = ""
 	settings.WaterDumpRelay = 0
 	settings.WaterDumpSeconds = 10
@@ -187,7 +195,7 @@ func (settings *SettingsType) setButtonByName(name string, pressed bool) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Button %s not found", name)
+	return fmt.Errorf("button %s not found", name)
 }
 
 // findExistingElByRelay returns a pointer to the matching electrolyser from the given array or null if not found
@@ -221,12 +229,13 @@ func (settings *SettingsType) findElByIP(ip string) *ElectrolyserSettingType {
 }
 
 // addElectrolyser adds a new electrolyser to the settings object
-func (settings *SettingsType) addElectrolyser(Relay uint8, Name string, HasDryer bool, Enabled bool) {
+// func (settings *SettingsType) addElectrolyser(Relay uint8, Name string, HasDryer bool, Enabled bool) {
+func (settings *SettingsType) addElectrolyser(Relay uint8, Name string, Enabled bool) {
 	var el ElectrolyserSettingType
 
 	el.Name = Name
 	el.PowerRelay = Relay
-	el.HasDryer = HasDryer
+	//	el.HasDryer = HasDryer
 	el.Enabled = Enabled
 	settings.Electrolysers = append(settings.Electrolysers, el)
 }
@@ -282,6 +291,13 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 	// Update the electrolysers or add new ones as necessary
 	Electrolysers.mu.Lock()
 	defer Electrolysers.mu.Unlock()
+
+	// Sort the array by stack time
+	els := settings.Electrolysers[:]
+	slices.SortStableFunc(els, func(a ElectrolyserSettingType, b ElectrolyserSettingType) int {
+		return cmp.Compare(a.StackTime, b.StackTime)
+	})
+
 	for _, el := range settings.Electrolysers {
 		if el.Name != "" {
 			if elect := Electrolysers.FindByRelay(el.PowerRelay); elect != nil {
@@ -309,7 +325,7 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 				newEl.powerRelay = el.PowerRelay
 				newEl.status.Name = el.Name
 				newEl.status.PowerRelay = el.PowerRelay
-				newEl.hasDryer = el.HasDryer
+				//				newEl.hasDryer = el.HasDryer
 				newEl.status.Enabled = el.Enabled
 				newEl.enabled = el.Enabled
 				Electrolysers.Arr = append(Electrolysers.Arr, newEl)
@@ -442,13 +458,13 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		settings.DigitalInputs[din].Name = r.FormValue(fmt.Sprintf("di%dname", din))
 	}
 	// Digital output names
-	for dout := 0; dout < 6; dout++ {
-		settings.DigitalOutputs[dout].Name = r.FormValue(fmt.Sprintf("do%dname", dout))
+	for dOut := 0; dOut < 6; dOut++ {
+		settings.DigitalOutputs[dOut].Name = r.FormValue(fmt.Sprintf("do%dname", dOut))
 	}
 	// Buttons
 	for btn := range settings.Buttons {
 		settings.Buttons[btn].Name = r.FormValue(fmt.Sprintf("btn%dname", btn))
-		settings.Buttons[btn].ShowOnCustomer = (r.FormValue(fmt.Sprintf("btn%duser", btn)) != "")
+		settings.Buttons[btn].ShowOnCustomer = r.FormValue(fmt.Sprintf("btn%duser", btn)) != ""
 	}
 	// Analogue names and settings
 	for analog := range settings.AnalogChannels {
@@ -560,6 +576,26 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	} else {
 		settings.ElectrolyserMaxStackVoltsTurnOff = int(val)
 	}
+	if val, err := strconv.ParseInt(r.FormValue("electrolyserStopToStartTime"), 10, 16); err != nil {
+		ReturnJSONError(w, "SaveSettings", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.ElectrolyserStopToStartTime = int(val)
+	}
+
+	if val, err := strconv.ParseInt(r.FormValue("electrolyserStartToStopTime"), 10, 16); err != nil {
+		ReturnJSONError(w, "SaveSettings", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.ElectrolyserStartToStopTime = int(val)
+	}
+
+	if val, err := strconv.ParseInt(r.FormValue("dryerRelay"), 10, 16); err != nil {
+		ReturnJSONError(w, "SaveSettings", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.DryerRelay = int(val)
+	}
 	if val, err := strconv.ParseInt(r.FormValue("waterDumpSeconds"), 10, 8); err != nil {
 		ReturnJSONError(w, DeviceString+":Water Dump Seconds", err, http.StatusBadRequest, true)
 		return
@@ -653,7 +689,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 				} else {
 					// Change the name and clear the serial and IP address so this one will get rediscovered.
 					el.Name = electrolyser.Name
-					el.HasDryer = electrolyser.HasDryer
+					//					el.HasDryer = electrolyser.HasDryer
 					el.IP = ""
 					el.Serial = ""
 					el.Enabled = electrolyser.Enabled
@@ -670,14 +706,15 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 					return
 				} else {
 					el.PowerRelay = electrolyser.Relay
-					el.HasDryer = electrolyser.HasDryer
+					//					el.HasDryer = electrolyser.HasDryer
 					el.Serial = ""
 					el.IP = ""
 					el.Enabled = electrolyser.Enabled
 				}
 			} else {
 				// Cannot find a match, so we should add this one in
-				settings.addElectrolyser(electrolyser.Relay, electrolyser.Name, electrolyser.HasDryer, electrolyser.Enabled)
+				//				settings.addElectrolyser(electrolyser.Relay, electrolyser.Name, electrolyser.HasDryer, electrolyser.Enabled)
+				settings.addElectrolyser(electrolyser.Relay, electrolyser.Name, electrolyser.Enabled)
 			}
 		}
 	}

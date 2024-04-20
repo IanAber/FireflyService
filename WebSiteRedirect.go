@@ -111,7 +111,7 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/setElectrolyser/Preheat/{electrolyser}", "", "PUT", "Start the preheating cycle by electrolyser name or index", preheatElectrolyser)                                         //
 	RegisterWebSiteAPI(router, "/setElectrolyser/Reboot/{electrolyser}", "", "PUT", "Reboot the electrolyser by electrolyser name or index", rebootElectrolyser)                                              //
 	RegisterWebSiteAPI(router, "/setElectrolyser/Locate/{electrolyser}", "", "PUT", "Start the electrolyser location signal by electrolyser name or index", locateElectrolyser)                               //
-	RegisterWebSiteAPI(router, "/setElectrolyser/Blowdown/{electrolyser}", "", "PUT", "Blow down the electrolyser by electrolyser name or index", blowdownElectrolyser)                                       //
+	RegisterWebSiteAPI(router, "/setElectrolyser/BlowDown/{electrolyser}", "", "PUT", "Blow down the electrolyser by electrolyser name or index", blowDownElectrolyser)                                       //
 	RegisterWebSiteAPI(router, "/setElectrolyser/Refill/{electrolyser}", "", "PUT", "Refill the electrolyser by electrolyser name or index", refillElectrolyser)                                              //
 	RegisterWebSiteAPI(router, "/setElectrolyser/StartMaintenance/{electrolyser}", "", "PUT", "Start the maintenance cycle for the electrolyser by electrolyser name or index", startMaintenanceElectrolyser) //
 	RegisterWebSiteAPI(router, "/setElectrolyser/StopMaintenance/{electrolyser}", "", "PUT", "Stop the maintenance cycle for the electrolyser by electrolyser name or index", stopMaintenanceElectrolyser)    //

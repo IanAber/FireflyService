@@ -37,10 +37,16 @@ function loadSettings() {
                         if (data.FuelCell) {
                             $("#FuelCell").attr('checked', true);
                         }
-                        $("#electrolyserHoldOffTime").val(data.electrolyserHoldOffTime / 1000000000);
-                        $("#electrolyserHoldOnTime").val(data.electrolyserHoldOnTime / 1000000000);
-                        $("#electrolyserOffDelay").val(data.electrolyserOffDelay / 1000000000);
-                        $("#electrolyserShutDownDelay").val(data.electrolyserShutDownDelay / 1000000000);
+                        // $("#electrolyserHoldOffTime").val(data.electrolyserHoldOffTime / 1000000000);
+                        // $("#electrolyserHoldOnTime").val(data.electrolyserHoldOnTime / 1000000000);
+                        //$("#electrolyserOffDelay").val(data.electrolyserOffDelay / 1000000000);
+                        //$("#electrolyserShutDownDelay").val(data.electrolyserShutDownDelay / 1000000000);
+                        if ((data.electrolyserStopToStartTime >= 1) && (data.electrolyserStopToStartTime <= 20)) {
+                            $('#electrolyserStopToStartTime').val(data.electrolyserStopToStartTime);
+                        }
+                        if ((data.electrolyserStartToStopTime >= 1) && (data.electrolyserStartToStopTime <= 20)) {
+                            $('#electrolyserStartToStopTime').val(data.electrolyserStartToStopTime);
+                        }
                         if ((data.electrolyserMaxStackVoltsForShutdown >= 25) && (data.electrolyserMaxStackVoltsForShutdown <= 35)) {
                             $("#electrolyserMaxStackVoltsForShutdown").val(data.electrolyserMaxStackVoltsForShutdown);
                         }
@@ -58,6 +64,17 @@ function loadSettings() {
                         if (data.electrolysers != null) {
                             Electrolysers = data.electrolysers;
                         }
+                        let dryerRelay = data.dryerRelay;
+                        let dryerRelayControl = $("#dryerRelay");
+                        if (dryerRelay === undefined) {
+                            dryerRelay = -1;
+                        }
+                        for (let rl = 0; rl < 16; rl++) {
+                            optText = $("#relay"+rl+"name").val();
+                            optValue = rl;
+                            dryerRelayControl.append($('<option>').val(optValue).text(optText));
+                        }
+                        dryerRelayControl.val(dryerRelay);
                         let relayNum = data.water;
                         let dumpRelay = $("#waterDumpRelay");
                         for (let rl = 0; rl < 16; rl++) {
@@ -117,7 +134,7 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip, enabled) {
     let nameID = "el" + numElectrolysers + "Name";
     let relayID = "el" + numElectrolysers + "Relay";
     let ipID = "el" + numElectrolysers + "IP";
-    let dryerID = "Dryer" + numElectrolysers;
+//    let dryerID = "Dryer" + numElectrolysers;
     let elEnabledID = "el" + numElectrolysers + "Enabled";
     for (let rl = 0; rl < 16; rl++) {
         if (relayNum === rl) {
@@ -132,14 +149,14 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip, enabled) {
     let newRow = '<tr class="elSetting" id="el' + numElectrolysers + 'Row">';
     newRow += '<td class="elRelaySetting"><select id="' + relayID + '" name="' + relayID + '">' + selectOptions + '</select></td>';
     newRow += '<td class="elNameSetting"><input class="settings" type="text" id="' + nameID + '" name="' + nameID + '" value="' + relayName + '"></td>';
-    newRow += '<td class="elDryerSetting"><input class="settings_cb" type="radio" id="' + dryerID + '" name="Dryer" value=' + numElectrolysers + '><label for="' + dryerID + '">Dryer Control</label></td>';
+//    newRow += '<td class="elDryerSetting"><input class="settings_cb" type="radio" id="' + dryerID + '" name="Dryer" value=' + numElectrolysers + '><label for="' + dryerID + '">Dryer Control</label></td>';
     newRow += '<td class="elIP"><span class="settings" id="' + ipID + '">' + ip + '</span></td>';
     newRow += '<td class="elEnabled"><input class="settings" type="checkbox" id="' + elEnabledID + '" name="' + elEnabledID + '" value="Enabled" ' + IsEnabled + '></td>'
     newRow += '<td><img src="images/trash.png" alt="Delete" onclick="deleteElectrolyser(' + numElectrolysers + ')" class="button" /></td></tr>';
     $("#ElectrolysersBody").append(newRow);
-    if (Dryer) {
-        $("#Dryer"+numElectrolysers).prop("checked", true);
-    }
+    // if (Dryer) {
+    //     $("#Dryer"+numElectrolysers).prop("checked", true);
+    // }
     $('#'+relayID).on("change", function() {
         Electrolysers[numElectrolysers].relay = parseInt($(this).val(), 10);
     });

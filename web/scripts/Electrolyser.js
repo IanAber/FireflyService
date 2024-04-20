@@ -265,17 +265,17 @@ function setButtonOnOff(button, on) {
     if (on && button.hasClass("swOff")) {
         button.removeClass("swOff");
         button.addClass("swOn");
-        button.removeClass("depressed");
+        button.removeClass("ButtonChanging");
     } else if (!on && button.hasClass( "swOn")) {
         button.removeClass("swOn");
         button.addClass("swOff");
-        button.removeClass("depressed");
+        button.removeClass("ButtonChanging");
     }
 }
 
 function RunClick() {
     let button = $("#Run");
-    button.addClass("depressed");
+    button.addClass("ButtonChanging");
     let url
     if (button.hasClass("swOn")) {
         url = "/setElectrolyser/Stop/" + elName;
@@ -290,7 +290,7 @@ function RunClick() {
 
 function MaintenanceClick() {
     let button = $("#Maintenance");
-    button.addClass("depressed");
+    button.addClass("ButtonChanging");
     if (button.hasClass("swOn")) {
         url = "/setElectrolyser/StopMaintenance/" + elName;
     } else {
@@ -308,7 +308,7 @@ function MaintenanceClick() {
 
 function PreheatClick() {
     let button = $("#Maintenance");
-    button.addClass("depressed");
+    button.addClass("ButtonChanging");
     url = "/setElectrolyser/Preheat/" + elName;
     $.ajax({
         method : "PUT",
@@ -318,7 +318,7 @@ function PreheatClick() {
 
 function BlowDownClick() {
     let button = $("#BlowDown");
-    button.addClass("depressed");
+    button.addClass("ButtonChanging");
     if (button.hasClass("swOff")) {
         if (confirm("You are about to perform an Electrolyser Blow Down sequence.\nAre you really sure this is what you want to do?") === true) {
             url = "/setElectrolyser/Blowdown/" + elName;
@@ -334,9 +334,9 @@ function BlowDownClick() {
 
 function RescanClick() {
     let button = $("#Rescan");
-    if (!button.hasClass("depressed")) {
+    if (!button.hasClass("ButtonChanging")) {
         if (confirm("You are about to perform an Electrolyser Rescan sequence to try and update the IP address.\nThis should only be performed if you believe the current IP address is incorrect.\nAre you really sure this is what you want to do?") === true) {
-            button.addClass("depressed");
+            button.addClass("ButtonChanging");
             url = "/setElectrolyser/Rescan/" + elName;
         } else {
             return;
@@ -345,7 +345,7 @@ function RescanClick() {
             method : "PUT",
             url: url
         }).done(function() {
-            $("#Rescan").removeClass("depressed");
+            $("#Rescan").removeClass("ButtonChanging");
         })
     }
 }

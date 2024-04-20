@@ -48,6 +48,7 @@ type ElectrolyserStatusType struct {
 	IP                                   net.IP                 `json:"ip"`
 	PowerRelay                           uint8                  `json:"powerRelay"`
 	Enabled                              bool                   `json:"enabled"`
+	monitored                            bool
 }
 
 type ElectrolyserJSONStatusType struct {
@@ -102,6 +103,27 @@ func (elt *ElectrolyserStatusType) GetStackSerial() string {
 	stackNumber := (elt.StackSerialNumber & 0xffffff00000000) > 32
 	stackSite := (elt.StackSerialNumber & 0xFF00000000000000) > 56
 	return fmt.Sprintf("Site: %d | Number: %d | Day: %d | Year: %d | Type: %d", stackSite, stackNumber, stackDay, stackYear, stackType)
+}
+
+func (elt *ElectrolyserStatusType) IsRunning() bool {
+	switch elt.State {
+	case 0:
+		return false // Halted
+	case 1:
+		return false // Maintenance
+	case 2:
+		return false // idle
+	case 3:
+		return true // Steady
+	case 4:
+		return true // Standby
+	case 5:
+		return false // Curve
+	case 6:
+		return false // Blowdown
+	default:
+		return false // Unknown
+	}
 }
 
 func (elt *ElectrolyserStatusType) GetProductCode() string {

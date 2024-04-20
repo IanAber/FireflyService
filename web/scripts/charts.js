@@ -85,13 +85,19 @@ function refresh(url) {
                             this[index].logged = new Date(part.logged * 1000);
                         }, data);
 
+                        let Chart = $('#ChartContainer');
+                        let waiting = $("#waiting");
+                        if (data.length === 0) {
+                            alert("No data found for the date/times selected");
+                            waiting.hide();
+                            return;
+                        }
                         let start = data[0].logged;
                         let end = data[data.length - 1].logged;
 
                         end.setSeconds(0);
                         start.setSeconds(0);
 
-                        let Chart = $('#ChartContainer');
                         let xAxis = Chart.jqxChart('xAxis');
                         xAxis.minValue = start;
                         xAxis.maxValue = end;
@@ -114,7 +120,7 @@ function refresh(url) {
                         Chart.jqxChart('getInstance')._selectorRange = [];
                         Chart.jqxChart('update');
                         Chart.jqxChart({'source':data});
-                        $("#waiting").hide();
+                        waiting.hide();
                         if (typeof postUpdate === "function") {
                             postUpdate(data);
                         }

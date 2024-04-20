@@ -150,6 +150,7 @@ function updateElectrolyser(currentElement, index) {
     } else {
         disabled.show();
     }
+    $("#ELReboot" + index).removeClass("ButtonChanging");
     let stat = $("#ELStatus" + index);
     if (currentElement.on) {
         switch (currentElement.state) {
@@ -211,6 +212,7 @@ function setRate(rate, elName) {
 
 function setOnOffButton(id, on) {
     btn = $("#"+id);
+    btn.removeClass("ButtonChanging");
     if (on) {
         if (!btn.hasClass("swOn")) {
             btn.removeClass("swOff");
@@ -226,7 +228,7 @@ function setOnOffButton(id, on) {
 
 function  PowerClick(id, controlID) {
     let Control = $("#"+controlID);
-    Control.addClass("depressed")
+    Control.addClass("ButtonChanging")
     let putString = "/setElectrolyser/" + (Control.hasClass("swOff") ? "PowerOn" : "PowerOff") + "/" + id;
     $.ajax({
         url: putString,
@@ -250,7 +252,7 @@ function  PowerClick(id, controlID) {
 
 function RunClick(id, controlID, elName) {
     let Control = $("#"+controlID);
-    Control.addClass("depressed")
+    Control.addClass("ButtonChanging")
     let putString = "/setElectrolyser/" + ((Control.hasClass("swOff")) ? "Start" : "Stop") + "/" + elName;
     $.ajax({
         url: putString,
@@ -274,7 +276,7 @@ function RunClick(id, controlID, elName) {
 
 function RebootClick(id, controlID, elName) {
     let Control = $("#"+controlID);
-    Control.addClass("depressed")
+    Control.addClass("ButtonChanging")
     let putString = "/setElectrolyser/Reboot/" + elName;
     $.ajax({
         url: putString,

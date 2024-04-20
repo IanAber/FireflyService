@@ -22,7 +22,7 @@ function RegisterWebSocket() {
             if (jsonData.kgH2 > 1.0) {
                 $("#kgH2").text(jsonData.kgH2.toFixed(3) + "kg");
             } else {
-                $("#kgH2").text((jsonData.kgH2 * 1000).toFiged(0) + "g")
+                $("#kgH2").text((jsonData.kgH2 * 1000).toFixed(0) + "g")
             }
             if (jsonData.ACMeasurements.length > 0) {
                 $("#ACMeasurementsDiv").show();
@@ -274,13 +274,12 @@ function UpdateButton(Button, idx) {
     if (Button.Name.startsWith("Button-")) {
         td_button.hide();
     } else {
+        td_button.removeClass("ButtonChanging");
         if (Button.Pressed) {
             td_button.removeClass("ButtonOff");
-            td_button.removeClass("ButtonChanging");
             td_button.addClass("ButtonOn");
         } else {
             td_button.removeClass("ButtonOn");
-            td_button.removeClass("ButtonChanging");
             td_button.addClass("ButtonOff");
         }
         $("#buttonText"+idx).text(Button.Name);

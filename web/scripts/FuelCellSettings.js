@@ -99,7 +99,7 @@ function RunFuelCellClick() {
     }
     let btn = $("#SwitchOnOff");
     let onOff = btn.hasClass("swOn");
-    btn.addClass("depressed");
+    btn.addClass("ButtonChanging");
     if (onOff) {
         url = "/setFuelCell/Stop";
     } else {
@@ -114,7 +114,7 @@ function RunFuelCellClick() {
 function ClearFaultClick() {
     if ($("#FCStatus").text() === "Standby") {
         url = "/setFuelCell/ResetFault";
-        $("#ClearFault").addClass("depressed");
+        $("#ClearFault").addClass("ButtonChanging");
         $.ajax({
             method : "PUT",
             url: url
@@ -127,7 +127,7 @@ function ClearFaultClick() {
 function HeaterClick() {
     let btn = $("#Heater");
     let onOff = btn.hasClass("swOn");
-    btn.addClass("depressed");
+    btn.addClass("ButtonChanging");
     let url = "/setFuelCell/TurnOnHeater";
     if (onOff) {
         url = "/setFuelCell/TurnOffHeater"
@@ -148,13 +148,13 @@ function ExhaustClick() {
         url = "/setFuelCell/ExhaustClose";
     } else {
         let btn = $("#Exhaust");
-        btn.addClass("depressed");
+        btn.addClass("ButtonChanging");
         if (btn.hasClass('swOn')) {
             url = "/setFuelCell/ExhaustClose";
         } else {
             url = "/setFuelCell/ExhaustOpen";
         }
-        btn.addClass("depressed");
+        btn.addClass("ButtonChanging");
     }
     $.ajax({
         method : "PUT",
@@ -164,7 +164,7 @@ function ExhaustClick() {
 
 function EnableFuelCellClick() {
     let btn = $("#Enable");
-    btn.addClass("depressed");
+    btn.addClass("ButtonChanging");
     if (btn.hasClass("swOn")) {
         url = "/setFuelCell/Disable";
     } else {
@@ -226,7 +226,7 @@ function RegisterWebSocket() {
             document.title=jsonData.System;
             $("#version").text(jsonData.Version);
             let sw = $("#Exhaust");
-            sw.removeClass("depressed");
+            sw.removeClass("ButtonChanging");
             bOn = (sw.attr('state') === "true");
             if (jsonData.ExhaustOpen) {
                 sw.addClass("swOn");
@@ -237,7 +237,7 @@ function RegisterWebSocket() {
             }
 
             let en = $("#Enable");
-            en.removeClass("depressed");
+            en.removeClass("ButtonChanging");
             if (jsonData.Enable) {
                 en.addClass("swOn");
                 en.removeClass("swOff");
@@ -248,11 +248,11 @@ function RegisterWebSocket() {
 
             let cf = $("#ClearFault");
             if (!jsonData.ClearFaultsActive) {
-                cf.removeClass("depressed");
+                cf.removeClass("ButtonChanging");
             }
 
             let htr = $("#Heater");
-            htr.removeClass("depressed")
+            htr.removeClass("ButtonChanging")
             if (!jsonData.HeaterOn) {
                 htr.addClass("swOff");
                 htr.removeClass("swOn");
@@ -318,7 +318,7 @@ function RegisterWebSocket() {
                     break;
                 default :
             }
-            onOff.removeClass("depressed");
+            onOff.removeClass("ButtonChanging");
             if (on) {
                 onOff.addClass("swOn");
                 onOff.removeClass("swOff");

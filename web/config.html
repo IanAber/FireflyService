@@ -490,6 +490,58 @@
                         <option value="27">27V</option>
                         <option value="26">26V</option>
                         <option value="25">25V</option>
+                    </select><br />
+                    <label class="Electrolysers" for="electrolyserStopToStartTime">Minimum Stop Time</label>
+                    <select class="Electrolysers" id="electrolyserStopToStartTime" name="electrolyserStopToStartTime" title="Select the minimum time between stopping and restarting the electrolyser">
+                        <option value="1">1 minute</option>
+                        <option value="2">2 minutes</option>
+                        <option value="3">3 minutes</option>
+                        <option value="4">4 minutes</option>
+                        <option value="5">5 minutes</option>
+                        <option value="6">6 minutes</option>
+                        <option value="7">7 minutes</option>
+                        <option value="8">8 minutes</option>
+                        <option value="9">9 minutes</option>
+                        <option value="10">10 minutes</option>
+                        <option value="11">11 minutes</option>
+                        <option value="12">12 minutes</option>
+                        <option value="13">13 minutes</option>
+                        <option value="14">14 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="16">16 minutes</option>
+                        <option value="17">17 minutes</option>
+                        <option value="18">18 minutes</option>
+                        <option value="19">19 minutes</option>
+                        <option value="20">20 minutes</option>
+                    </select><br />
+                    <label class="Electrolysers" for="electrolyserStartToStopTime">Minimum Run Time</label>
+                    <select class="Electrolysers" id="electrolyserStartToStopTime" name="electrolyserStartToStopTime" title="Select the minimum time between starting and stopping the electrolyser">
+                        <option value="1">1 minute</option>
+                        <option value="2">2 minutes</option>
+                        <option value="3">3 minutes</option>
+                        <option value="4">4 minutes</option>
+                        <option value="5">5 minutes</option>
+                        <option value="6">6 minutes</option>
+                        <option value="7">7 minutes</option>
+                        <option value="8">8 minutes</option>
+                        <option value="9">9 minutes</option>
+                        <option value="10">10 minutes</option>
+                        <option value="11">11 minutes</option>
+                        <option value="12">12 minutes</option>
+                        <option value="13">13 minutes</option>
+                        <option value="14">14 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="16">16 minutes</option>
+                        <option value="17">17 minutes</option>
+                        <option value="18">18 minutes</option>
+                        <option value="19">19 minutes</option>
+                        <option value="20">20 minutes</option>
+                    </select>
+                </div>
+                <div class="ElectrolyserParams">
+                    <label class="Electrolysers" for="dryerRelay">Dryer Power Relay</label>
+                    <select class="Electrolysers" id="dryerRelay" name="dryerRelay">
+                        <option value="-1">No Dryer</option>
                     </select>
                 </div>
                 <div class="Electrolysers">
@@ -499,10 +551,6 @@
                             <tr class="Electrolysers">
                                 <th class="Electrolysers">Relay</th>
                                 <th class="Electrolysers">Name</th>
-                                <th class="Electrolysers">
-                                    <label for="DryerNone">No Dryer</label>
-                                    <input class="settings_cb" type="radio" id="DryerNone" name="Dryer" value=-1 checked>
-                                </th>
                                 <th class="Electrolysers">IP Address</th>
                             </tr>
                         </thead>

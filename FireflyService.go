@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"slices"
 	"strings"
 	"time"
 )
@@ -372,7 +374,7 @@ func DatabaseLogger() {
 				log.Println("Database is not connected")
 			}
 			// Check for water dump.
-			if currentSettings.WaterDumpAction == CONDUCTIVITYHIGH {
+			if currentSettings.WaterDumpAction == ElConductivityHigh {
 				on := false
 				_, conductivity := AnalogInputs.GetInput(7)
 				if conductivity > float32(currentSettings.MaximumConductivity) {
@@ -433,11 +435,22 @@ func ElectrolyserLoop() {
 		case <-electrolyserHeartbeat.C:
 			{
 				if !currentSettings.acquiringElectrolysers {
+					gotDryer := false
 					for _, el := range Electrolysers.Arr {
 						// Is this electrolyser switched on?
 						if el.IsSwitchedOn() {
+							if !gotDryer {
+								el.hasDryer = true                                       // First active electrolyser gets to control the dryer
+								gotDryer = true                                          // We found an active electrolyser, so we have the dryer.
+								Relays.SetRelay(uint8(currentSettings.DryerRelay), true) // Make sure the dryer is powered on
+								// after 30 seconds, start the dryer error monitor
+								time.AfterFunc(time.Second*30, el.MonitorDryerErrors)
+							} else {
+								el.hasDryer = false // We already have the dryer so this electrolyser can skip it.
+							}
 							// We must have a valid IP address
 							if !el.status.IP.Equal(net.IPv4zero) {
+
 								// Get the values for this electrolyser
 								if debugOutput {
 									log.Println("polling electrolyser ", el.GetIPString())
@@ -446,15 +459,7 @@ func ElectrolyserLoop() {
 									log.Print(err)
 								} else {
 									// Write the data to the database
-									if _, err := ElectrolyserStatement.Exec(el.status.Name,
-										el.status.H2Flow,
-										el.status.StackVoltage,
-										el.status.StackCurrent,
-										el.status.ElectrolyteTemp,
-										el.GetErrorText(),
-										el.GetWarningText(),
-										el.status.WaterPressure,
-										el.status.CurrentProductionRate); err != nil {
+									if err := el.RecordData(ElectrolyserStatement); err != nil {
 
 										log.Println(err)
 									}
@@ -484,6 +489,13 @@ func ElectrolyserLoop() {
 							el.status.ClearErrors()
 							el.status.ClearWarnings()
 						}
+					}
+					// If we did not find an active electrolyser, turn off the dryer and resort the electrolysers
+					if !gotDryer {
+						Relays.SetRelay(uint8(currentSettings.DryerRelay), false)
+						slices.SortStableFunc(Electrolysers.Arr[:], func(a *ElectrolyserType, b *ElectrolyserType) int {
+							return cmp.Compare(a.status.StackTotalRunTime, b.status.StackTotalRunTime)
+						})
 					}
 				}
 			}
@@ -557,10 +569,10 @@ func LeakDetection() {
 						Relays.SetRelay(el.powerRelay, false)
 					}
 					conductivityAlarmCount = 5
-					SystemAlarms.ConducitivtyAlarm = true
+					SystemAlarms.ConductivityAlarm = true
 				} else if conductivityAlarmCount <= 0 {
 					conductivityAlarmCount = 0
-					SystemAlarms.ConducitivtyAlarm = false
+					SystemAlarms.ConductivityAlarm = false
 				}
 			}
 
@@ -611,22 +623,6 @@ SELECT min(logged), avg(a0), avg(a1), avg(a2), avg(a3), avg(a4), avg(a5), avg(a6
       GROUP BY UNIX_TIMESTAMP(logged) DIV 60`
 
 	const IOValuesCleanupStatement = `DELETE FROM IOValues WHERE logged < DATE(DATE_ADD( now(), interval -1 month))`
-
-	const ElectrolyserArchiveStatement = `INSERT INTO firefly.Electrolyser_Archive (logged, name, flow, volts, amps, temperature, errors, waterPressure, rate)
-SELECT min(logged), min(name), avg(flow), avg(volts), avg(amps), avg(temperature), min(errors), avg(waterPressure), avg(rate)
-  FROM firefly.Electrolyser
- WHERE logged < DATE(DATE_ADD( now(), interval -1 month))
- GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
-
-	const ElectrolyserCleanupStatement = `DELETE FROM Electrolyser WHERE logged < DATE(DATE_ADD( now(), interval -1 month))`
-
-	const DryerArchiveStatement = `INSERT INTO firefly.Dryer (logged, temp1, temp2, temp3, temp4, inputPressure, outputPressure, warnings, errors)
-SELECT min(logged), avg(temp1), avg(temp2), avg(temp3), avg(temp4), avg(inputPressure), avg(outputPressure), max(warnings), max(errors)
-  FROM firefly.Dryer
-WHERE logged < DATE(DATE_ADD( now(), interval -1 month))
- GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
-
-	const DryerCleanupStatement = `DELETE FROM Dryer WHERE logged < DATE(DATE_ADD( now(), interval -1 month))`
 
 	const ACValuesArchiveStatement = `INSERT INTO firefly.ACValues_Archive (logged, A_volts, A_amps, A_watts, A_hertz, A_powerFactor
 			, B_volts, B_amps, B_watts, B_hertz, B_powerFactor

@@ -73,15 +73,15 @@ func RequestLoggerMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 }
 
 func setUpLocalWebSocket() {
-	wsrouter := mux.NewRouter()
-	wsrouter.HandleFunc("/ws/fuelcell", startFuelCellWebSocket).Methods("GET")
-	wsrouter.HandleFunc("/ws/electrolyser/{electrolyser}", startElectrolyserWebSocket).Methods("GET")
-	wsrouter.HandleFunc("/ws", startDataWebSocket).Methods("GET")
+	wsRouter := mux.NewRouter()
+	wsRouter.HandleFunc("/ws/fuelcell", startFuelCellWebSocket).Methods("GET")
+	wsRouter.HandleFunc("/ws/electrolyser/{electrolyser}", startElectrolyserWebSocket).Methods("GET")
+	wsRouter.HandleFunc("/ws", startDataWebSocket).Methods("GET")
 
-	if webport, err := strconv.ParseInt(WebPort, 10, 16); err != nil {
+	if webPort, err := strconv.ParseInt(WebPort, 10, 16); err != nil {
 		log.Fatal(err)
 	} else {
-		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", webport+1), wsrouter))
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", webPort+1), wsRouter))
 	}
 }
 
@@ -796,18 +796,13 @@ func powerOnElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
 		if err := turnOnOffRelay(el.powerRelay, true); err != nil {
 			ReturnJSONError(w, function, err, http.StatusBadRequest, true)
-			return
-		}
-		if el.hasDryer {
-			// after 30 seconds, start the dryer error monitor
-			time.AfterFunc(time.Second*30, el.MonitorDryerErrors)
+		} else {
+			ReturnJSONSuccess(w)
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func powerOffElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -817,14 +812,13 @@ func powerOffElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
 		if err := turnOnOffRelay(el.powerRelay, false); err != nil {
 			ReturnJSONError(w, function, err, http.StatusBadRequest, true)
-			return
+		} else {
+			ReturnJSONSuccess(w)
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func startElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -834,7 +828,6 @@ func startElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
 		// Is this the first to be started?
 		started := false
@@ -848,20 +841,30 @@ func startElectrolyser(w http.ResponseWriter, r *http.Request) {
 		if !started {
 			// We are the first to be started
 			switch currentSettings.WaterDumpAction {
-			case ELSTART:
+			case ElStart:
 				go TurnOnWaterDumpValve()
 				break
-			case ELSTARTANDCONDUCTIVITY:
+			case ElStartAndConductivity:
 				_, conductivity := AnalogInputs.GetInput(7)
 				if float32(currentSettings.MaximumConductivity) < conductivity {
 					go TurnOnWaterDumpValve()
 				}
 			}
 		}
-
-		el.Start()
+		if err := el.Start(); err != http.StatusOK {
+			if err == http.StatusConflict {
+				ReturnJSONErrorString(w, function, "Too soon after last Stop", err, false)
+			} else if err == http.StatusBadRequest {
+				if err == http.StatusBadRequest {
+					ReturnJSONErrorString(w, function, "Electrolyser is not powered on", err, false)
+				} else {
+					ReturnJSONErrorString(w, function, "Unknown Error", err, true)
+				}
+			}
+		} else {
+			ReturnJSONSuccess(w)
+		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func stopElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -871,11 +874,21 @@ func stopElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
-		el.Stop()
+		if err := el.Stop(); err != http.StatusOK {
+			if err == http.StatusConflict {
+				ReturnJSONErrorString(w, function, "Too soon after last Start", err, false)
+			} else {
+				if err == http.StatusBadRequest {
+					ReturnJSONErrorString(w, function, "Electrolyser is not powered on", err, false)
+				} else {
+					ReturnJSONErrorString(w, function, "Unknown Error", err, true)
+				}
+			}
+		} else {
+			ReturnJSONSuccess(w)
+		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func preheatElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -901,19 +914,18 @@ func rebootElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
 		if !el.IsSwitchedOn() {
 			ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
-		}
-		log.Println("Rebooting")
-		if err := el.Reboot(); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return
+		} else {
+			if err := el.Reboot(); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			} else {
+				ReturnJSONSuccess(w)
+				log.Println("Reboot sent.")
+			}
 		}
 	}
-	ReturnJSONSuccess(w)
-	log.Println("Reboot sent.")
 }
 
 func locateElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -923,31 +935,38 @@ func locateElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
-		if err := el.Locate(); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return
+		if !el.IsSwitchedOn() {
+			ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
+		} else {
+			if err := el.Locate(); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			} else {
+				ReturnJSONSuccess(w)
+			}
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
-func blowdownElectrolyser(w http.ResponseWriter, r *http.Request) {
+func blowDownElectrolyser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	request := strings.ToLower(vars["electrolyser"])
-	const function = "blowdownElectrolyser"
+	const function = "blowDownElectrolyser"
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
 		return
 	} else {
-		if err := el.BlowDown(); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return
+		if !el.IsSwitchedOn() {
+			ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
+		} else {
+			if err := el.BlowDown(); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			} else {
+				ReturnJSONSuccess(w)
+			}
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func refillElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -957,14 +976,17 @@ func refillElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
-		if err := el.Refill(); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return
+		if !el.IsSwitchedOn() {
+			ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
+		} else {
+			if err := el.Refill(); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			} else {
+				ReturnJSONSuccess(w)
+			}
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func startMaintenanceElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -974,14 +996,17 @@ func startMaintenanceElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
-		if err := el.EnableMaintenance(); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return
+		if !el.IsSwitchedOn() {
+			ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
+		} else {
+			if err := el.EnableMaintenance(); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			} else {
+				ReturnJSONSuccess(w)
+			}
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func stopMaintenanceElectrolyser(w http.ResponseWriter, r *http.Request) {
@@ -991,24 +1016,31 @@ func stopMaintenanceElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
-		return
 	} else {
-		if err := el.DisableMaintenance(); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return
+		if !el.IsSwitchedOn() {
+			ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
+		} else {
+			if err := el.DisableMaintenance(); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			} else {
+				ReturnJSONSuccess(w)
+			}
 		}
 	}
-	ReturnJSONSuccess(w)
 }
 
 func startDryer(w http.ResponseWriter, _ *http.Request) {
 	const function = "startDryer"
 	for _, el := range Electrolysers.Arr {
 		if el.hasDryer {
-			if err := el.StartDryer(); err != nil {
-				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			if !el.IsSwitchedOn() {
+				ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
 			} else {
-				ReturnJSONSuccess(w)
+				if err := el.StartDryer(); err != nil {
+					ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+				} else {
+					ReturnJSONSuccess(w)
+				}
 			}
 			return
 		}
@@ -1020,10 +1052,14 @@ func stopDryer(w http.ResponseWriter, _ *http.Request) {
 	const function = "stopDryer"
 	for _, el := range Electrolysers.Arr {
 		if el.hasDryer {
-			if err := el.StopDryer(); err != nil {
-				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			if !el.IsSwitchedOn() {
+				ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
 			} else {
-				ReturnJSONSuccess(w)
+				if err := el.StopDryer(); err != nil {
+					ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+				} else {
+					ReturnJSONSuccess(w)
+				}
 			}
 			return
 		}
@@ -1035,10 +1071,14 @@ func rebootDryer(w http.ResponseWriter, _ *http.Request) {
 	const function = "rebootDryer"
 	for _, el := range Electrolysers.Arr {
 		if el.hasDryer {
-			if err := el.RebootDryer(); err != nil {
-				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			if !el.IsSwitchedOn() {
+				ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
 			} else {
-				ReturnJSONSuccess(w)
+				if err := el.RebootDryer(); err != nil {
+					ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+				} else {
+					ReturnJSONSuccess(w)
+				}
 			}
 			return
 		}
@@ -1281,24 +1321,22 @@ func setFuelCellSettings(w http.ResponseWriter, r *http.Request) {
 		ReturnJSONError(w, function, err, http.StatusBadRequest, true)
 		return
 	}
-	if floatval, err := strconv.ParseFloat(r.FormValue("PowerDemand"), 64); err != nil {
+	if floatVal, err := strconv.ParseFloat(r.FormValue("PowerDemand"), 64); err != nil {
 		ReturnJSONError(w, function, err, http.StatusBadRequest, true)
 		return
 	} else {
-		currentSettings.FuelCellSettings.PowerSetting = floatval
-		FuelCell.Control.TargetPower = floatval
+		currentSettings.FuelCellSettings.PowerSetting = floatVal
+		FuelCell.Control.TargetPower = floatVal
 	}
-	if floatval, err := strconv.ParseFloat(r.FormValue("LowBattDemand"), 64); err != nil {
+	if floatVal, err := strconv.ParseFloat(r.FormValue("LowBattDemand"), 64); err != nil {
 		ReturnJSONError(w, function, err, http.StatusBadRequest, true)
 	} else {
-		currentSettings.FuelCellSettings.LowBatterySetpoint = floatval
-		//		FuelCell.Control.TargetBatteryLow = floatval
+		currentSettings.FuelCellSettings.LowBatterySetpoint = floatVal
 	}
-	if floatval, err := strconv.ParseFloat(r.FormValue("HighBattDemand"), 64); err != nil {
+	if floatVal, err := strconv.ParseFloat(r.FormValue("HighBattDemand"), 64); err != nil {
 		ReturnJSONError(w, function, err, http.StatusBadRequest, true)
 	} else {
-		currentSettings.FuelCellSettings.HighBatterySetpoint = floatval
-		//		FuelCell.Control.TargetBatteryHigh = floatval
+		currentSettings.FuelCellSettings.HighBatterySetpoint = floatVal
 	}
 	if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 		log.Print(err)
@@ -1349,15 +1387,15 @@ func turnOnOffRelay(relayNum uint8, bOn bool) error {
 	if relayNum < uint8(len(Relays.Relays)) {
 		if !bOn {
 			// Turning the relay off so check if we are controlling an Electrolyser
-			if el := Electrolysers.FindByRelay(uint8(relayNum)); el != nil {
+			if el := Electrolysers.FindByRelay(relayNum); el != nil {
 				// Check the stack voltage if it is running.
 				if el.clientConnected && int(el.status.StackVoltage) >= currentSettings.ElectrolyserMaxStackVoltsTurnOff {
-					return fmt.Errorf("Electrolyser stack voltage is too high (%f). It must be below %dV", el.status.StackVoltage, currentSettings.ElectrolyserMaxStackVoltsTurnOff)
+					return fmt.Errorf("electrolyser stack voltage is too high (%f). It must be below %dV", el.status.StackVoltage, currentSettings.ElectrolyserMaxStackVoltsTurnOff)
 				}
 			}
 		} else {
 			// If this is an electrolyser
-			if el := Electrolysers.FindByRelay(uint8(relayNum)); el != nil {
+			if el := Electrolysers.FindByRelay(relayNum); el != nil {
 				// Check status of all electrolysers. Are any on already?
 				on := false
 				for _, el := range Electrolysers.Arr {
@@ -1368,10 +1406,10 @@ func turnOnOffRelay(relayNum uint8, bOn bool) error {
 				if !on {
 					// This the first one to be powered up?
 					switch currentSettings.WaterDumpAction {
-					case ELPOWERED:
+					case ElPowered:
 						go TurnOnWaterDumpValve()
 						break
-					case ELPOWERANDCONDUCTIVITY:
+					case ElPowerAndConductivity:
 						_, conductivity := AnalogInputs.GetInput(7)
 						if float32(currentSettings.MaximumConductivity) < conductivity {
 							go TurnOnWaterDumpValve()
@@ -1381,18 +1419,15 @@ func turnOnOffRelay(relayNum uint8, bOn bool) error {
 				}
 			}
 		}
-		Relays.SetRelay(uint8(relayNum), bOn)
+		Relays.SetRelay(relayNum, bOn)
 	} else {
-		return fmt.Errorf("Invalid relay number - %d", relayNum)
+		return fmt.Errorf("invalid relay number - %d", relayNum)
 	}
 	return nil
 }
 
-/*
-*
-TurnOnWaterDumpValve will dump water if we have a water dump relay configured and the current conductivity is above the minimum set.
-It will dump for the configured number of seconds
-*/
+// TurnOnWaterDumpValve will dump water if we have a water dump relay configured and the current conductivity is above the minimum set.
+// It will dump for the configured number of seconds
 func TurnOnWaterDumpValve() {
 	if currentSettings.WaterDumpRelay != 255 {
 		if !Relays.GetRelay(currentSettings.WaterDumpRelay) {
@@ -1503,7 +1538,7 @@ type SystemSettings struct {
 }
 
 type SystemAlarmsType struct {
-	ConducitivtyAlarm bool `json:"conductivityAlarm"`
+	ConductivityAlarm bool `json:"conductivityAlarm"`
 	H2DetectedAlarm   bool `json:"h2Alarm"`
 }
 
