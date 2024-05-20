@@ -20,6 +20,36 @@ function setGasDisplayOptions(opt) {
     DisplaySelection.val(opt);
 }
 
+function setupNumericField(inputField, units) {
+    let input = document.getElementById(inputField);
+    let hiddenValue = document.getElementById(inputField + "Value");
+    let unitsValue = document.getElementById(inputField + "Units");
+    input.addEventListener("input", () => {
+        hiddenValue.innerHTML = input.value;
+//        Only show units when there is a value?
+        unitsValue.innerHTML = (input.value.length > 0 ? (" " + units) : "");
+    });
+}
+
+function setupFields() {
+    setupNumericField("electrolyserMaxStackVoltsForShutdown", "Volts")
+    setupNumericField("electrolyserStopToStartTime", "Minutes")
+    setupNumericField("electrolyserStartToStopTime", "Minutes")
+    setupNumericField("maxConductivity", "µS/cm")
+    setupNumericField("maxGreenConductivity", "µS/cm")
+    setupNumericField("maxYellowConductivity", "µS/cm")
+    setupNumericField("waterQualityAlarm", "µS/cm")
+    setupNumericField("waterDumpSeconds", "Seconds");
+    setupNumericField("fcMaxOutput", "kW");
+    setupNumericField("fcMaxTime", "Minutes");
+    setupNumericField("fcStartSOC", "%");
+    setupNumericField("fcStopSOC", "%");
+    setupNumericField("GasCapacity", "Nl");
+    setupNumericField("GasDetectorThreshold", "");
+    setupNumericField("MaxGasPressure", "Bar");
+    setupNumericField("GasCapacity", "Nl");
+}
+
 function loadSettings() {
     fetch("/getSettings")
         .then( function(response) {
@@ -37,10 +67,6 @@ function loadSettings() {
                         if (data.FuelCell) {
                             $("#FuelCell").attr('checked', true);
                         }
-                        // $("#electrolyserHoldOffTime").val(data.electrolyserHoldOffTime / 1000000000);
-                        // $("#electrolyserHoldOnTime").val(data.electrolyserHoldOnTime / 1000000000);
-                        //$("#electrolyserOffDelay").val(data.electrolyserOffDelay / 1000000000);
-                        //$("#electrolyserShutDownDelay").val(data.electrolyserShutDownDelay / 1000000000);
                         if ((data.electrolyserStopToStartTime >= 1) && (data.electrolyserStopToStartTime <= 20)) {
                             $('#electrolyserStopToStartTime').val(data.electrolyserStopToStartTime);
                         }
@@ -60,6 +86,18 @@ function loadSettings() {
                         }
                         if (data.FuelCellSettings.Capacity !== "") {
                             $("#fcCapacity").val(data.FuelCellSettings.Capacity);
+                        }
+                        if (data.FuelCellSettings.StartSOC !== "") {
+                            $("#fcStartSOC").val(data.FuelCellSettings.StartSOC);
+                        }
+                        if (data.FuelCellSettings.StopSOC !== "") {
+                            $("#fcStopSOC").val(data.FuelCellSettings.StopSOC);
+                        }
+                        if (data.FuelCellSettings.MaxRunTime !== "") {
+                            $("#fcMaxTime").val(data.FuelCellSettings.MaxRunTime);
+                        }
+                        if (data.FuelCellSettings.MaximumOutput !== "") {
+                            $("#fcMaxOutput").val(data.FuelCellSettings.MaximumOutput);
                         }
                         if (data.electrolysers != null) {
                             Electrolysers = data.electrolysers;

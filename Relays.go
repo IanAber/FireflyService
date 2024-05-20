@@ -75,11 +75,26 @@ func (rl *RelaysType) SetRelayName(relay uint8, name string) {
 }
 
 func (rl *RelaysType) SetRelay(relay uint8, on bool) {
+	// If this is the dryer relay and we are trying to turn it off
 	if !on && relay == uint8(currentSettings.DryerRelay) {
 		for _, el := range Electrolysers.Arr {
+			// If an electrolyser is powered on then do not turn off the dryer
 			if el.IsSwitchedOn() && el.powerRelay != relay {
 				// We are trying to turn off the dryer relay but there is an electrolyser
 				// that is still powered on with a different relay, so ignore the request.
+
+				return
+			}
+		}
+	}
+	// If this is the water management relay and we are trying to turn it off and we want it on when any electrolyser is on
+	if !on && relay == uint8(currentSettings.WaterDumpRelay) && (currentSettings.WaterDumpAction == ELRun) {
+		for _, el := range Electrolysers.Arr {
+			// If an electrolyser is powered on then do not turn off the dryer
+			if el.IsSwitchedOn() && el.powerRelay != relay {
+				// We are trying to turn off the dryer relay but there is an electrolyser
+				// that is still powered on with a different relay, so ignore the request.
+
 				return
 			}
 		}

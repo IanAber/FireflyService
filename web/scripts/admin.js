@@ -271,7 +271,7 @@ function UpdateInput(Input, idx) {
 
 function UpdateButton(Button, idx) {
     td_button = $("#button" + idx);
-    if (Button.Name.startsWith("Button-")) {
+    if (Button.Name.startsWith("Button-") || (Button.Name === "")) {
         td_button.hide();
     } else {
         td_button.removeClass("ButtonChanging");

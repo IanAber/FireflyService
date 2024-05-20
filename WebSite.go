@@ -417,6 +417,10 @@ func redirectToNodeRED(w http.ResponseWriter, r *http.Request) {
 	} else {
 		if strings.Contains(r.RequestURI, "20080") {
 			url = strings.Replace(strings.Replace(r.RequestURI, "20080", "1880", 1), "NodeRED", "", 1)
+		} else {
+			if strings.HasSuffix(r.RequestURI, "0/NodeRED") {
+				url = strings.Replace(r.RequestURI, "0/NodeRED", "1", 1)
+			}
 		}
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 	}
@@ -427,6 +431,10 @@ func redirectToNodeREDUI(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.RequestURI, "20080") {
 		// We are local so go to the local NodeRedUI
 		url = strings.Replace(strings.Replace(r.RequestURI, "20080", "1880", 1), "NodeREDUI", "ui", 1)
+	} else {
+		if strings.HasSuffix(r.RequestURI, "0/NodeREDUI") {
+			url = strings.Replace(r.RequestURI, "0/NodeREDUI", "1/ui", 1)
+		}
 	}
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }

@@ -82,7 +82,7 @@
         },{
           type: 'spline',
           valueAxis: {
-            unitInterval: 50,
+            unitInterval: 10,
             gridLines: {
               visible: true,
               step: 1,
@@ -226,7 +226,7 @@
         },{
           type: 'spline',
           valueAxis : {
-            unitInterval: 50,
+            unitInterval: 500,
             gridLines : {
               visible: true,
               step : 1,
@@ -239,11 +239,11 @@
               step : 2,
             },
             minValue: 0,
-            maxValue : 1000,
+            maxValue : 10000,
             description : 'Speed',
           },
           series: [{
-            dataField: 'electrolyteFanSpeec',
+            dataField: 'electrolyteFanSpeed',
             displayText: 'Electrolyte Fan'
           },{
             dataField: 'airFanSpeed',

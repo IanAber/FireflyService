@@ -1411,6 +1411,10 @@ type PanStatus struct {
 	WaterPumpActive      bool
 	CoolingFanSpeed      uint16
 	ClearFaultsActive    bool
+	StartSOC             uint16
+	StopSOC              uint16
+	MaxRunTime           uint16
+	MaxOutput            uint16
 }
 
 /*
@@ -1458,6 +1462,10 @@ func (fc *PANFuelCell) GetStatus() *PanStatus {
 	//status.BMSTargetLow = fc.Control.TargetBatteryLow
 	status.BMSTargetHigh = currentSettings.FuelCellSettings.HighBatterySetpoint
 	status.BMSTargetLow = currentSettings.FuelCellSettings.LowBatterySetpoint
+	status.MaxOutput = currentSettings.FuelCellSettings.MaximumOutput
+	status.MaxRunTime = currentSettings.FuelCellSettings.MaxRunTime
+	status.StartSOC = currentSettings.FuelCellSettings.StartSOC
+	status.StopSOC = currentSettings.FuelCellSettings.StopSOC
 	status.RunStatus = fc.PowerMode.PowerModeState.String()
 	status.Alarms = fc.Alarms.Text()
 	status.DCOutputStatus = fc.DCOutput.GetStatus()

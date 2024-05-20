@@ -540,11 +540,81 @@ td.DCError {
     text-align: left;
 }
 
+td.settingLabel {
+    text-align: right;
+}
+
+td.settingValue {
+    text-align: left;
+}
+
 form.settings {
     background-color: aliceblue;
 }
+
 input.settings {
-    background-color: antiquewhite;
+    border: 2px solid #fee400;
+    background-color: #373637;
+    width: 95%;
+    font-family: serif;
+    font-size: 18px;
+    line-height: 25px;
+    font-weight: normal;
+    color: white;
+}
+
+.inputNumeric {
+    border: 2px solid #fee400;
+    background-color: #373637;
+    width: 100%;
+    font-family: serif;
+    font-size: 18px;
+    line-height: 25px;
+    font-weight: normal;
+    color: white;
+}
+
+.wrapper {
+    position: relative;
+    width: 95%;
+}
+
+select {
+    color: white;
+    border: 2px solid #fee400;
+    background-color: #373637;
+    height: 2em;
+    font-size: large;
+    width: 100%;
+}
+
+div.inputUnits {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 10px;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    display: flex;
+}
+span.inputUnits {
+
+    /* Match input styles */
+    font-family: serif;
+    font-size: 18px;
+    line-height: 25px;
+    font-weight: normal;
+
+    /* includes border width */
+    padding: 5px 5px 5px 12px;
+    color: white;
+    opacity: 0.8;
+    white-space: pre;
+}
+
+.inputInvisible {
+    visibility: hidden;
 }
 
 span.connectionLost {

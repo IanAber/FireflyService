@@ -34,6 +34,7 @@ const (
 	ElStartAndConductivity
 	ElPowered
 	ElStart
+	ELRun
 )
 
 type PortNameType struct {
@@ -53,12 +54,16 @@ type ModbusNameType struct {
 }
 
 type FuelCellSettingsType struct {
-	HighBatterySetpoint float64 // Default high battery setpoint
-	LowBatterySetpoint  float64 // Default low battery setpoint
-	PowerSetting        float64 // Default power level
-	IgnoreIsoLow        bool    // Flag to control IsoLow fault behaviour. True = suppress fault
-	Enabled             bool    // Allow us to control the fuel cell
-	Capacity            int16   // Capacity in kW
+	HighBatterySetpoint float64 `json:"HighBatterySetpoint"` // Default high battery setpoint
+	LowBatterySetpoint  float64 `json:"LowBatterySetpoint"`  // Default low battery setpoint
+	PowerSetting        float64 `json:"PowerSetting"`        // Default power level
+	IgnoreIsoLow        bool    `json:"IgnoreIsoLow"`        // Flag to control IsoLow fault behaviour. True = suppress fault
+	Enabled             bool    `json:"Enabled"`             // Allow us to control the fuel cell
+	Capacity            uint16  `json:"Capacity"`            // Capacity in kW
+	StartSOC            uint16  `json:"StartSOC"`            // Battery SOC at which the fuel cell will start
+	StopSOC             uint16  `json:"StopSOC"`             // Battery SOC at which the fuel cell will stop
+	MaxRunTime          uint16  `json:"MaxRunTime"`          // Maximum number of minutes the fuel cell is allowed to run
+	MaximumOutput       uint16  `json:"MaximumOutput"`       // Maximum power the fuel cell can deliver
 }
 
 type ElectrolyserSettingType struct {
@@ -145,6 +150,10 @@ func NewSettings() *SettingsType {
 	settings.FuelCellSettings.IgnoreIsoLow = false
 	settings.FuelCellSettings.Enabled = false
 	settings.FuelCellSettings.Capacity = 20
+	settings.FuelCellSettings.MaximumOutput = 10
+	settings.FuelCellSettings.StartSOC = 50
+	settings.FuelCellSettings.StopSOC = 70
+	settings.FuelCellSettings.MaxRunTime = 90
 
 	for i := range settings.ACMeasurement {
 		settings.ACMeasurement[i].Name = ""
@@ -551,8 +560,33 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		ReturnJSONError(w, DeviceString+"FuelCellCapacity", err, http.StatusBadRequest, true)
 		return
 	} else {
-		settings.FuelCellSettings.Capacity = int16(val)
+		settings.FuelCellSettings.Capacity = uint16(val)
 	}
+	if val, err := strconv.ParseInt(r.FormValue("fcStartSOC"), 10, 16); err != nil {
+		ReturnJSONError(w, DeviceString+"FuelCellStartSOC", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.FuelCellSettings.StartSOC = uint16(val)
+	}
+	if val, err := strconv.ParseInt(r.FormValue("fcStopSOC"), 10, 16); err != nil {
+		ReturnJSONError(w, DeviceString+"FuelCellStopSOC", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.FuelCellSettings.StopSOC = uint16(val)
+	}
+	if val, err := strconv.ParseInt(r.FormValue("fcMaxTime"), 10, 16); err != nil {
+		ReturnJSONError(w, DeviceString+"FuelCellMaxTime", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.FuelCellSettings.MaxRunTime = uint16(val)
+	}
+	if val, err := strconv.ParseInt(r.FormValue("fcMaxOutput"), 10, 16); err != nil {
+		ReturnJSONError(w, DeviceString+"FuelCellMaxOutput", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.FuelCellSettings.MaximumOutput = uint16(val)
+	}
+
 	settings.ACMeasurement[0].Name = strings.TrimSpace(r.FormValue("ACMeasurement20"))
 	settings.ACMeasurement[0].SlaveID = 20
 	settings.ACMeasurement[1].Name = strings.TrimSpace(r.FormValue("ACMeasurement21"))
@@ -663,7 +697,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		ReturnJSONError(w, "SaveSettings", err, http.StatusBadRequest, true)
 		return
 	} else {
-		settings.FuelCellSettings.Capacity = int16(val)
+		settings.FuelCellSettings.Capacity = uint16(val)
 	}
 	settings.NodeRED = r.FormValue("nodeRed")
 	//	settings.Subnet = r.FormValue("subnet")

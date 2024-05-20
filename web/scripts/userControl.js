@@ -34,7 +34,7 @@ function RegisterWebSocket() {
                 if (FuelCell.length === 0) {
                     sCode = `<div id="FuelCell" class="centered" style="{visibility:hidden}"><div id="fcStackPower"></div></div>`;
                     jQuery('#systems').append(sCode);
-
+                    FuelCell = $("#fcStackPower");
                     FuelCell.jqxGauge({
                         ticksMinor: {interval: 500, size: '5%'},
                         ticksMajor: {interval: 1000,size: '9%'},

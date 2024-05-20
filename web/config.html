@@ -9,7 +9,7 @@
     <script type="text/ecmascript" src="scripts/config.js"></script>
     <script type="text/ecmascript" src="scripts/utils.js"></script>
 </head>
-<body onLoad="loadSettings(); PopulateTitle();" >
+<body onLoad="setupFields(); loadSettings(); PopulateTitle();" >
     <header class="header">
         <h1>
             <span class="system" id="system">Loading...</span>
@@ -18,7 +18,18 @@
     </header>
     <div>
         <form class="settings" action="/setSettings" method="post" id="settingsForm">
-            <label for="name">System Name</label><input type="text" id="name" name="name" value="Loading..."><br />
+            <table class="settings">
+                <tbody>
+                    <tr>
+                        <td class="settingsLabel">
+                            <label for="name">System Name</label>
+                        </td>
+                        <td class="settingValue">
+                            <input class="settings" type="text" id="name" name="name" value="Loading...">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             <table class="settings">
                 <thead>
                     <tr>
@@ -413,7 +424,7 @@
                     </table>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 50% 50%; border-top-color: black;border-top-width: 1px; border-top-style: solid;border-bottom-color: black;border-bottom-width: 1px; border-bottom-style: solid;">
+            <div style="display: grid; grid-template-columns: 50% 50%; border-top-color: #000000;border-top-width: 1px; border-top-style: solid;border-bottom-color: #000000;border-bottom-width: 1px; border-bottom-style: solid;">
                 <div>
                     <table class="settings">
                         <thead>
@@ -452,22 +463,22 @@
                         <tr>
                             <td><label for="DCMeasurement10">Device 0</label></td>
                             <td><input class="settings" type="text" id="DCMeasurement10" name="DCMeasurement10" value=""></td>
-                            <td><a id="calibrateDC10" href="/calibrateDC/0" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                            <td><a id="calibrateDC10" href="/calibrateDC/0" target="_blank" style="display: none;"><img src="images/calibrate.png" alt="Calibrate"></a></td>
                         </tr>
                         <tr>
                             <td><label for="DCMeasurement11">Device 1</label></td>
                             <td><input class="settings" type="text" id="DCMeasurement11" name="DCMeasurement11" value=""></td>
-                            <td><a id="calibrateDC11" href="/calibrateDC/1" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                            <td><a id="calibrateDC11" href="/calibrateDC/1" target="_blank" style="display: none;"><img src="images/calibrate.png" alt="Calibrate"></a></td>
                         </tr>
                         <tr>
                             <td><label for="DCMeasurement12">Device 2</label></td>
                             <td><input class="settings" type="text" id="DCMeasurement12" name="DCMeasurement12" value=""></td>
-                            <td><a id="calibrateDC12" href="/calibrateDC/2" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                            <td><a id="calibrateDC12" href="/calibrateDC/2" target="_blank" style="display: none;"><img src="images/calibrate.png" alt="Calibrate"></a></td>
                         </tr>
                         <tr>
                             <td><label for="DCMeasurement13">Device 3</label></td>
                             <td><input class="settings" type="text" id="DCMeasurement13" name="DCMeasurement13" value=""></td>
-                            <td><a id="calibrateDC13" href="/calibrateDC/3" target="_blank" style="display: none"><img src="images/calibrate.png" alt="Calibrate"></a></td>
+                            <td><a id="calibrateDC13" href="/calibrateDC/3" target="_blank" style="display: none;"><img src="images/calibrate.png" alt="Calibrate"></a></td>
                         </tr>
                         </tbody>
                     </table>
@@ -476,76 +487,65 @@
             <div class="Electrolysers">
                 <h2 class="firefly Electrolysers">Electrolysers</h2>
                 <div class="ElectrolyserParams">
-                    <label class="Electrolysers" for="electrolyserMaxStackVoltsForShutdown">Max Volts For Shutdown</label>
-                    <select class="Electrolysers" id="electrolyserMaxStackVoltsForShutdown" name="electrolyserMaxStackVoltsForShutdown"
-                        title="Set the maximum voltage for the stack to allow the electrolyser to be turned off.">
-                        <option value="35">35V</option>
-                        <option value="34">34V</option>
-                        <option value="33">33V</option>
-                        <option value="32">32V</option>
-                        <option value="31">31V</option>
-                        <option value="30" selected>30V</option>
-                        <option value="29">29V</option>
-                        <option value="28">28V</option>
-                        <option value="27">27V</option>
-                        <option value="26">26V</option>
-                        <option value="25">25V</option>
-                    </select><br />
-                    <label class="Electrolysers" for="electrolyserStopToStartTime">Minimum Stop Time</label>
-                    <select class="Electrolysers" id="electrolyserStopToStartTime" name="electrolyserStopToStartTime" title="Select the minimum time between stopping and restarting the electrolyser">
-                        <option value="1">1 minute</option>
-                        <option value="2">2 minutes</option>
-                        <option value="3">3 minutes</option>
-                        <option value="4">4 minutes</option>
-                        <option value="5">5 minutes</option>
-                        <option value="6">6 minutes</option>
-                        <option value="7">7 minutes</option>
-                        <option value="8">8 minutes</option>
-                        <option value="9">9 minutes</option>
-                        <option value="10">10 minutes</option>
-                        <option value="11">11 minutes</option>
-                        <option value="12">12 minutes</option>
-                        <option value="13">13 minutes</option>
-                        <option value="14">14 minutes</option>
-                        <option value="15">15 minutes</option>
-                        <option value="16">16 minutes</option>
-                        <option value="17">17 minutes</option>
-                        <option value="18">18 minutes</option>
-                        <option value="19">19 minutes</option>
-                        <option value="20">20 minutes</option>
-                    </select><br />
-                    <label class="Electrolysers" for="electrolyserStartToStopTime">Minimum Run Time</label>
-                    <select class="Electrolysers" id="electrolyserStartToStopTime" name="electrolyserStartToStopTime" title="Select the minimum time between starting and stopping the electrolyser">
-                        <option value="1">1 minute</option>
-                        <option value="2">2 minutes</option>
-                        <option value="3">3 minutes</option>
-                        <option value="4">4 minutes</option>
-                        <option value="5">5 minutes</option>
-                        <option value="6">6 minutes</option>
-                        <option value="7">7 minutes</option>
-                        <option value="8">8 minutes</option>
-                        <option value="9">9 minutes</option>
-                        <option value="10">10 minutes</option>
-                        <option value="11">11 minutes</option>
-                        <option value="12">12 minutes</option>
-                        <option value="13">13 minutes</option>
-                        <option value="14">14 minutes</option>
-                        <option value="15">15 minutes</option>
-                        <option value="16">16 minutes</option>
-                        <option value="17">17 minutes</option>
-                        <option value="18">18 minutes</option>
-                        <option value="19">19 minutes</option>
-                        <option value="20">20 minutes</option>
-                    </select>
-                </div>
-                <div class="ElectrolyserParams">
-                    <label class="Electrolysers" for="dryerRelay">Dryer Power Relay</label>
-                    <select class="Electrolysers" id="dryerRelay" name="dryerRelay">
-                        <option value="-1">No Dryer</option>
-                    </select>
+                    <table class="settings">
+                        <tbody>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label class="Electrolysers" for="electrolyserMaxStackVoltsForShutdown">Max Volts For Shutdown</label>
+                                </td>
+                                <td class="settingValue">
+                                    <div class="wrapper">
+                                        <input class="inputNumeric" id="electrolyserMaxStackVoltsForShutdown" name="electrolyserMaxStackVoltsForShutdown" type="number" value="30" min="25" max="35" step="1"  title="Set the maximum voltage for the stack to allow the electrolyser to be turned off."/>
+                                        <div class="inputUnits">
+                                            <span class="inputInvisible" id="electrolyserMaxStackVoltsForShutdownValue">5</span>
+                                            <span class="inputUnits" id="electrolyserMaxStackVoltsForShutdownUnits"> Minutes</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label class="Electrolysers" for="electrolyserStopToStartTime">Minimum Stop Time</label>
+                                </td>
+                                <td class="settingValue">
+                                    <div class="wrapper">
+                                        <input class="inputNumeric" id="electrolyserStopToStartTime" name="electrolyserStopToStartTime" type="number" value="5" min="1" max="20" step="1"  title="Set the minimum time between stopping and restarting the electrolyser"/>
+                                        <div class="inputUnits">
+                                            <span class="inputInvisible" id="electrolyserStopToStartTimeValue">5</span>
+                                            <span class="inputUnits" id="electrolyserStopToStartTimeUnits"> Minutes</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label class="Electrolysers" for="electrolyserStartToStopTime">Minimum Run Time</label>
+                                </td>
+                                <td class="settingValue">
+                                    <div class="wrapper">
+                                        <input class="inputNumeric" id="electrolyserStartToStopTime" name="electrolyserStartToStopTime" type="number" value="5" min="1" max="20" step="1"  title="Set the minimum time between starting and stopping the electrolyser"/>
+                                        <div class="inputUnits">
+                                            <span class="inputInvisible" id="electrolyserStartToStopTimeValue">5</span>
+                                            <span class="inputUnits" id="electrolyserStartToStopTimeUnits"> Minutes</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label class="Electrolysers" for="dryerRelay">Dryer Power Relay</label>
+                                </td>
+                                <td class="settingValue">
+                                    <select class="Electrolysers" id="dryerRelay" name="dryerRelay">
+                                        <option value="-1">No Dryer</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="Electrolysers">
-                    <label for="ElectrolyserRelays"></label><input style="visibility: hidden" name="ElectrolyserRelays" id="ElectrolyserRelays" value="[]">
+                    <label for="ElectrolyserRelays"></label><input style="visibility: hidden;" name="ElectrolyserRelays" id="ElectrolyserRelays" value="[]">
                     <table class="Electrolysers" id="Electrolysers">
                         <thead class="Electrolysers">
                             <tr class="Electrolysers">
@@ -565,266 +565,360 @@
                             </tr>
                         </tfoot>
                     </table>
-                    <table class="Electrolysers">
-                        <tr class="Electrolysers">
-                        </tr>
-                    </table>
                 </div>
             </div>
             <div class="CoolantManagement">
                 <h2 class="firefly CoolantParams">Electrolyser Cooling</h2>
-                <div class="CoolantParams">
-                    <label for="coolingPumpRelay">Water Pump</label>
-                    <select id="coolingPumpRelay" name="coolingPumpRelay" title="CChoose the relay that controls the cooling pump for water cooled electrolysers">
-                        <option value="255" selected>No Water Pump</option>
-                    </select>
-                </div>
-                <div class="CoolantParams">
-                    <label for="coolingPumpStartTemperature">Pump Start Temperature</label>
-                    <select id="coolingPumpStartTemperature" name="coolingPumpStartTemperature" title="The cooling pump will start when one or more electrolysers reaches this stack temperature.">
-                        <option value="25">25℃</option>
-                        <option value="26">26℃</option>
-                        <option value="27">27℃</option>
-                        <option value="28">28℃</option>
-                        <option value="29">29℃</option>
-                        <option value="30">30℃</option>
-                        <option value="31">31℃</option>
-                        <option value="32">32℃</option>
-                        <option value="33">33℃</option>
-                        <option value="34">34℃</option>
-                        <option value="35">35℃</option>
-                        <option value="36">36℃</option>
-                        <option value="37">37℃</option>
-                        <option value="38">38℃</option>
-                        <option value="39">39℃</option>
-                        <option value="40">40℃</option>
-                        <option value="41">41℃</option>
-                        <option value="42">42℃</option>
-                        <option value="43">43℃</option>
-                        <option value="44">44℃</option>
-                        <option value="45">45℃</option>
-                        <option value="46">46℃</option>
-                        <option value="47">47℃</option>
-                        <option value="48">48℃</option>
-                        <option value="49">49℃</option>
-                        <option value="50">50℃</option>
-                        <option value="51">51℃</option>
-                        <option value="52">52℃</option>
-                        <option value="53">53℃</option>
-                        <option value="54">54℃</option>
-                        <option value="55">55℃</option>
-                        <option value="56">56℃</option>
-                        <option value="57">57℃</option>
-                        <option value="58">58℃</option>
-                        <option value="59">59℃</option>
-                        <option value="60">60℃</option>
-                    </select>
-                </div>
-                <div class="CoolantParams">
-                    <label for="coolingPumpStopTemperature">Pump Stop Temperature</label>
-                    <select id="coolingPumpStopTemperature" name="coolingPumpStopTemperature" title="The cooling pump will stop when all electrolysers reach this stack temperature.">
-                        <option value="25">25℃</option>
-                        <option value="26">26℃</option>
-                        <option value="27">27℃</option>
-                        <option value="28">28℃</option>
-                        <option value="29">29℃</option>
-                        <option value="30">30℃</option>
-                        <option value="31">31℃</option>
-                        <option value="32">32℃</option>
-                        <option value="33">33℃</option>
-                        <option value="34">34℃</option>
-                        <option value="35">35℃</option>
-                        <option value="36">36℃</option>
-                        <option value="37">37℃</option>
-                        <option value="38">38℃</option>
-                        <option value="39">39℃</option>
-                        <option value="40">40℃</option>
-                        <option value="41">41℃</option>
-                        <option value="42">42℃</option>
-                        <option value="43">43℃</option>
-                        <option value="44">44℃</option>
-                        <option value="45">45℃</option>
-                        <option value="46">46℃</option>
-                        <option value="47">47℃</option>
-                        <option value="48">48℃</option>
-                        <option value="49">49℃</option>
-                        <option value="50">50℃</option>
-                        <option value="51">51℃</option>
-                        <option value="52">52℃</option>
-                        <option value="53">53℃</option>
-                        <option value="54">54℃</option>
-                        <option value="55">55℃</option>
-                        <option value="56">56℃</option>
-                        <option value="57">57℃</option>
-                        <option value="58">58℃</option>
-                        <option value="59">59℃</option>
-                        <option value="60">60℃</option>
-                    </select>
-                </div>
+                <table class="settings">
+                    <tbody>
+                        <tr>
+                            <td class="settingLabel">
+                                <label for="coolingPumpRelay">Water Pump</label>
+                            </td>
+                            <td class="settingValue">
+                                <select id="coolingPumpRelay" name="coolingPumpRelay" title="CChoose the relay that controls the cooling pump for water cooled electrolysers">
+                                    <option value="255" selected>No Water Pump</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="settingLabel">
+                                <label for="coolingPumpStartTemperature">Pump Start Temperature</label>
+                            </td>
+                            <td class="settingValue">
+                                <div class="wrapper">
+                                    <input class="inputNumeric" id="coolingPumpStartTemperature" name="coolingPumpStartTemperature" type="number" value="40" min="25" max="60" step="1"  title="The cooling pump will start when one or more electrolysers reaches this stack temperature."/>
+                                    <div class="inputUnits">
+                                        <span class="inputInvisible" id="coolingPumpStartTemperatureValue">40</span>
+                                        <span class="inputUnits" id="coolingPumpStartTemperatureUnits"> ℃</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="settingLabel">
+                                <label for="coolingPumpStopTemperature">Pump Stop Temperature</label>
+                            </td>
+                            <td class="settingValue">
+                                <div class="wrapper">
+                                    <input class="inputNumeric" id="coolingPumpStopTemperature" name="coolingPumpStopTemperature" type="number" value="40" min="25" max="60" step="1"  title="The cooling pump will stop when all electrolysers reach this stack temperature."/>
+                                    <div class="inputUnits">
+                                        <span class="inputInvisible" id="coolingPumpStopTemperatureValue">40</span>
+                                        <span class="inputUnits" id="coolingPumpStopTemperatureUnits"> ℃</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="WaterManagement">
                 <h2 class="firefly WaterParams">Water Management</h2>
-                <div class="WaterParams">
-                    <label for="waterDumpRelay">Water Relay</label>
-                    <select id="waterDumpRelay" name="waterDumpRelay" title="Choose a relay that dumps water from the electrolyser input supply to manage conductivity.">
-                        <option value="255" selected>No Relay Configured</option>
-                    </select>
-                </div>
-                <div class="WaterParams">
-                    <label for="waterDumpSeconds">Dump Time</label>
-                    <select id="waterDumpSeconds" name = "waterDumpSeconds" title="The length of time the dump valve is open for to flush the system on electrolyser start">
-                        <option value="5">5s</option>
-                        <option value="6">6s</option>
-                        <option value="7">7s</option>
-                        <option value="8">8s</option>
-                        <option value="9">9s</option>
-                        <option value="10">10s</option>
-                        <option value="11">11s</option>
-                        <option value="12">12s</option>
-                        <option value="13">13s</option>
-                        <option value="14">14s</option>
-                        <option value="15">15s</option>
-                        <option value="16">16s</option>
-                        <option value="17">17s</option>
-                        <option value="18">18s</option>
-                        <option value="19">19s</option>
-                        <option value="20">20s</option>
-                        <option value="21">21s</option>
-                        <option value="22">22s</option>
-                        <option value="23">23s</option>
-                        <option value="24">24s</option>
-                        <option value="25">25s</option>
-                        <option value="26">26s</option>
-                        <option value="27">27s</option>
-                        <option value="28">28s</option>
-                        <option value="29">29s</option>
-                        <option value="30">30s</option>
-                        <option value="31">31s</option>
-                        <option value="32">32s</option>
-                        <option value="33">33s</option>
-                        <option value="34">34s</option>
-                        <option value="35">35s</option>
-                        <option value="36">36s</option>
-                        <option value="37">37s</option>
-                        <option value="38">38s</option>
-                        <option value="39">39s</option>
-                        <option value="40">40s</option>
-                        <option value="41">41s</option>
-                        <option value="42">42s</option>
-                        <option value="43">43s</option>
-                        <option value="44">44s</option>
-                        <option value="45">45s</option>
-                    </select>
-                </div>
-                <div class="WaterParams">
-                    <label for="waterDumpAction">When to Dump Water</label>
-                    <select id="waterDumpAction" name="waterDumpAction" title="Select the water dump function">
-                        <option value=0>Never</option>
-                        <option value=1>Any time conductivity high</option>
-                        <option value=2>On first electrolyser powered if conductivity is high</option>
-                        <option value=3>On first electrolyser started if conductivity is high</option>
-                        <option value=4>Always on first electrolyser powered</option>
-                        <option value=5>Always on first electrolyser started</option>
-                    </select>
-                </div>
-                <div class="WaterParams">
-                    <label for="maxConductivity">Maximum Conductivity</label>
-                    <select id="maxConductivity" name = "maxConductivity" title="Water will be dumped when an electorlyser is turned on if the cunductivity is higher than the velue selected here">
-                        <option value="0">0µS/cm</option>
-                        <option value="0.5">0.5µS/cm</option>
-                        <option value="1">1µS/cm</option>
-                        <option value="1.5">1.5µS/cm</option>
-                        <option value="2">2µS/cm</option>
-                        <option value="2.5">2.5µS/cm</option>
-                        <option value="3">3µS/cm</option>
-                        <option value="3.5">3.5µS/cm</option>
-                        <option value="4">4µS/cm</option>
-                        <option value="4.5">4.5µS/cm</option>
-                        <option value="5">5µS/cm</option>
-                        <option value="5.5">5.5µS/cm</option>
-                        <option value="6">6µS/cm</option>
-                        <option value="6.5">6.5µS/cm</option>
-                        <option value="7">7µS/cm</option>
-                    </select>
-                </div>
-                <div class="WaterParams">
-                    <label for="maxGreenConductivity">Maximum Conductivity for Green status</label>
-                    <input type="number" id="maxGreenConductivity" name="maxGreenConductivity" />
-                </div>
-                <div class="WaterParams">
-                    <label for="maxYellowConductivity">Maximum Conductivity for Yellow status</label>
-                    <input type="number" id="maxYellowConductivity" name="maxYellowConductivity" />
-                </div>
-                <div class="WaterParams">
-                    <label for="waterAlarm">Water Quality Shutoff</label>
-                    <input type="number" id="waterQualityAlarm" name="waterQualityAlarm" title="Electrolysers will not run if the water conductivity is above this level" />
-                </div>
+                <table class="settings" style="width: 50em">
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="waterDumpRelay">Water Relay</label>
+                        </td>
+                        <td class="settingValue">
+                            <select id="waterDumpRelay" name="waterDumpRelay" title="Choose a relay that manges water from the to the electrolyser input supply to manage conductivity.">
+                                <option value="255" selected>No Relay Configured</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="waterDumpSeconds">Dump Time</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="waterDumpSeconds" name="waterDumpSeconds" type="number" value="10" min="1" max="45" step="1"  title="The length of time the dump valve is open for to flush the system on electrolyser start"/>
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="waterDumpSecondsValue">50</span>
+                                    <span class="inputUnits" id="waterDumpSecondsUnits"> Seconds</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="waterDumpAction">When to Dump Water</label>
+                        </td>
+                        <td class="settingValue">
+                            <select id="waterDumpAction" name="waterDumpAction" title="Select the water dump function">
+                                <option value=0>Never</option>
+                                <option value=1>Any time conductivity high</option>
+                                <option value=2>On first electrolyser powered if conductivity is high</option>
+                                <option value=3>On first electrolyser started if conductivity is high</option>
+                                <option value=4>Always on first electrolyser powered</option>
+                                <option value=5>Always on first electrolyser started</option>
+                                <option value=6>Any time an electrolyser is powered up or conductivity is high</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="maxConductivity">Maximum Conductivity</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="maxConductivity" name="maxConductivity" type="number" value="5" min="0" max="7" step="0.5"  title="Water will be dumped when an electrolyser is turned on if the conductivity is higher than the value selected here"/>
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="maxConductivityValue">5</span>
+                                    <span class="inputUnits" id="maxConductivityUnits"> µS/cm</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="maxGreenConductivity">Maximum Conductivity for Green status</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="maxGreenConductivity" name="maxGreenConductivity" type="number" value="5" min="0" max="7" step="0.5"/>
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="maxGreenConductivityValue">5</span>
+                                    <span class="inputUnits" id="maxGreenConductivityUnits"> µS/cm</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="maxYellowConductivity">Maximum Conductivity for Yellow status</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="maxYellowConductivity" name="maxYellowConductivity" type="number" value="5" min="0" max="7" step="0.5"/>
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="maxYellowConductivityValue">5</span>
+                                    <span class="inputUnits" id="maxYellowConductivityUnits"> µS/cm</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="waterAlarm">Water Quality Shutoff</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="waterQualityAlarm" name="waterQualityAlarm" type="number" value="5" min="0" max="7" step="0.5"  title="Electrolysers will not run if the water conductivity is above this level"/>
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="waterQualityAlarmValue">5</span>
+                                    <span class="inputUnits" id="waterQualityAlarmUnits"> µS/cm</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div id="gasManagement" class="gasManagement">
                 <h2 class="firefly GasParams">Hydrogen Settings</h2>
                 <div class="GasSettings">
-                    <label for="GasUnits">Gas Pressure Units</label>
-                    <select id="GasUnits" name="GasUnits" onchange="setGasDisplayOptions(null)">
-                        <option value="bar" selected>Bar</option>
-                        <option value="psi" >Pounds Per Square Inch</option>
-                    </select>
-                </div>
-                <div class="GasSettings">
-                    <label for="GasDisplayUnits">Gas Display Units</label>
-                    <select id="GasDisplayUnits" name="GasDisplayUnits" >
-                        <option value="bar" selected>Bar</option>
-                        <option value="psi" >Pounds Per Square Inch</option>
-                        <option value="litres" >Litres</option>
-                        <option value="cuft" >Cubic Feet</option>
-                        <option value="kWhr" >Killowatt Hours (kWhr)</option>
-                    </select>
-                </div>
-                <div class="GasSettings">
-                    <label for="GasCapacity">Gas Volume (Normal Litres)</label>
-                    <input type="number" id="GasCapacity" name="GasCapacity" title="1 standard tank = 270Nl" />
-                </div>
-                <div class="GasSettings">
-                    <label for="MaxGasPressure" >Maximum Gas Pressure</label>
-                    <input type="number" id="MaxGasPressure" name="MaxGasPressure" />
-                </div>
-                <div class="GasSettings">
-                    <Label for="GasInput">Gas Pressure Input</Label>
-                    <select id="GasInput" name="GasInput">
-                    </select>
-                </div>
-                <div class="GasSettings">
-                    <label for="GasDetectorThreshold">Gas Detector Maximum Value</label>
-                    <input type="number" id="GasDetectorThreshold" name="GasDetectorThreshold" />
-                </div>
-                <div class="GasSettings">
-                    <label for="GasDetectorInput">Gas Detector Input</label>
-                    <select id="GasDetectorInput" name="GasDetectorInput">
-                    </select>
+                    <table class="settings">
+                        <tbody>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label for="GasUnits">Gas Pressure Units</label>
+                                </td>
+                                <td class="settingValue">
+                                    <select id="GasUnits" name="GasUnits" onchange="setGasDisplayOptions(null)">
+                                        <option value="bar" selected>Bar</option>
+                                        <option value="psi" >Pounds Per Square Inch</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label for="GasDisplayUnits">Gas Display Units</label>
+                                </td>
+                                <td class="settingValue">
+                                    <select id="GasDisplayUnits" name="GasDisplayUnits" >
+                                        <option value="bar" selected>Bar</option>
+                                        <option value="psi" >Pounds Per Square Inch</option>
+                                        <option value="litres" >Litres</option>
+                                        <option value="cuft" >Cubic Feet</option>
+                                        <option value="kWhr" >Kilowatt Hours (kWhr)</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label for="GasCapacity">Gas Volume (Normal Litres)</label>
+                                </td>
+                                <td class="settingValue">
+                                    <div class="wrapper">
+                                        <input class="inputNumeric" id="GasCapacity" name="GasCapacity" type="number" value="270" min="270" max="13500" step="1"  title="1 standard tank = 270Nl"/>
+                                        <div class="inputUnits">
+                                            <span class="inputInvisible" id="GasCapacityValue">270</span>
+                                            <span class="inputUnits" id="GasCapacityUnits"> Nl</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label for="MaxGasPressure" >Maximum Gas Pressure</label>
+                                </td>
+                                <td class="settingValue">
+                                    <div class="wrapper">
+                                        <input class="inputNumeric" id="MaxGasPressure" name="MaxGasPressure" type="number" value="35" min="30" max="50" step="1"  title="Maximum system tank pressure"/>
+                                        <div class="inputUnits">
+                                            <span class="inputInvisible" id="MaxGasPressureValue">35</span>
+                                            <span class="inputUnits" id="MaxGasPressureUnits"> Bar</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <Label for="GasInput">Gas Pressure Input</Label>
+                                </td>
+                                <td class="settingValue">
+                                    <select id="GasInput" name="GasInput"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label for="GasDetectorThreshold">Gas Detector Maximum Value</label>
+                                </td>
+                                <td class="settingValue">
+                                    <div class="wrapper">
+                                        <input class="inputNumeric" id="GasDetectorThreshold" name="GasDetectorThreshold" type="number" value="1000" min="0" max="4096" step="1"  title="Hydrogen detector threshold value"/>
+                                        <div class="inputUnits">
+                                            <span class="inputInvisible" id="GasDetectorThresholdValue">1000</span>
+                                            <span class="inputUnits" id="GasDetectorThresholdUnits"></span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="settingLabel">
+                                    <label for="GasDetectorInput">Gas Detector Input</label>
+                                </td>
+                                <td class="settingValue">
+                                    <select id="GasDetectorInput" name="GasDetectorInput"></select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="FuelCellSettings">
                 <h2 class="firefly FuelCell">Fuel Cell</h2>
-                <label for="FuelCell">Fuel Cell Present?</label>
-                <input id="FuelCell" name="FuelCell" type="checkbox" value=TRUE>
-                <label for="fcCapacity">Fuel Cell Capacity</label>
-                <select id="fcCapacity" name="fcCapacity">
-                    <option value="5">5kW</option>
-                    <option value="10" selected>10kW</option>
-                    <option value="20">20kW</option>
-                </select>
-                <label for="isoLowBehaviour">Fuel Cell - Iso Low Fault Behaviour</label>
-                <select id="isoLowBehaviour" name="isoLowBehaviour">
-                    <option value="false">Shut down if IsoLow fault detected</option>
-                    <option value="true">Ignore IsoLow fault detection</option>
-                </select><br />
+                <table class="settings">
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="FuelCell">Fuel Cell Present?</label>
+                        </td>
+                        <td class="settingValue">
+                            <input id="FuelCell" name="FuelCell" type="checkbox" value=TRUE>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="fcCapacity">Capacity</label>
+                        </td>
+                        <td class="settingValue">
+                            <select id="fcCapacity" name="fcCapacity">
+                                <option value="5">5kW</option>
+                                <option value="10" selected>10kW</option>
+                                <option value="20">20kW</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="isoLowBehaviour">Iso Low Fault Behaviour</label>
+                        </td>
+                        <td class="settingValue">
+                            <select id="isoLowBehaviour" name="isoLowBehaviour">
+                                <option value="false">Shut down if IsoLow fault detected</option>
+                                <option value="true">Ignore IsoLow fault detection</option>
+                            </select><br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="fcStartSOC">Start at SOC</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="fcStartSOC" name="fcStartSOC" type="number" value="50" min="30" max="95" step="1" />
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="fcStartSOCValue">50</span>
+                                    <span class="inputUnits" id="fcStartSOCUnits"> %</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="fcStopSOC">Stop at SOC</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="fcStopSOC" name="fcStopSOC" type="number" value="70" min="30" max="98" step="1" />
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="fcStopSOCValue">70</span>
+                                    <span class="inputUnits" id="fcStopSOCUnits"> %</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="fcMaxTime">Maximum run time</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="fcMaxTime" name="fcMaxTime" type="number" value="90" min="30" max="300" step="1" />
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="fcMaxTimeValue">90</span>
+                                    <span class="inputUnits" id="fcMaxTimeUnits"> Minutes</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="fcMaxOutput">Maximum output</label>
+                        </td>
+                        <td class="settingValue">
+                            <div class="wrapper">
+                                <input class="inputNumeric" id="fcMaxOutput" name="fcMaxOutput" type="number" value="10" min="3" max="10" step="1" />
+                                <div class="inputUnits">
+                                    <span class="inputInvisible" id="fcMaxOutputValue">10</span>
+                                    <span class="inputUnits" id="fcMaxOutputUnits"> kW</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div class="SystemSettings">
-                <label for="nodeRed">Node-<span style="color: red">RED</span> URL</label>
-                <input type="text" id="nodeRed" name="nodeRed" width="100em"/>
-            </div>
-            <div class="SystemSettings">
-                <label for="APIKey">API Key</label>
-                <input type="text" id="APIKey" name="APIKey" style="width: 25em" /><img src="images/keys.png" alt="Generate Key" title="Generate new key" onclick="GenerateNewKey()" class="button" style="width: 2em; height: 2em" />
+                <h2 class="firefly">System Settings</h2>
+                <table class="settings">
+                    <tbody>
+                        <tr>
+                            <td class="settingLabel">
+                                <label for="nodeRed">Node-<span style="color: #ff0000;">RED</span> URL</label>
+                            </td>
+                            <td class="settingValue">
+                                <input class="settings" type="text" id="nodeRed" name="nodeRed" width="100em"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="settingLabel">
+                                <label for="APIKey">API Key</label>
+                            </td>
+                            <td class="settingValue">
+                                <input class="settings" type="text" id="APIKey" name="APIKey" style="width: 25em;" /><img src="images/keys.png" alt="Generate Key" title="Generate new key" onclick="GenerateNewKey()" class="button" style="width: 2em; height: 2em;" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <input class="submitButton" type="button" value="Submit" onclick="saveSettings()">

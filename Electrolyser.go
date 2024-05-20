@@ -687,10 +687,18 @@ func (el *ElectrolyserType) ReadValues() error {
 		return err
 	} else {
 		if el.status.Serial == "" {
+			log.Printf("New serial number for %s = %s", el.status.Name, serial)
+			for _, electrolyser := range Electrolysers.Arr {
+				if electrolyser.status.Serial == serial {
+					err := fmt.Errorf("%s is already assigned to %s. Trying to find %s", serial, electrolyser.status.Name, el.status.Name)
+					log.Print(err)
+					return err
+				}
+			}
 			el.status.Serial = serial
 		} else {
 			if el.status.Serial != serial {
-				log.Printf("electrolyser at %s has a different serial number. Rescanning...", el.GetIPString())
+				log.Printf("electrolyser at %s has a different serial number (%s). Rescanning...", el.GetIPString(), serial)
 				if ip, elType, err := el.rescan(2, el.status.Serial); err != nil {
 					log.Println(err)
 					return err
@@ -701,6 +709,10 @@ func (el *ElectrolyserType) ReadValues() error {
 					if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 						log.Print(err)
 					}
+				}
+			} else {
+				if debugOutput {
+					log.Printf("serial number read from %s = %s", el.status.Name, serial)
 				}
 			}
 		}
@@ -731,7 +743,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.status.DownstreamTemp = jsonFloat32(values[10])
 	}
 
-	log.Println("Electrolyte")
+	//	log.Println("Electrolyte")
 	if values, err := el.Client.ReadRegisters(ElectrolyteHigh, 11, modbus.INPUT_REGISTER); err != nil {
 		if err := el.Client.Close(); err != nil {
 			log.Print("Error closing modbus client - ", err)
@@ -759,7 +771,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	}
 
 	//	get the maximum tank and restart pressure settings if we don't have them
-	log.Println("Restart Pressure")
+	//	log.Println("Restart Pressure")
 	if el.status.MaxTankPressure == 0 || el.status.RestartPressure == 0 {
 		p, err := el.Client.ReadFloat32s(MaxPressure, 2, modbus.HOLDING_REGISTER)
 		if err != nil {
@@ -774,7 +786,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.status.RestartPressure = jsonFloat32(p[1])
 	}
 
-	log.Println("System State")
+	//	log.Println("System State")
 	if state, err := el.Client.ReadRegister(SystemState, modbus.INPUT_REGISTER); err != nil {
 		log.Print("System state error - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
@@ -785,7 +797,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	} else {
 		el.status.SystemState = state
 	}
-	log.Println("State")
+	//	log.Println("State")
 	if state, err := el.Client.ReadRegister(State, modbus.INPUT_REGISTER); err != nil {
 		log.Print("ElState - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
@@ -797,7 +809,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.status.State = state
 	}
 
-	log.Println("Product Code")
+	//	log.Println("Product Code")
 	if stack, err := el.Client.ReadUint32s(ProductCode, 3, modbus.INPUT_REGISTER); err != nil {
 		log.Print("Product Code error - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
@@ -812,7 +824,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.status.StackTotalRunTime = stack[2]
 	}
 
-	log.Println("Stack Total Production")
+	//	log.Println("Stack Total Production")
 	if stack, err := el.Client.ReadFloat32s(StackTotalProduction, 2, modbus.INPUT_REGISTER); err != nil {
 		log.Print("Current Production error - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
@@ -828,7 +840,7 @@ func (el *ElectrolyserType) ReadValues() error {
 			el.status.H2Flow = jsonFloat32(stack[1])
 		}
 	}
-	log.Println("Stack Serial")
+	//	log.Println("Stack Serial")
 	if stack, err := el.Client.ReadUint64(StackSerial, modbus.INPUT_REGISTER); err != nil {
 		log.Print("Stack Serial error - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
@@ -839,7 +851,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	} else {
 		el.status.StackSerialNumber = stack
 	}
-	log.Println("Rate")
+	//	log.Println("Rate")
 	if rate, err := el.Client.ReadFloat32(RATE, modbus.HOLDING_REGISTER); err != nil {
 		log.Print("current production rate error - ", err)
 		if err := el.Client.Close(); err != nil {
@@ -851,10 +863,10 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.status.CurrentProductionRate = jsonFloat32(rate)
 	}
 
-	log.Println("Events")
+	//	log.Println("Events")
 	el.readEvents()
 
-	log.Println("Dryer")
+	//	log.Println("Dryer")
 	if el.hasDryer && !currentSettings.acquiringElectrolysers {
 		dryer, err := el.Client.ReadFloat32s(DryerTemp0, 6, modbus.INPUT_REGISTER)
 		if err != nil {
@@ -893,7 +905,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	} else {
 		el.status.DryerFailure = "No Dryer"
 	}
-	log.Println("Electrolyser Errors")
+	//	log.Println("Electrolyser Errors")
 	if !el.status.monitored {
 		go el.MonitorElectrolyserErrors()
 	}
@@ -1613,7 +1625,7 @@ func (el *ElectrolyserType) Acquire() error {
 	Relays.SetRelay(el.powerRelay, true)
 	defer Relays.SetRelay(el.powerRelay, false)
 
-	time.Sleep(time.Second * 15)
+	time.Sleep(time.Second * 30)
 
 	// Try and find the electrolyser
 	if debugOutput {
@@ -1808,8 +1820,8 @@ func (el *ElectrolyserType) MonitorElectrolyserErrors() {
 	if !el.status.monitored {
 		el.status.monitored = true
 		elTicker := time.NewTicker(time.Minute)
-		numErrors := 0
-		numLoops := 0
+		numErrors := 0 // Errors is incremented each time we reboot until we power cycle.
+		numLoops := 0  // Ensures that a reboot is only if we have seen multiple halt conditions
 		for {
 			select {
 			case <-elTicker.C:
@@ -1818,9 +1830,9 @@ func (el *ElectrolyserType) MonitorElectrolyserErrors() {
 					return
 				}
 				// Every minute, check for errors if we have seen less than 5 errors since turning the electrolyser on
-				if el.status.State == 0 {
+				if el.status.State == 0 && numErrors < 5 {
 					numLoops++
-					if numLoops > 1 {
+					if numLoops > 2 {
 						if err := el.Reboot(); err != nil {
 							log.Print(err)
 						} else {

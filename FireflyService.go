@@ -443,6 +443,10 @@ func ElectrolyserLoop() {
 								el.hasDryer = true                                       // First active electrolyser gets to control the dryer
 								gotDryer = true                                          // We found an active electrolyser, so we have the dryer.
 								Relays.SetRelay(uint8(currentSettings.DryerRelay), true) // Make sure the dryer is powered on
+								// If the water management relay is set to turn on whenever an electrolyser is on, turn it on now.
+								if currentSettings.WaterDumpAction == ELRun {
+									Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), true)
+								}
 								// after 30 seconds, start the dryer error monitor
 								time.AfterFunc(time.Second*30, el.MonitorDryerErrors)
 							} else {
@@ -493,6 +497,10 @@ func ElectrolyserLoop() {
 					// If we did not find an active electrolyser, turn off the dryer and resort the electrolysers
 					if !gotDryer {
 						Relays.SetRelay(uint8(currentSettings.DryerRelay), false)
+						// If the water relay is set to run whenever an electrolyser is on, turn it off
+						if currentSettings.WaterDumpAction == ELRun {
+							Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), false)
+						}
 						slices.SortStableFunc(Electrolysers.Arr[:], func(a *ElectrolyserType, b *ElectrolyserType) int {
 							return cmp.Compare(a.status.StackTotalRunTime, b.status.StackTotalRunTime)
 						})
