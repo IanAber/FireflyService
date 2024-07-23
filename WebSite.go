@@ -26,17 +26,20 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 	f, err := nfs.fs.Open(path)
 	if err != nil {
 		return nil, err
-	}
-
-	s, err := f.Stat()
-	if s.IsDir() {
-		index := filepath.Join(path, "index.html")
-		if _, err := nfs.fs.Open(index); err != nil {
-			closeErr := f.Close()
-			if closeErr != nil {
-				return nil, closeErr
+	} else {
+		if s, err := f.Stat(); err != nil {
+			return f, err
+		} else {
+			if s.IsDir() {
+				index := filepath.Join(path, "index.html")
+				if _, err := nfs.fs.Open(index); err != nil {
+					closeErr := f.Close()
+					if closeErr != nil {
+						return nil, closeErr
+					}
+					return nil, err
+				}
 			}
-			return nil, err
 		}
 	}
 	return f, nil
@@ -685,9 +688,7 @@ func getElectrolyserData(w http.ResponseWriter, r *http.Request) {
 				SendDataAsJSON(w, function, ElectrolyserDataByMinute, name, start, end)
 			} else {
 				SendDataAsJSON(w, function, ElectrolyserDataBySecond, name, start, end)
-			}
-			if err != nil {
-				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+
 			}
 		}
 	}
@@ -709,9 +710,6 @@ func getACData(w http.ResponseWriter, r *http.Request) {
 		} else {
 			SendDataAsJSON(w, function, ACDataBySecond, start, end)
 		}
-		if err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-		}
 	}
 }
 
@@ -730,9 +728,6 @@ func getDCData(w http.ResponseWriter, r *http.Request) {
 			SendDataAsJSON(w, function, DCDataByMinute, start, end)
 		} else {
 			SendDataAsJSON(w, function, DCDataBySecond, start, end)
-		}
-		if err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		}
 	}
 }
@@ -782,7 +777,7 @@ type h2DataType struct {
 	TankRemaining float64 `json:"tank_remaining"`
 }
 
-func getH2Volume(w http.ResponseWriter, r *http.Request) {
+func getH2Volume(w http.ResponseWriter, _ *http.Request) {
 	var H2 h2DataType
 
 	// Calculate hydrogen using the ideal gas law PV=nRT
@@ -888,23 +883,21 @@ func startElectrolyser(w http.ResponseWriter, r *http.Request) {
 			switch currentSettings.WaterDumpAction {
 			case ElStart:
 				go TurnOnWaterDumpValve()
-				break
 			case ElStartAndConductivity:
 				_, conductivity := AnalogInputs.GetInput(7)
 				if float32(currentSettings.MaximumConductivity) < conductivity {
 					go TurnOnWaterDumpValve()
 				}
+			default:
 			}
 		}
 		if err := el.Start(); err != http.StatusOK {
 			if err == http.StatusConflict {
 				ReturnJSONErrorString(w, function, "Too soon after last Stop", err, false)
 			} else if err == http.StatusBadRequest {
-				if err == http.StatusBadRequest {
-					ReturnJSONErrorString(w, function, "Electrolyser is not powered on", err, false)
-				} else {
-					ReturnJSONErrorString(w, function, "Unknown Error", err, true)
-				}
+				ReturnJSONErrorString(w, function, "Electrolyser is not powered on", err, false)
+			} else {
+				ReturnJSONErrorString(w, function, "Unknown Error", err, true)
 			}
 		} else {
 			ReturnJSONSuccess(w)
@@ -1453,13 +1446,12 @@ func turnOnOffRelay(relayNum uint8, bOn bool) error {
 					switch currentSettings.WaterDumpAction {
 					case ElPowered:
 						go TurnOnWaterDumpValve()
-						break
 					case ElPowerAndConductivity:
 						_, conductivity := AnalogInputs.GetInput(7)
 						if float32(currentSettings.MaximumConductivity) < conductivity {
 							go TurnOnWaterDumpValve()
 						}
-						break
+					default:
 					}
 				}
 			}

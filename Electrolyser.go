@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/simonvetter/modbus"
 	"html"
@@ -367,10 +368,8 @@ func (el *ElectrolyserType) setClient(IP net.IP) {
 	el.status.IP = IP
 	el.status.Serial = ""
 	if Client, err := modbus.NewClient(&config); err != nil {
-		if err != nil {
-			log.Print("New modbus client error - ", err)
-			return
-		}
+		log.Print("New modbus client error - ", err)
+		return
 	} else {
 		el.Client = Client
 		if err := el.Client.Open(); err != nil {
@@ -566,14 +565,20 @@ func (el *ElectrolyserType) CheckConnected() bool {
 					}
 					log.Printf("seach for electrolyser with serial number %s\n", setting.Serial)
 					if ip, elType, err := el.rescan(1, setting.Serial); err != nil {
+						log.Println(err)
+						el.clientConnected = false
+						return false
+					} else {
 						el.status.IP = ip
 						if ip.Equal(net.IPv4zero) {
 							log.Printf("Failed to find %s", el.status.Name)
 							el.clientConnected = false
+							return false
 						} else {
 							log.Printf("Found %s - %s at %s", el.status.Name, elType, ip.String())
 							currentSettings.findElByName(el.status.Name).IP = ip.String()
 							if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
+								err = errors.Join(fmt.Errorf("Error whilst trying to save the settings for %s", el.status.Name), err)
 								log.Print(err)
 							}
 						}
