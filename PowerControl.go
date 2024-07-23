@@ -12,12 +12,13 @@ import (
 const InsertPowerSQL = "INSERT INTO firefly.Power(source, amps, volts, soc, frequency,solar) VALUES (?,?,?,?,?,?)"
 
 type PowerControlType struct {
-	Source        string  `json:"source"`
-	Voltage       float64 `json:"volts"`
-	Current       float64 `json:"amps"`
-	StateOfCharge float64 `json:"soc"`
-	Frequency     float64 `json:"hz"`
-	Solar         float64 `json:"solar"`
+	Source        string    `json:"source"`
+	Voltage       float64   `json:"volts"`
+	Current       float64   `json:"amps"`
+	StateOfCharge float64   `json:"soc"`
+	Frequency     float64   `json:"hz"`
+	Solar         float64   `json:"solar"`
+	LastUpdated   time.Time `json:"lastUpdated"`
 	updated       bool
 	mu            sync.Mutex
 }

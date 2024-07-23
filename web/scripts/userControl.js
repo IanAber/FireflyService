@@ -20,6 +20,7 @@ function RegisterWebSocket() {
             leakDetection(jsonData.SystemAlarms.h2Alarm);
             conductivityDetection(jsonData.SystemAlarms.conductivityAlarm);
             jsonData.Buttons.forEach(UpdateButton);
+            jsonData.DigitalIn.Inputs.forEach(UpdateInput);
 
             let numDials = jsonData.Electrolysers.length + (jsonData.PanFuelCellStatus != null ? 1 : 0);
 
@@ -90,6 +91,25 @@ function UpdateButton(Button, idx) {
         td_button.show();
     }
 }
+
+function UpdateInput(Input, idx) {
+    td_input = $("#di" + idx);
+    if (Input.Name.startsWith("Input-") || !Input.ShowOnCustomer) {
+        td_input.hide();
+    } else {
+        if (Input.Value) {
+            td_input.removeClass("DILow");
+            td_input.addClass("DIHigh");
+        } else {
+            td_input.removeClass("DIHigh");
+            td_input.addClass("DILow");
+        }
+        $("#InputText"+idx).text(Input.Name);
+        td_input.show();
+
+    }
+}
+
 
 function openElectrolyser(name, id) {
     // Do nothing in the user interface, only used in the admin interface

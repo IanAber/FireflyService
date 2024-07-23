@@ -369,7 +369,8 @@ function updatePressure(pressure, units, displayUnits, capacity) {
                 gasTitle.text("H2 Volume (cubic feet)");
                 break;
             case "kWhr" :
-                let kWhr = Math.round((capacity / 990) + 0.5); // Conversion from litres to kWhr
+                // using 859l/kWhr
+                let kWhr = Math.round(((capacity * 35) / 859) - ((capacity * 10) / 859)); // Conversion from litres to kWhr
                 Gas.jqxLinearGauge({
                     max: kWhr,
                     min: 0,
@@ -384,14 +385,14 @@ function updatePressure(pressure, units, displayUnits, capacity) {
                               formatValue: function(value){return Math.round(value);},
                     },
                     ranges: [
-                        { startValue: 0, endValue: Math.round(kWhr * 0.29), style: { fill: '#FF4800', stroke: '#FF4800'} },
-                        { startValue: Math.round(kWhr * 0.29), endValue: Math.round(kWhr * 0.8), style: { fill: '#FFA200', stroke: '#FFA200'}},
+                        { startValue: 0, endValue: Math.round(kWhr * 0.2), style: { fill: '#FF4800', stroke: '#FF4800'} },
+                        { startValue: Math.round(kWhr * 0.2), endValue: Math.round(kWhr * 0.8), style: { fill: '#FFA200', stroke: '#FFA200'}},
                         { startValue: Math.round(kWhr * 0.8), endValue: kWhr, style: { fill: '#00B000', stroke: '#00B000'}}],
                     pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
                     value: 0,
                     animationDuration: 0,
                 });
-                gasTitle.text("Energy Stored (kWhr)");
+                gasTitle.text("Energy Available (kWhr)");
                 break;
         }
     }
@@ -401,7 +402,10 @@ function updatePressure(pressure, units, displayUnits, capacity) {
                 break;
             case "cuft" : pressure = ((pressure / 35) * capacity * 0.03535).toFixed(1); // Bar -> cubic feet
                 break;
-            case "kWhr" : pressure = (((pressure / 35) * capacity) / 990).toFixed(1); // Bar -> kwHr
+            case "kWhr" : pressure = ((capacity * pressure) / 859) - ((capacity * 10) / 859); // Bar -> kwHr (minimum pressure = 10Bar)
+                if (pressure < 0) {
+                    pressure = 0;
+                }
                 break;
             case "psi" : pressure = (pressure * 14.5).toFixed(0)
         }
@@ -411,9 +415,15 @@ function updatePressure(pressure, units, displayUnits, capacity) {
                 break;
             case "cuft" : pressure = ((pressure / 507.6) * capacity * 0.03535).toFixed(1); // psi -> cubic feet
                 break;
-            case "kWhr" : pressure = (((pressure / 507.6) * capacity) / 990).toFixed(1); // psi -> kwHr
+            case "kWhr" : pressure = (pressure * 0.0689).toFixed(1); // Convert to Bar
+                pressure = ((capacity * pressure) / 859) - ((capacity * 10) / 859); // Bar -> kwHr (minimum pressure = 10Bar)
+                if (pressure < 0) {
+                    pressure = 0;
+                }
                 break;
-            case "bar" : pressure = (pressure * 0.0689).toFixed(1) // psi -> bar
+            // case "kWhr" : pressure = (((pressure / 507.6) * capacity) / 990).toFixed(1); // psi -> kwHr
+            //     break;
+            case "bar" : pressure = (pressure * 0.0689).toFixed(1); // psi -> bar
         }
     }
     Gas.val(pressure);

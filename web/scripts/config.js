@@ -296,6 +296,7 @@ function SetDigitalOutputSettings(channel) {
 
 function SetDigitalInputSettings(channel) {
     $("#di"+channel.Port+"name").val(channel.Name);
+    $("#di"+channel.Port+"user").prop('checked',channel.ShowOnCustomer);
 }
 
 function SetACMeasurementSettings(channel) {

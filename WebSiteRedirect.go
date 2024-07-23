@@ -137,6 +137,8 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/recordBatteryHertz", "", "POST", `Post a JSON block {"source":"firefly", "hz":f.f } hz is mains frequency in Hz.`, recordMainsFrequency)
 	RegisterWebSiteAPI(router, "/recordSolar", "", "POST", `Post a JSON Block {"source":"firefly", "solar":w, "hz":f.f } hz is mains frequency and is optional. Set to 0 to ignore`, recordSolar)
 
+	RegisterWebSiteAPI(router, "/h2", "", "GET", `Return the current hydrogen volume`, getH2Volume)
+
 	// Historical data access
 	RegisterWebSiteAPI(router, "/FuelCellData/DCDC", "start=datetime&end=datetime", "GET", "Get the historical data for the DC-DC converter. Take start and end parameters to determing the time span.", getFuelCellDCDCData)
 	RegisterWebSiteAPI(router, "/FuelCellData/Stack", "start=datetime&end=datetime", "GET", "Get the historical data for the fuel cells stack. Take start and end parameters to determing the time span.", getFuelCellStackData)

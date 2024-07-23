@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ "$USER" != "root" ]
 then
     echo "Please run this as root or with sudo"
@@ -17,16 +18,16 @@ cp dist/amd64/FireflyService /usr/bin
 
 chmod +x /usr/bin/FireflyService
 
-if ! test -d "/FireflyService"; then
-  mkdir /FireflyService
+if ! test -d "/etc/FireflyService"; then
+  mkdir /etc/FireflyService
 fi
-if ! test -d "/FireflyService/web"; then
-  mkdir /FireflyService/web
+if ! test -d "/etc/FireflyService/web"; then
+  mkdir /etc/FireflyService/web
 fi
 if ! test -f "/etc/FireflyService.json"; then
   cp /etc/FireFlyIO.json /etc/FireflyService.json
 fi
-cp -r web/* /FireflyService/web
+cp -r web/* /etc/FireflyService/web
 systemctl start FireflyService
 
 echo "Done"

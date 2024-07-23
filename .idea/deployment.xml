@@ -7,7 +7,8 @@
         <serverdata>
           <mappings>
             <mapping deploy="/" local="$PROJECT_DIR$/dist/release" web="/" />
-            <mapping deploy="/" local="$PROJECT_DIR$/Scrpits" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$/Scripts" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$/web" web="/" />
           </mappings>
         </serverdata>
       </paths>

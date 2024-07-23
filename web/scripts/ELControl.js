@@ -287,7 +287,7 @@ function RebootClick(id, controlID, elName) {
         dataType: 'json',
         success: function() {
             console.log("Electrolyser reboot sent OK");
-            alert(elName + " rebott command sent.");
+            alert(elName + " reboot command sent.");
         },
         error: function (xhr, ajaxOptions, thrownError) {
             if (xhr.status === 400) {

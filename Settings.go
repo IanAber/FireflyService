@@ -42,6 +42,12 @@ type PortNameType struct {
 	Port uint8
 }
 
+type InputNameType struct {
+	Name           string
+	Port           uint8
+	ShowOnCustomer bool
+}
+
 type ButtonType struct {
 	Name           string
 	Pressed        bool
@@ -80,7 +86,7 @@ type SettingsType struct {
 	Name                             string                    `json:"Name"`
 	FuelCell                         bool                      `json:"FuelCell"`
 	AnalogChannels                   [8]AnalogSettingType      `json:"AnalogChannels"`
-	DigitalInputs                    [4]PortNameType           `json:"DigitalInputs"`
+	DigitalInputs                    [4]InputNameType          `json:"DigitalInputs"`
 	DigitalOutputs                   [6]PortNameType           `json:"DigitalOutputs"`
 	Relays                           [16]PortNameType          `json:"Relays"`
 	Buttons                          [20]ButtonType            `json:"Buttons"`
@@ -132,7 +138,7 @@ func NewSettings() *SettingsType {
 	}
 	for idx := range settings.DigitalInputs {
 		settings.DigitalInputs[idx].Port = uint8(idx)
-		settings.DigitalInputs[idx].Name = fmt.Sprintf("Intput-%d", idx)
+		settings.DigitalInputs[idx].Name = fmt.Sprintf("Input-%d", idx)
 	}
 
 	for idx := range settings.DigitalOutputs {
@@ -465,6 +471,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	// Digital Input names
 	for din := 0; din < 4; din++ {
 		settings.DigitalInputs[din].Name = r.FormValue(fmt.Sprintf("di%dname", din))
+		settings.DigitalInputs[din].ShowOnCustomer = r.FormValue(fmt.Sprintf("di%duser", din)) != ""
 	}
 	// Digital output names
 	for dOut := 0; dOut < 6; dOut++ {

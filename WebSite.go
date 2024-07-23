@@ -96,6 +96,7 @@ func setUpWebSite() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	RegisterWebSiteAPICalls(router)
+	router.HandleFunc("/action-login", serveDefault).Methods("POST")
 
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir(webFiles)})
 	router.PathPrefix("/").Handler(http.StripPrefix("/", fileServer))
@@ -103,8 +104,8 @@ func setUpWebSite() {
 	router.Use(RequestLoggerMiddleware(router))
 
 	port := fmt.Sprintf(":%s", WebPort)
-	certFile := "/certs/localhost.crt"
-	keyFile := "/certs/localhost.key"
+	//	certFile := "/certs/localhost.crt"
+	//	keyFile := "/certs/localhost.key"
 	//log.Fatal(http.ListenAndServe(port, router))
 
 	server := &http.Server{
@@ -772,6 +773,42 @@ func getPowerData(w http.ResponseWriter, r *http.Request) {
 			SendPowerByMinute(w, start, end, source)
 		} else {
 			SendPowerBySecond(w, start, end, source)
+		}
+	}
+}
+
+type h2DataType struct {
+	TankCapacity  float64 `json:"tank_volume"`
+	TankRemaining float64 `json:"tank_remaining"`
+}
+
+func getH2Volume(w http.ResponseWriter, r *http.Request) {
+	var H2 h2DataType
+
+	// Calculate hydrogen using the ideal gas law PV=nRT
+	// M = (V * P * C1) / (T1 + T) Where V is litres, P is bar and T is Celsius
+	const C1 = 0.02424826
+	const T1 = 273.15
+	var (
+		volume      = float64(currentSettings.GasCapacity)
+		gasPressure float64
+	)
+
+	if currentSettings.GasUnits == "bar" {
+		// SI units
+		gasPressure = float64(AnalogInputs.Inputs[currentSettings.GasPressureInput].Value)
+	} else {
+		// stupid units - convert to SI
+		gasPressure = float64(AnalogInputs.Inputs[currentSettings.GasPressureInput].Value) / 14.50377
+	}
+	H2.TankRemaining = (volume * gasPressure * C1) / (T1 + AnalogInputs.GasTemperature)
+	H2.TankCapacity = (volume * 35.0 * C1) / (T1 + AnalogInputs.GasTemperature)
+
+	if sJSON, err := json.Marshal(H2); err != nil {
+		ReturnJSONError(w, "getH2Volume", err, http.StatusInternalServerError, true)
+	} else {
+		if _, err := fmt.Fprint(w, sJSON); err != nil {
+			log.Println(err)
 		}
 	}
 }

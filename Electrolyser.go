@@ -216,11 +216,11 @@ const ElectrolyserDataBySecond = `select UNIX_TIMESTAMP(logged) as logged
 type jsonFloat32 float32
 
 func (value jsonFloat32) MarshalJSON() ([]byte, error) {
-	if value != value {
-		return json.Marshal(nil)
-	} else {
-		return json.Marshal(float32(value))
-	}
+	//	if value != value {
+	//		return json.Marshal(nil)
+	//	} else {
+	return json.Marshal(float32(value))
+	//	}
 }
 
 type ElectrolyserEventsType struct {
@@ -540,11 +540,14 @@ func (el *ElectrolyserType) CheckConnected() bool {
 	//}
 	if !el.IsSwitchedOn() {
 		if debugOutput {
-			log.Println("Client Switched Off")
+			log.Println("Electrolyser Switched Off")
 		}
 		return false
 	}
 	if !el.clientConnected {
+		if debugOutput {
+			log.Println("Electrolyser switched on but not yet connected")
+		}
 		if time.Since(el.lastConnectAttempt) > time.Second*5 {
 			err := fmt.Errorf("no client")
 			if el.Client != nil {
@@ -658,6 +661,9 @@ func (el *ElectrolyserType) ReadModelNumber() error {
 // ReadValues calls out to the electrolyser using ModbusTCP and gathers the current data
 func (el *ElectrolyserType) ReadValues() error {
 	// Add a modbus client if we do not have one assigned
+	if debugOutput {
+		log.Printf("Read values from %s", el.status.Name)
+	}
 	if el.Client == nil {
 		if debugOutput {
 			log.Println("Adding a modbus client")
@@ -671,6 +677,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		}
 		el.status.ClearErrors()
 		el.status.ClearWarnings()
+		el.status.Clear()
 		return fmt.Errorf("electrolyser %s is not connected", el.status.Name)
 	}
 	el.mu.Lock()
@@ -871,12 +878,13 @@ func (el *ElectrolyserType) ReadValues() error {
 		dryer, err := el.Client.ReadFloat32s(DryerTemp0, 6, modbus.INPUT_REGISTER)
 		if err != nil {
 			log.Println("Dryer error", err, el.buf)
-			if err := el.Client.Close(); err != nil {
-				log.Print("Error closing modbus client - ", err)
-			}
-			el.clientConnected = false
+			//			if err := el.Client.Close(); err != nil {
+			//				log.Print("Error closing modbus client - ", err)
+			//			}
 			el.status.DryerFailure = err.Error() // Log the dryer communication failure
-			return err
+			//		el.clientConnected = false
+			//			return err
+			dryer = make([]float32, 6)
 		}
 		if el.status.Dryer == nil {
 			el.status.Dryer = new(DryerStatusType)
@@ -890,17 +898,24 @@ func (el *ElectrolyserType) ReadValues() error {
 			el.status.Dryer.Temps[3] = jsonFloat32(dryer[3])
 			el.status.Dryer.InputPressure = jsonFloat32(dryer[4])
 			el.status.Dryer.OutputPressure = jsonFloat32(dryer[5])
-			dryerErrors, err := el.Client.ReadRegisters(DryerError, 2, modbus.INPUT_REGISTER)
-			if err != nil {
+			if dryerErrors, err := el.Client.ReadRegisters(DryerError, 2, modbus.INPUT_REGISTER); err != nil {
 				log.Print("Error reading dryer errors - ", err, el.buf)
-				if err := el.Client.Close(); err != nil {
-					log.Print("Error closing modbus client - ", err)
+				if debugOutput {
+					if el.CheckConnected() {
+						log.Println("Electrolyser connected")
+					} else {
+						log.Println("Electrolyser is NOT connected")
+					}
 				}
-				el.clientConnected = false
-				return err
+				//if err := el.Client.Close(); err != nil {
+				//	log.Print("Error closing modbus client - ", err)
+				//}
+				//el.clientConnected = false
+				//return err
+			} else {
+				el.status.Dryer.Errors = dryerErrors[0]
+				el.status.Dryer.Warnings = dryerErrors[1]
 			}
-			el.status.Dryer.Errors = dryerErrors[0]
-			el.status.Dryer.Warnings = dryerErrors[1]
 		}
 	} else {
 		el.status.DryerFailure = "No Dryer"
@@ -908,6 +923,9 @@ func (el *ElectrolyserType) ReadValues() error {
 	//	log.Println("Electrolyser Errors")
 	if !el.status.monitored {
 		go el.MonitorElectrolyserErrors()
+	}
+	if debugOutput {
+		log.Println("Values read...")
 	}
 	return nil
 }
@@ -1238,11 +1256,21 @@ func (el *ElectrolyserType) GetDryerTemp(idx int) interface{} {
 }
 
 func (el *ElectrolyserType) GetDryerErrors() []string {
-	return decodeDryerMessage(el.status.Dryer.Errors)
+	if el != nil {
+		if el.status.Dryer != nil {
+			return decodeDryerMessage(el.status.Dryer.Errors)
+		}
+	}
+	return nil
 }
 
 func (el *ElectrolyserType) GetDryerWarnings() []string {
-	return decodeDryerMessage(el.status.Dryer.Warnings)
+	if el != nil {
+		if el.status.Dryer != nil {
+			return decodeDryerMessage(el.status.Dryer.Warnings)
+		}
+	}
+	return nil
 }
 
 func (el *ElectrolyserType) SendRateToElectrolyser(rate float32) error {
@@ -1822,17 +1850,20 @@ func (el *ElectrolyserType) MonitorElectrolyserErrors() {
 		elTicker := time.NewTicker(time.Minute)
 		numErrors := 0 // Errors is incremented each time we reboot until we power cycle.
 		numLoops := 0  // Ensures that a reboot is only if we have seen multiple halt conditions
+		log.Print("Starting electrolyser monitor for ", el.status.Name)
 		for {
 			select {
 			case <-elTicker.C:
 				// Drop out if the electrolyser is switched off
 				if !el.IsSwitchedOn() {
+					log.Print("Stopping electrolyser monitor for ", el.status.Name)
 					return
 				}
 				// Every minute, check for errors if we have seen less than 5 errors since turning the electrolyser on
 				if el.status.State == 0 && numErrors < 5 {
 					numLoops++
 					if numLoops > 2 {
+						log.Print("Rebooting ", el.status.Name)
 						if err := el.Reboot(); err != nil {
 							log.Print(err)
 						} else {

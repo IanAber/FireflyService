@@ -305,6 +305,19 @@ func (elt *ElectrolyserStatusType) ClearErrors() {
 	}
 }
 
+func (elt *ElectrolyserStatusType) Clear() {
+	elt.ClearWarnings()
+	elt.ClearErrors()
+	elt.H2Flow = 0
+	elt.HydrogenPressureTooHigh = false
+	elt.InnerH2Pressure = 0
+	elt.OuterH2Pressure = 0
+	elt.StackCurrent = 0
+	elt.StackVoltage = 0
+	elt.State = 0
+	elt.SystemState = 0
+}
+
 func (eljst *ElectrolyserJSONStatusType) load(elt ElectrolyserStatusType) {
 	eljst.Device = elt.Device
 	eljst.Name = elt.Name

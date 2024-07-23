@@ -53,6 +53,8 @@ var (
 	callLogging           = false
 	debugOutput           = false
 	store                 *sessions.CookieStore
+	certFile              string
+	keyFile               string
 )
 
 func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
@@ -165,13 +167,16 @@ func init() {
 	flag.StringVar(&CANInterface, "can", "can0", "CAN Interface Name")
 	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
 	flag.StringVar(&jsonSettings, "jsonSettings", "/etc/FireflyService.json", "JSON file containing the system control parameters")
-	flag.StringVar(&webFiles, "webFiles", "/FireflyService/web", "Path to the WEB files location")
+	flag.StringVar(&webFiles, "webFiles", "/etc/FireflyService/web", "Path to the WEB files location")
 	flag.StringVar(&databaseServer, "sqlServer", "localhost", "MySQL Server")
 	flag.StringVar(&databaseName, "database", "firefly", "Database name")
 	flag.StringVar(&databaseLogin, "dbUser", "FireflyService", "Database login user name")
 	flag.StringVar(&databasePassword, "dbPassword", "logger", "Database user password")
 	flag.StringVar(&databasePort, "dbPort", "3306", "Database port")
 	flag.StringVar(&logFileName, "logfile", "/var/log/FireflyService", "Name of the log file")
+	flag.StringVar(&keyFile, "keyFile", "/certs/elektrik.green.key", "Path to the key file")
+	flag.StringVar(&certFile, "certFile", "/certs/fullchain.cer", "Path to the certificate full chain file")
+
 	flag.Parse()
 
 	// open log file
@@ -464,7 +469,6 @@ func ElectrolyserLoop() {
 								} else {
 									// Write the data to the database
 									if err := el.RecordData(ElectrolyserStatement); err != nil {
-
 										log.Println(err)
 									}
 									if el.hasDryer {

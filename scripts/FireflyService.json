@@ -1,0 +1,400 @@
+{
+    "Name": "Location",
+    "FuelCell": true,
+    "AnalogChannels": [
+        {
+            "Name": "Hydrogen",
+            "Port": 0,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 400,
+            "UpperCalibrationActual": 30,
+            "UpperCalibrationAtoD": 2780,
+            "MaxVal": 40,
+            "MinVal": 0
+        },
+        {
+            "Name": "Analog-1",
+            "Port": 1,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 0,
+            "UpperCalibrationActual": 1024,
+            "UpperCalibrationAtoD": 1024,
+            "MaxVal": 3000,
+            "MinVal": 0
+        },
+        {
+            "Name": "Analog-2",
+            "Port": 2,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 418,
+            "UpperCalibrationActual": 4.2,
+            "UpperCalibrationAtoD": 1777,
+            "MaxVal": 5,
+            "MinVal": 0
+        },
+        {
+            "Name": "Analog-3",
+            "Port": 3,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 0,
+            "UpperCalibrationActual": 1024,
+            "UpperCalibrationAtoD": 1024,
+            "MaxVal": 3000,
+            "MinVal": 0
+        },
+        {
+            "Name": "Analog-4",
+            "Port": 4,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 0,
+            "UpperCalibrationActual": 1024,
+            "UpperCalibrationAtoD": 1024,
+            "MaxVal": 3000,
+            "MinVal": 0
+        },
+        {
+            "Name": "Analog-5",
+            "Port": 5,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 0,
+            "UpperCalibrationActual": 1024,
+            "UpperCalibrationAtoD": 1024,
+            "MaxVal": 3000,
+            "MinVal": 0
+        },
+        {
+            "Name": "Analog-6",
+            "Port": 6,
+            "LowerCalibrationActual": 0,
+            "LowerCalibrationAtoD": 0,
+            "UpperCalibrationActual": 1024,
+            "UpperCalibrationAtoD": 1024,
+            "MaxVal": 3000,
+            "MinVal": 0
+        },
+        {
+            "Name": "Conductivity uS/cm",
+            "Port": 7,
+            "LowerCalibrationActual": 0.05,
+            "LowerCalibrationAtoD": 300,
+            "UpperCalibrationActual": 6.38,
+            "UpperCalibrationAtoD": 1820,
+            "MaxVal": 10,
+            "MinVal": 0
+        }
+    ],
+    "DigitalInputs": [
+        {
+            "Name": "1",
+            "Port": 0,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "2",
+            "Port": 1,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "3",
+            "Port": 2,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "4",
+            "Port": 3,
+            "ShowOnCustomer": false
+        }
+    ],
+    "DigitalOutputs": [
+        {
+            "Name": "1",
+            "Port": 0
+        },
+        {
+            "Name": "2",
+            "Port": 1
+        },
+        {
+            "Name": "3",
+            "Port": 2
+        },
+        {
+            "Name": "4",
+            "Port": 3
+        },
+        {
+            "Name": "5",
+            "Port": 4
+        },
+        {
+            "Name": "6",
+            "Port": 5
+        }
+    ],
+    "Relays": [
+        {
+            "Name": "EL1",
+            "Port": 0
+        },
+        {
+            "Name": "EL2",
+            "Port": 1
+        },
+        {
+            "Name": "EL3",
+            "Port": 2
+        },
+        {
+            "Name": "Dryer",
+            "Port": 3
+        },
+        {
+            "Name": "Water",
+            "Port": 4
+        },
+        {
+            "Name": "Relay 5",
+            "Port": 5
+        },
+        {
+            "Name": "Relay 6",
+            "Port": 6
+        },
+        {
+            "Name": "Relay 7",
+            "Port": 7
+        },
+        {
+            "Name": "Relay 8",
+            "Port": 8
+        },
+        {
+            "Name": "Relay 9",
+            "Port": 9
+        },
+        {
+            "Name": "Relay 10",
+            "Port": 10
+        },
+        {
+            "Name": "Relay 11",
+            "Port": 11
+        },
+        {
+            "Name": "Relay 12",
+            "Port": 12
+        },
+        {
+            "Name": "Relay 13",
+            "Port": 13
+        },
+        {
+            "Name": "Relay 14",
+            "Port": 14
+        },
+        {
+            "Name": "Relay 15",
+            "Port": 15
+        }
+    ],
+    "Buttons": [
+        {
+            "Name": "Electrolyser Enable",
+            "Pressed": true,
+            "ShowOnCustomer": true
+        },
+        {
+            "Name": "",
+            "Pressed": true,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        },
+        {
+            "Name": "",
+            "Pressed": false,
+            "ShowOnCustomer": false
+        }
+    ],
+    "FuelCellSettings": {
+        "HighBatterySetpoint": 55.5,
+        "LowBatterySetpoint": 35,
+        "PowerSetting": 6,
+        "IgnoreIsoLow": true,
+        "Enabled": true,
+        "Capacity": 10,
+        "StartSOC": 60,
+        "StopSOC": 70,
+        "MaxRunTime": 60,
+        "MaximumOutput": 8
+    },
+    "ACMeasurement": [
+        {
+            "Name": "Firefly",
+            "SlaveID": 20
+        },
+        {
+            "Name": "",
+            "SlaveID": 21
+        },
+        {
+            "Name": "",
+            "SlaveID": 22
+        },
+        {
+            "Name": "",
+            "SlaveID": 23
+        }
+    ],
+    "DCMeasurement": [
+        {
+            "Name": "",
+            "SlaveID": 10
+        },
+        {
+            "Name": "",
+            "SlaveID": 11
+        },
+        {
+            "Name": "",
+            "SlaveID": 12
+        },
+        {
+            "Name": "",
+            "SlaveID": 13
+        }
+    ],
+    "electrolyserMaxStackVoltsForShutdown": 30,
+    "electrolyserStopToStartTime": 5,
+    "electrolyserStartToStopTime": 15,
+    "dryerRelay": 8,
+    "electrolysers": [
+        {
+            "name": "EL1",
+            "ip": "",
+            "serial": "",
+            "relay": 0,
+            "enabled": true,
+            "stackTime": 0
+        },
+        {
+            "name": "EL3",
+            "ip": "",
+            "serial": "",
+            "relay": 1,
+            "enabled": true,
+            "stackTime": 0
+        },
+        {
+            "name": "EL2",
+            "ip": "",
+            "serial": "",
+            "relay": 2,
+            "enabled": true,
+            "stackTime": 0
+        }
+    ],
+    "nodeRED": "",
+    "apiKey": "",
+    "water": 4,
+    "waterSeconds": 10,
+    "maxConductivity": 4.5,
+    "waterQualityAlarm": 8,
+    "waterDumpAction": 6,
+    "sessionKey": "",
+    "maxGasPressure": 35,
+    "gasCapacity": 2160,
+    "gasUnits": "bar",
+    "gasDisplayUnits": "bar",
+    "gasPressureInput": 0,
+    "gasDetectorThreshold": 1000,
+    "gasDetectorInput": 4,
+    "conductivityGreenMax": 3.5,
+    "conductivityYellowMax": 7.5,
+    "coolingPumpRelay": 7,
+    "coolingPumpStartTemperature": 42,
+    "coolingPumpStopTemperature": 38
+}
