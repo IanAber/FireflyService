@@ -9,32 +9,31 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Added debugging to track electrlyser IP or Serial Number changes&#10;Added option for water dump to control a circulation pumpinstead of a solenoid valve.">
-      <change afterPath="$PROJECT_DIR$/scripts/FireflyService.json" afterDir="false" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fixed issue where there is no dryer or the dryer is not responding">
+      <change afterPath="$PROJECT_DIR$/dist/release/FireflyService" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CANBus.go" beforeDir="false" afterPath="$PROJECT_DIR$/CANBus.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Data.go" beforeDir="false" afterPath="$PROJECT_DIR$/Data.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ElectrolyserStatusType.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerControl.go" beforeDir="false" afterPath="$PROJECT_DIR$/PowerControl.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/FireflyService.service" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/FireflyService.service" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Install.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/UpdateFirefly.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/UpdateFirefly.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/UpdateWeb.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/UpdateWeb.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Scripts/Upgrade.sql" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Upgrade.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/Install.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PAN Fuel Cell.go" beforeDir="false" afterPath="$PROJECT_DIR$/PAN Fuel Cell.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UpdateWeb.sh" beforeDir="false" afterPath="$PROJECT_DIR$/UpdateWeb.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSiteRedirect.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/registration.go" beforeDir="false" afterPath="$PROJECT_DIR$/security.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/UpdateWeb.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/UpdateWeb.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/Charting.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Charting.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/ACData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ACData.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/ELControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/userControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/userControl.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userControl.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -130,7 +129,7 @@
     &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;aProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;rsyncConfigurable&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
   },
   &quot;keyToStringList&quot;: {
     &quot;DatabaseDriversLRU&quot;: [
@@ -167,7 +166,7 @@
       <option name="run" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Linux X86 Release" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <configuration name="Linux X86 Release" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false">
       <module name="FireflyService" />
       <working_directory value="$PROJECT_DIR$" />
       <go_parameters value="-v -o dist/release/FireflyService" />
@@ -182,7 +181,6 @@
       <option name="run" value="false" />
       <method v="2">
         <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Version Incrementer" />
-        <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Zip" />
       </method>
     </configuration>
     <list>
@@ -239,7 +237,8 @@
     <MESSAGE value="Fixed error resulting in incorrect analog input data in charts.&#10;Added Dryer monitor to reboot dryer on error.&#10;Corrected Power table display errors&#10;Corrected analog chart values for by-second output." />
     <MESSAGE value="Added delays for start and stop of electrolysers&#10;Added fields tot he electrolser stored data and graphs&#10;Adjusted display limits for fuel cell&#10;Added message when no data is found fo a graph." />
     <MESSAGE value="Added debugging to track electrlyser IP or Serial Number changes&#10;Added option for water dump to control a circulation pumpinstead of a solenoid valve." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added debugging to track electrlyser IP or Serial Number changes&#10;Added option for water dump to control a circulation pumpinstead of a solenoid valve." />
+    <MESSAGE value="Fixed issue where there is no dryer or the dryer is not responding" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue where there is no dryer or the dryer is not responding" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
@@ -256,11 +255,6 @@
           <url>file://$PROJECT_DIR$/web/scripts/fcAlarms.js</url>
           <line>4</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/web/scripts/ELControl.js</url>
-          <line>98</line>
-          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

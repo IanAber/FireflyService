@@ -106,17 +106,17 @@ func setUpWebSite() {
 
 	router.Use(RequestLoggerMiddleware(router))
 
-	port := fmt.Sprintf(":%s", WebPort)
-	//	certFile := "/certs/localhost.crt"
-	//	keyFile := "/certs/localhost.key"
-	//log.Fatal(http.ListenAndServe(port, router))
+	// localPortAddress is the address for other devices on the local network connecting directly to this server
+	localPortAddress := fmt.Sprintf("%s:%s", GetLocalIP(), LocalPort)
+	// remotePortAddress is the loopback address used by all traffic coming in over the reverse ssh tunnel from the cloud
+	remotePortAddress := fmt.Sprintf("127.0.0.1:%s", WebPort)
 
-	server := &http.Server{
-		Addr:    port,
+	remoteServer := &http.Server{
+		Addr:    remotePortAddress,
 		Handler: router,
 		TLSConfig: &tls.Config{
 			GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
-				// Load the latest localhost.crt and localhost.key if the certificate is nil
+				// Load the latest certificate and key if the certificate is nil
 				if cert.Certificate == nil {
 					if newCert, err := tls.LoadX509KeyPair(certFile, keyFile); err != nil {
 						log.Print(err)
@@ -128,9 +128,42 @@ func setUpWebSite() {
 			},
 		},
 	}
-	for {
-		log.Fatal(server.ListenAndServeTLS("", ""))
+
+	go func() { log.Fatal(remoteServer.ListenAndServeTLS("", "")) }()
+	go func() { log.Fatal(http.ListenAndServe(localPortAddress, router)) }()
+}
+
+//func startInsecureSite(router *gin.Engine, errs chan error) {
+//	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", GetLocalIP(), Settings.LocalPort))
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	errs <- http.Serve(l, router)
+//}
+//
+//func startSecureSite(router *gin.Engine, errs chan error) {
+//	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", Settings.WebPort))
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	errs <- http.ServeTLS(l, router, Settings.SSLCertificateFile, Settings.SSLKeyFile)
+//}
+
+func GetLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
 	}
+	for _, address := range addrs {
+		// check the address type and if it is not a loopback and is an ipv4 address then return it
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	log.Fatal("No local IP addreses found")
+	return ""
 }
 
 type PowerBody struct {
@@ -327,11 +360,13 @@ func serveUserControl(w http.ResponseWriter, r *http.Request) {
 	if role == "admin" {
 		adminLink = `<li><a id="adminLink" href="/admin.html">Administration</a></li>`
 	}
+	log.Println(r.RequestURI)
+	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
 	if page, err := os.ReadFile(webFiles + "/userControl.html"); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		return
 	} else {
-		if _, err := fmt.Fprint(w, strings.Replace(string(page), "<!--adminLink-->", adminLink, -1)); err != nil {
+		if _, err := fmt.Fprint(w, strings.Replace(strings.Replace(string(page), "<!--adminLink-->", adminLink, -1), "<!--links-->", links, -1)); err != nil {
 			log.Println(err)
 		}
 	}
@@ -356,11 +391,52 @@ func serveDefault(w http.ResponseWriter, r *http.Request) {
 	if role == "admin" {
 		adminLink = `<li><a id="adminLink" href="/admin.html">Administration</a></li>`
 	}
+	log.Println(r.RequestURI)
+	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
+
 	if page, err := os.ReadFile(webFiles + "/default.html"); err != nil {
-		ReturnJSONError(w, "ServerDefault", err, http.StatusInternalServerError, true)
+		ReturnJSONError(w, "ServerDefault", err, http.StatusInternalServerError, role == "admin")
 		return
 	} else {
-		if _, err := fmt.Fprint(w, strings.Replace(string(page), "<!--adminLink-->", adminLink, -1)); err != nil {
+		if _, err := fmt.Fprint(w, strings.Replace(strings.Replace(string(page), "<!--adminLink-->", adminLink, -1), "<!--links-->", links, -1)); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func IsExternal(r *http.Request) bool {
+	addr := r.Context().Value(http.LocalAddrContextKey).(*net.TCPAddr)
+	return addr.IP.IsLoopback()
+}
+
+func serveAdmin(w http.ResponseWriter, r *http.Request) {
+	role := "user"
+	if session, err := store.Get(r, "user-session"); err != nil {
+		ReturnJSONError(w, "Load Admin Page", err, http.StatusInternalServerError, true)
+		return
+	} else {
+		roleInterface := session.Values["role"]
+		if roleInterface != nil {
+			role = session.Values["role"].(string)
+		} else {
+			log.Println("No role found in the session")
+			http.ServeFile(w, r, webFiles+"/Login.html")
+			return
+		}
+	}
+
+	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
+
+	if role != "admin" {
+		serveDefault(w, r)
+		return
+	}
+
+	if page, err := os.ReadFile(webFiles + "/admin.html"); err != nil {
+		ReturnJSONError(w, "ServeAdmin", err, http.StatusInternalServerError, role == "admin")
+		return
+	} else {
+		if _, err := fmt.Fprint(w, strings.Replace(string(page), "<!--links-->", links, -1)); err != nil {
 			log.Println(err)
 		}
 	}
@@ -412,35 +488,6 @@ func setCallLogging(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("Cache-Control", "no-store")
 	http.ServeFile(w, r, webFiles+"/debug.html")
-}
-
-func redirectToNodeRED(w http.ResponseWriter, r *http.Request) {
-	url := currentSettings.NodeRED
-	if url == "" {
-		http.ServeFile(w, r, webFiles+"/config.html")
-	} else {
-		if strings.Contains(r.RequestURI, "20080") {
-			url = strings.Replace(strings.Replace(r.RequestURI, "20080", "1880", 1), "NodeRED", "", 1)
-		} else {
-			if strings.HasSuffix(r.RequestURI, "0/NodeRED") {
-				url = strings.Replace(r.RequestURI, "0/NodeRED", "1", 1)
-			}
-		}
-		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-	}
-}
-
-func redirectToNodeREDUI(w http.ResponseWriter, r *http.Request) {
-	url := currentSettings.NodeRED + "/ui"
-	if strings.Contains(r.RequestURI, "20080") {
-		// We are local so go to the local NodeRedUI
-		url = strings.Replace(strings.Replace(r.RequestURI, "20080", "1880", 1), "NodeREDUI", "ui", 1)
-	} else {
-		if strings.HasSuffix(r.RequestURI, "0/NodeREDUI") {
-			url = strings.Replace(r.RequestURI, "0/NodeREDUI", "1/ui", 1)
-		}
-	}
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 type ReplacementsType map[string]string
@@ -891,14 +938,8 @@ func startElectrolyser(w http.ResponseWriter, r *http.Request) {
 			default:
 			}
 		}
-		if err := el.Start(); err != http.StatusOK {
-			if err == http.StatusConflict {
-				ReturnJSONErrorString(w, function, "Too soon after last Stop", err, false)
-			} else if err == http.StatusBadRequest {
-				ReturnJSONErrorString(w, function, "Electrolyser is not powered on", err, false)
-			} else {
-				ReturnJSONErrorString(w, function, "Unknown Error", err, true)
-			}
+		if st, err := el.Start(); err != nil {
+			ReturnJSONErrorString(w, function, err.Error(), st, false)
 		} else {
 			ReturnJSONSuccess(w)
 		}
@@ -913,16 +954,8 @@ func stopElectrolyser(w http.ResponseWriter, r *http.Request) {
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
 	} else {
-		if err := el.Stop(); err != http.StatusOK {
-			if err == http.StatusConflict {
-				ReturnJSONErrorString(w, function, "Too soon after last Start", err, false)
-			} else {
-				if err == http.StatusBadRequest {
-					ReturnJSONErrorString(w, function, "Electrolyser is not powered on", err, false)
-				} else {
-					ReturnJSONErrorString(w, function, "Unknown Error", err, true)
-				}
-			}
+		if st, err := el.Stop(); err != nil {
+			ReturnJSONErrorString(w, function, err.Error(), st, false)
 		} else {
 			ReturnJSONSuccess(w)
 		}

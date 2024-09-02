@@ -394,6 +394,8 @@ func relayHandler(frame can.Frame, _ *CANBus) {
 	Relays.SetAllRelays(binary.LittleEndian.Uint16(frame.Data[0:2]))
 	//	Outputs.SetAllOutputs(frame.Data[2])
 	returnedHeartbeat = binary.LittleEndian.Uint16(frame.Data[4:6])
+	boardVersion := binary.LittleEndian.Uint16(frame.Data[6:8])
+	currentSettings.BoardVersion = fmt.Sprintf("%d.%d.%d", boardVersion/10000, (boardVersion/100)%100, boardVersion%100)
 }
 
 func analogInputs0to3Handler(frame can.Frame, _ *CANBus) {

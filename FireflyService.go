@@ -25,6 +25,7 @@ var (
 	canBus                *CANBus
 	CANInterface          string
 	WebPort               string
+	LocalPort             string
 	databaseServer        string
 	databasePort          string
 	databaseName          string
@@ -166,6 +167,7 @@ func ConnectCANBus() *CANBus {
 func init() {
 	flag.StringVar(&CANInterface, "can", "can0", "CAN Interface Name")
 	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
+	flag.StringVar(&LocalPort, "LocalPort", "8080", "Local Port")
 	flag.StringVar(&jsonSettings, "jsonSettings", "/etc/FireflyService.json", "JSON file containing the system control parameters")
 	flag.StringVar(&webFiles, "webFiles", "/etc/FireflyService/web", "Path to the WEB files location")
 	flag.StringVar(&databaseServer, "sqlServer", "localhost", "MySQL Server")

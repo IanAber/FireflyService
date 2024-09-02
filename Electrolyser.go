@@ -1382,7 +1382,7 @@ func (el *ElectrolyserType) SetRestartPressure(pressure float32) error {
 }
 
 // Start will Attempt to start the electrolyser - return an httpStatus. 200 if successful
-func (el *ElectrolyserType) Start() int {
+func (el *ElectrolyserType) Start() (int, error) {
 	if el.CheckConnected() {
 		if time.Since(el.stopTime) > time.Minute*time.Duration(currentSettings.ElectrolyserStopToStartTime) {
 			if !el.status.IsRunning() {
@@ -1398,19 +1398,19 @@ func (el *ElectrolyserType) Start() int {
 				if debugOutput {
 					log.Printf("Electrolyser %s started", el.status.Name)
 				}
-				return http.StatusOK
+				return http.StatusOK, nil
 			}
 		} else {
-			return http.StatusConflict
+			return http.StatusConflict, fmt.Errorf("too soon after last stop - %s", el.stopTime.Format(time.Kitchen))
 		}
 	}
-	return http.StatusBadRequest
+	return http.StatusBadRequest, fmt.Errorf("electrolyser is not connected")
 }
 
 /*
 Stop -  Attempt to stop the electrolyser - returns an http.Status. 200 if successful
 */
-func (el *ElectrolyserType) Stop() int {
+func (el *ElectrolyserType) Stop() (int, error) {
 	if el.CheckConnected() {
 		if time.Since(el.startTime) > time.Minute*time.Duration(currentSettings.ElectrolyserStartToStopTime) {
 			if el.status.IsRunning() {
@@ -1428,13 +1428,13 @@ func (el *ElectrolyserType) Stop() int {
 				if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 					log.Print("Error saving settings - ", err)
 				}
-				return http.StatusOK
+				return http.StatusOK, nil
 			}
 		} else {
-			return http.StatusConflict
+			return http.StatusConflict, fmt.Errorf("too soon after start command - %s", el.startTime.Format(time.Kitchen))
 		}
 	}
-	return http.StatusBadRequest
+	return http.StatusBadRequest, fmt.Errorf("electrolyser is not connected")
 }
 
 // Preheat will start the pre-heat cycle

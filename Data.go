@@ -49,10 +49,10 @@ func getDatabaseRowsAsJSON(pdb *sql.DB, qry string, args ...any) ([]string, erro
 	if pDB == nil {
 		return nil, fmt.Errorf("the database is not connected")
 	}
-	if incidentRows, err := pdb.Query(qry, args...); err != nil {
+	if Rows, err := pdb.Query(qry, args...); err != nil {
 		return nil, err
 	} else {
-		return jsonify.Jsonify(incidentRows), err
+		return jsonify.Jsonify(Rows), err
 	}
 }
 

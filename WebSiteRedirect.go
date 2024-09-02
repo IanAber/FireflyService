@@ -98,10 +98,8 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/setFuelCell/Enable", "", "PUT", "Enable CAN communications to the fuel cell (we are always listening but may not be sending)", enableFc)
 	RegisterWebSiteAPI(router, "/setFuelCell/Disable", "", "PUT", "Disable CAN communications to the fuel cell so it can be controlled locally by its own user interface", disableFc)
 	RegisterWebSiteAPI(router, "/setFuelCell/ResetFault", "", "PUT", "Send the reset fault code to the fuel cell", resetFCFault)
-	RegisterWebSiteAPI(router, "/setFuelCell/TurnOnHeater", "", "PUT", "Turn on the fuel cell coolanty heater", turnOnFCHeater)
-	RegisterWebSiteAPI(router, "/setFuelCell/TurnOffHeater", "", "PUT", "Turn off the fuel cell coolanty heater", turnOffFCHeater)
-	RegisterWebSiteAPI(router, "/NodeRED", "", "GET", "Redirect to Node Red", redirectToNodeRED)
-	RegisterWebSiteAPI(router, "/NodeREDUI", "", "GET", "Redirect to Node Red", redirectToNodeREDUI)
+	RegisterWebSiteAPI(router, "/setFuelCell/TurnOnHeater", "", "PUT", "Turn on the fuel cell coolant heater", turnOnFCHeater)
+	RegisterWebSiteAPI(router, "/setFuelCell/TurnOffHeater", "", "PUT", "Turn off the fuel cell coolant heater", turnOffFCHeater)
 	RegisterWebSiteAPI(router, "/Electrolyser.html", "", "GET", "Open the Electrolyser screen", serveElectrolyser)
 	RegisterWebSiteAPI(router, "/electrolyser/acquire}", "", "GET", "Go and find the electrolyser IP address based on its name or index.", acquireElectrolysers)
 	RegisterWebSiteAPI(router, "/getElectrolyser/{electrolyser}", "", "GET", "Get the status for an electrolyser by electrolyser name or index", getElectrolyserStatus)
@@ -161,6 +159,7 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/", "", "GET", "Serve the default home page (same as /default.html)", serveDefault)
 	RegisterWebSiteAPI(router, "/userControl.html", "", "GET", "User control page", serveUserControl)
 	RegisterWebSiteAPI(router, "/default.html", "", "GET", "Serve the default home page", serveDefault)
+	RegisterWebSiteAPI(router, "/admin.html", "", "GET", "Serve the admin home page", serveAdmin)
 	RegisterWebSiteAPI(router, "/ping", "", "GET", "Respond to ping. Can be used to verify connectivity", ping)
 
 	// Refresh Certificates

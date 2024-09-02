@@ -82,6 +82,21 @@ type ElectrolyserSettingType struct {
 	StackTime uint32 `json:"stackTime"`
 }
 
+type UrlLinkType struct {
+	Title                string `json:"name"`
+	External             string `json:"external"`
+	Internal             string `json:"internal"`
+	ShowOnCustomerScreen bool   `json:"showOnCustomerScreen"`
+}
+
+func (lk *UrlLinkType) buildLink(external bool) string {
+	if external {
+		return fmt.Sprintf(`<li><a href="%s" class="urlLink" target="_blank">%s</a></li>`, lk.External, lk.Title)
+	} else {
+		return fmt.Sprintf(`<li><a href="%s" class="urlLink" target="_blank">%s</a></li>`, lk.Internal, lk.Title)
+	}
+}
+
 type SettingsType struct {
 	Name                             string                    `json:"Name"`
 	FuelCell                         bool                      `json:"FuelCell"`
@@ -98,7 +113,6 @@ type SettingsType struct {
 	ElectrolyserStartToStopTime      int                       `json:"electrolyserStartToStopTime"`
 	DryerRelay                       int                       `json:"dryerRelay"`
 	Electrolysers                    []ElectrolyserSettingType `json:"electrolysers"`
-	NodeRED                          string                    `json:"nodeRED"`
 	APIKey                           string                    `json:"apiKey"`
 	WaterDumpRelay                   uint8                     `json:"water"`
 	WaterDumpSeconds                 uint8                     `json:"waterSeconds"`
@@ -118,6 +132,8 @@ type SettingsType struct {
 	CoolingPumpRelay                 uint8                     `json:"coolingPumpRelay"`
 	CoolingPumpStartTemperature      uint8                     `json:"coolingPumpStartTemperature"`
 	CoolingPumpStopTemperature       uint8                     `json:"coolingPumpStopTemperature"`
+	BoardVersion                     string                    `json:"boardVersion"`
+	Links                            []UrlLinkType             `json:"links"`
 	filepath                         string
 	acquiringElectrolysers           bool
 }
@@ -174,7 +190,6 @@ func NewSettings() *SettingsType {
 	settings.ElectrolyserMaxStackVoltsTurnOff = 30
 	settings.ElectrolyserStopToStartTime = 600
 	settings.ElectrolyserStartToStopTime = 600
-	settings.NodeRED = ""
 	settings.WaterDumpRelay = 0
 	settings.WaterDumpSeconds = 10
 	settings.MaximumConductivity = 2.5
@@ -643,7 +658,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	} else {
 		settings.WaterDumpSeconds = uint8(val)
 	}
-	if val, err := strconv.ParseInt(r.FormValue("waterDumpRelay"), 10, 8); err != nil {
+	if val, err := strconv.ParseUint(r.FormValue("waterDumpRelay"), 10, 8); err != nil {
 		ReturnJSONError(w, DeviceString+":Water Dump Relay", err, http.StatusBadRequest, true)
 		return
 	} else {
@@ -706,8 +721,6 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	} else {
 		settings.FuelCellSettings.Capacity = uint16(val)
 	}
-	settings.NodeRED = r.FormValue("nodeRed")
-	//	settings.Subnet = r.FormValue("subnet")
 	ElectrolysersSettings := r.FormValue("ElectrolyserRelays")
 	if debugOutput {
 		log.Println("Settings = " + ElectrolysersSettings)
@@ -774,6 +787,15 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		}
 	}
 
+	LinkSettings := r.FormValue("Links")
+	log.Println(LinkSettings)
+	newLinks := make([]UrlLinkType, 0)
+	if err := json.Unmarshal([]byte(LinkSettings), &newLinks); err != nil {
+		ReturnJSONError(w, DeviceString+":Links", err, http.StatusBadRequest, true)
+		return
+	}
+	settings.Links = newLinks
+
 	if err := settings.SaveSettings(settings.filepath); err != nil {
 		log.Print(err)
 	}
@@ -798,4 +820,15 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		}
 	}
 	http.Redirect(w, r, "/config.html", http.StatusTemporaryRedirect)
+}
+
+func (settings *SettingsType) buildLinks(external bool, admin bool) string {
+	linkSet := make([]string, 0)
+
+	for _, link := range settings.Links {
+		if admin || link.ShowOnCustomerScreen {
+			linkSet = append(linkSet, link.buildLink(external))
+		}
+	}
+	return strings.Join(linkSet, "")
 }

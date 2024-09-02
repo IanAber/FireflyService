@@ -146,7 +146,7 @@ const FuelCellCoolantByMinute = `select min(UNIX_TIMESTAMP(logged)) as logged
                   where logged between ? and ?
 	              group by UNIX_TIMESTAMP(logged) div 60`
 
-const NUMCOMMANDREPEATS = 10 // Send Start/Stop 10 times
+const NUMCOMMANDREPEATS = 10 // Send Start/Stop 3 times
 
 type PanSettingsType struct {
 	TargetPower float64 // Power output requested
@@ -191,14 +191,16 @@ const (
 	HeaterOn
 )
 
-const CanOutputControlMsg = 0x161088C1
-
 type OutputControlType struct {
 	FuelCellRunEnable RunCommandType  // Startup / Shutdown
 	PowerDemand       uint8           // kW x 10
 	ExhaustMode       ExhaustModeType // Open / Closed
 	Heater            HeaterModeType
 	repeats           uint8
+	lastRunEnable     RunCommandType
+	lastPowerDemand   uint8
+	lastExhaustMode   ExhaustModeType
+	lastHeater        HeaterModeType
 }
 
 func (t *OutputControlType) Clear() {
@@ -213,38 +215,55 @@ func (t *OutputControlType) GetPowerDemand() float64 {
 	return float64(t.PowerDemand) / 10.0
 }
 
+// UpdateFuelCell sends a new OutputControl frame if the contents have changed. It repeats the frame NUMCOMMANDREPEATS times.
 func (t *OutputControlType) UpdateFuelCell(bus *CANBus) error {
 	var frame can.Frame
 
+	// Set up the frame
 	frame.ID = CanOutputControlMsg
 	frame.IsExtended = true
 	frame.Length = 8
-	//	if t.repeats > 0 {
 	frame.Data[0] = byte(t.FuelCellRunEnable)
-	//	} else {
-	//		frame.Data[0] = 0
-	//	}
 	frame.Data[1] = t.PowerDemand
 	frame.Data[2] = byte(t.ExhaustMode)
 	frame.Data[3] = byte(t.Heater)
-	t.repeats--
-	return bus.Publish(frame)
-}
 
-const CanBatteryVoltageLimitsMsg = 0x161088C2
+	// Reset the counter if the contents have changed
+	if t.ExhaustMode != t.lastExhaustMode || t.Heater != t.lastHeater ||
+		t.PowerDemand != t.lastPowerDemand || t.FuelCellRunEnable != t.lastRunEnable {
+		t.repeats = NUMCOMMANDREPEATS
+		t.lastExhaustMode = t.ExhaustMode
+		t.lastHeater = t.Heater
+		t.lastPowerDemand = t.PowerDemand
+		t.lastRunEnable = t.FuelCellRunEnable
+	}
+
+	// Send the frame for the NUMCOMMANDREPEATS times
+	if t.repeats > 0 {
+		t.repeats--
+		return bus.Publish(frame)
+	} else {
+		return nil
+	}
+}
 
 type BatteryVoltageLimitsType struct {
-	BMSHighVoltage uint16 //Battery high voltage setpoint
-	BMSLowVoltage  uint16 //Battery low voltage setpoint
-	IsoFlag        bool   //Set true to suppress stack isolation tests.
-	ClearFaults    bool   //Set true to send 10 frames with the fault clear flag set
-	repeats        uint8  // Number of times to send the same frame
+	BMSHighVoltage     uint16 //Battery high voltage setpoint
+	BMSLowVoltage      uint16 //Battery low voltage setpoint
+	IsoFlag            bool   //Set true to suppress stack isolation tests.
+	ClearFaults        bool   //Set true to send 10 frames with the fault clear flag set
+	repeats            uint8  // Number of times to send the same frame
+	lastBMSHighVoltage uint16
+	lastBMSLowVoltage  uint16
+	lastIsoFlag        bool
+	lastClearFaults    bool
 }
 
-// UpdateFuelCell sends the frame to the CAN bus
+// UpdateFuelCell sends the frame to the CAN bus if the contents have changed then repeats it NUMCOMMANDREPEATS times
 func (t *BatteryVoltageLimitsType) UpdateFuelCell(bus *CANBus) error {
 	var frame can.Frame
 
+	// Set up the frame
 	frame.ID = CanBatteryVoltageLimitsMsg
 	frame.IsExtended = true
 	frame.Length = 8
@@ -260,12 +279,23 @@ func (t *BatteryVoltageLimitsType) UpdateFuelCell(bus *CANBus) error {
 	} else {
 		frame.Data[5] = 0
 	}
+
+	// Reset the repeat counter if anything has changed
+	if t.lastClearFaults != t.ClearFaults || t.lastBMSHighVoltage != t.BMSHighVoltage || t.lastBMSLowVoltage != t.BMSLowVoltage || t.lastIsoFlag != t.IsoFlag {
+		t.repeats = NUMCOMMANDREPEATS
+		t.lastClearFaults = t.ClearFaults
+		t.lastBMSHighVoltage = t.BMSHighVoltage
+		t.lastBMSLowVoltage = t.BMSLowVoltage
+		t.lastIsoFlag = t.IsoFlag
+	}
+	// Send the frame for the NUMCOMMANDREPEATS times
 	if t.repeats > 0 {
 		t.repeats--
+		return bus.Publish(frame)
 	} else {
 		t.ClearFaults = false
+		return nil
 	}
-	return bus.Publish(frame)
 }
 
 type PowerModeStateType byte
@@ -288,8 +318,6 @@ func (pm PowerModeStateType) String() string {
 	modeStates := [...]string{"Off", "Standby", "Hydrogen intake", "Start", "AirPurge", "Hydrogen leak check", "manual", "emergency stop", "fault", "shutdown"}
 	return modeStates[pm]
 }
-
-const CanPowerModeMsg = 0x161088A1
 
 type PowerModeType struct {
 	PowerModeState PowerModeStateType
@@ -316,8 +344,6 @@ func (t *PowerModeType) Load(data [8]byte) {
 	dbRecord.RunStage = data[4]
 	dbRecord.FaultLevel = data[1]
 }
-
-const CanPressuresMsg = 0x161088A2
 
 type PressuresType struct {
 	H2Pressure        uint16 // Hydrogen pressure
@@ -360,8 +386,6 @@ func (t *PressuresType) GetCoolantPressure() float64 {
 func (t *PressuresType) GetH2AirPressureDiff() float64 {
 	return (float64(t.H2AirPressureDiff) / 10.0) - 5.0
 }
-
-const CanStackCoolantMsg = 0x161088A3
 
 type StackCoolantType struct {
 	CoolantInTemp  uint16 // Coolant temperature at the inlet of the stack
@@ -406,8 +430,6 @@ func (t *StackCoolantType) GetAmbientTemp() float64 {
 	return (float64(t.AmbientTemp) / 10.0) - 40
 }
 
-const CanAirFlowMsg = 0x161088A4
-
 type AirFlowType struct {
 	Flow uint16 //Air flow Lpm * 10
 }
@@ -426,8 +448,6 @@ func (t *AirFlowType) Load(data [8]byte) {
 func (t *AirFlowType) GetFlow() float64 {
 	return float64(t.Flow) / 10.0
 }
-
-const CanAlarmsMsg = 0x161088A5
 
 type AlarmsType struct {
 	bitMap uint32
@@ -570,8 +590,6 @@ func (al *AlarmsType) Text() []string {
 	return alarmText
 }
 
-const CanStackOutputMsg = 0x161088A7
-
 type StackOutputType struct {
 	Voltage uint16 //Stack voltage
 	Current uint16 //Stack current
@@ -608,8 +626,6 @@ func (t *StackOutputType) GetPower() float64 {
 	return float64(t.Power) / 10.0
 }
 
-const CanCff1Msg = 0x8CFF1C90
-
 type CffMsgType struct {
 	GasConcentration uint8
 	MSBSide          byte
@@ -641,8 +657,6 @@ func (t *CffMsgType) Load(data [8]byte) {
 func (t *CffMsgType) GetGasConcentration() int16 {
 	return (int16(t.GasConcentration) - 10) * 500
 }
-
-const CanInsulationMsg = 0x18FEA3B2
 
 type InsulationType struct {
 	InsulationStatusCode byte
@@ -713,6 +727,23 @@ const CanStackCellsID25to28Msg = 0x1816A7B1
 const CanStackCellsID29to32Msg = 0x1817A7B1
 const CanMaxMinCellsMsg = 0x1801A7B1
 const CanTotalStackVoltageMsg = 0x1802A7B1
+const CanATSCoolingFanMsg = 0x19BBB701
+const CanWaterPumpMsg = 0x18FAC503
+const CanDCDCConverterMsg = 0x1029FF00
+const CanDCOutputMsg = 0x18FFB587
+const CanKeyOnMsg = 0x161088AD
+const CanRunTimeMsg = 0x1610AAAB
+const CanBMSSettingsMsg = 0x1610AAAA
+const CanStackCoolantMsg = 0x161088A3
+const CanOutputControlMsg = 0x161088C1
+const CanBatteryVoltageLimitsMsg = 0x161088C2
+const CanPowerModeMsg = 0x161088A1
+const CanPressuresMsg = 0x161088A2
+const CanAirFlowMsg = 0x161088A4
+const CanAlarmsMsg = 0x161088A5
+const CanStackOutputMsg = 0x161088A7
+const CanCff1Msg = 0x8CFF1C90
+const CanInsulationMsg = 0x18FEA3B2
 
 type StackCellsType struct {
 	StackCellVoltage           [5][32]uint16
@@ -840,8 +871,6 @@ func (t *StackCellsType) GetAvgCellVoltage() int16 {
 	return int16(t.AvgCellVolts) - 5000
 }
 
-const CanATSCoolingFanMsg = 0x19BBB701
-
 type ATSCoolingFanType struct {
 	Enable uint16
 	Speed  uint16
@@ -860,8 +889,6 @@ func (t *ATSCoolingFanType) Load(data [8]byte) {
 	defer dbRecord.mu.Unlock()
 	dbRecord.CoolantFanSpeed = t.Speed
 }
-
-const CanWaterPumpMsg = 0x18FAC503
 
 type WaterPumpType struct {
 	Speed   uint16
@@ -894,8 +921,6 @@ func (t *WaterPumpType) getVoltage() float64 {
 func (t *WaterPumpType) getCurrent() float64 {
 	return float64(t.Current) * 0.2
 }
-
-const CanDCDCConverterMsg = 0x1029FF00
 
 type DCDCConverterType struct {
 	InputCurrent  uint16
@@ -939,8 +964,6 @@ func (t *DCDCConverterType) GetInputVoltage() float64 {
 func (t *DCDCConverterType) GetOutputVoltage() float64 {
 	return float64(t.OutputVoltage) / 100.0
 }
-
-const CanDCOutputMsg = 0x18FFB587
 
 type DCOutputType struct {
 	Temp         uint8
@@ -1048,9 +1071,6 @@ func (t *DCOutputType) GetFaultCode() string {
 	}
 }
 
-const CanKeyOnMsg = 0x161088AD
-const CanRunTimeMsg = 0x1610AAAB
-
 type SystemInfoType struct {
 	Run              bool
 	ExhaustFlag      bool
@@ -1082,8 +1102,6 @@ func (t *SystemInfoType) SetExhaustFlag() {
 	t.ExhaustFlag = true
 	t.exhaustFlagTimer.Reset(time.Second)
 }
-
-const CanBMSSettingsMsg = 0x1610AAAA
 
 type BMSSettingsType struct {
 	TargetPowerLevel uint8
@@ -1353,6 +1371,7 @@ func (fc *PANFuelCell) updateOutput() error {
 			if output.FuelCellRunEnable == FCStartUp && fc.PowerMode.PowerModeState != PMInit {
 				output.FuelCellRunEnable = FCNoCommand
 			}
+			// if we are sending a stop. Continue to send it as long as the fuel cell says it is not in standby, init or off
 			if output.FuelCellRunEnable == FCShutDown &&
 				(fc.PowerMode.PowerModeState == PM_Shutdown ||
 					fc.PowerMode.PowerModeState == PMInit ||

@@ -907,21 +907,41 @@
                     <tbody>
                         <tr>
                             <td class="settingLabel">
-                                <label for="nodeRed">Node-<span style="color: #ff0000;">RED</span> URL</label>
-                            </td>
-                            <td class="settingValue">
-                                <input class="settings" type="text" id="nodeRed" name="nodeRed" width="100em"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="settingLabel">
                                 <label for="APIKey">API Key</label>
                             </td>
                             <td class="settingValue">
                                 <input class="settings" type="text" id="APIKey" name="APIKey" style="width: 25em;" /><img src="images/keys.png" alt="Generate Key" title="Generate new key" onclick="GenerateNewKey()" class="button" style="width: 2em; height: 2em;" />
                             </td>
                         </tr>
+                        <tr>
+                            <td class="settingLabel">
+                                <label for="boardVersion">FFIO Board Firware</label>
+                            </td>
+                            <td>
+                                <span class="settings" id="boardVersion"></span>
+                            </td>
+                        </tr>
                     </tbody>
+                </table>
+            </div>
+            <div>
+                <label for="Links"></label><input style="visibility: hidden;" name="Links" id="Links" value="[]">
+                <h2 class="firefly Links">Links</h2>
+                <table class="settings" id="Links">
+                    <thead class="Links">
+                        <tr class="Links">
+                            <th class="Links">Name</th>
+                            <th class="Links">Local URL</th>
+                            <th class="Links">Remote URL</th>
+                            <th class="Links">Show on Customer Screen</th>
+                        </tr>
+                    </thead>
+                    <tbody class="Links" id="LinksBody"></tbody>
+                    <tfoot class="Links">
+                        <tr class="Links">
+                            <td class="LinksAdd" onclick="appendLink()" colspan=3 >Add A Link</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 

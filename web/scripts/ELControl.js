@@ -207,6 +207,8 @@ function setRate(rate, elName) {
     $.ajax({
         method : "PUT",
         url: url
+    }).fail(function (xhr) {
+        alert(xhr.status + " : " +  xhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -240,13 +242,8 @@ function  PowerClick(id, controlID) {
         success: function() {
             console.log("Relay command sent OK");
         },
-    }).fail(function (xhr, ajaxOptions, thrownError) {
-        if (xhr.status === 400) {
-            responseObj = JSON.parse(xhr.responseText)
-            alert(responseObj.errors[0].Err);
-        } else {
-            alert(xhr.status + " : " + thrownError);
-        }
+    }).fail(function (xhr) {
+        alert(xhr.status + " : " +  xhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -264,12 +261,8 @@ function RunClick(id, controlID, elName) {
         success: function() {
             console.log("Electrolyser command sent OK");
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            if (xhr.status === 400) {
-                alert(xhr.responseJSON.errors[0].Err);
-            } else {
-                alert(xhr.status + " : " + thrownError);
-            }
+        error: function (xhr) {
+            alert(xhr.status + " : " + xhr.responseJSON.errors[0].Err);
         }
     });
 }
@@ -289,12 +282,8 @@ function RebootClick(id, controlID, elName) {
             console.log("Electrolyser reboot sent OK");
             alert(elName + " reboot command sent.");
         },
-        error: function (xhr, ajaxOptions, thrownError) {
-            if (xhr.status === 400) {
-                alert(xhr.responseJSON.errors[0].Err);
-            } else {
-                alert(xhr.status + " : " + thrownError);
-            }
+        error: function (xhr) {
+            alert(xhr.status + " : " + xhr.responseJSON.errors[0].Err);
         }
     });
 }

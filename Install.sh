@@ -26,7 +26,7 @@ fi
 if ! test -f "/etc/FireflyService.json"; then
   cp /etc/FireFlyIO.json /etc/FireflyService.json
 fi
-cp -r web/* /FireflyService/web
+cp -r web/* /etc/FireflyService/web
 systemctl start FireflyService
 
 echo "Done"

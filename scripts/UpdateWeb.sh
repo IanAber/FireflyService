@@ -3,11 +3,11 @@ then
     echo "Please run this as root or with sudo"
     exit 2
 fi
-if ! test -d "/FireflyService"; then
-  mkdir /FireflyService
+if ! test -d "/etc/FireflyService"; then
+  mkdir /etc/FireflyService
 fi
-if ! test -d "/FireflyService/web"; then
-  mkdir /FireflyService/web
+if ! test -d "/etc/FireflyService/web"; then
+  mkdir /etc/FireflyService/web
 fi
-rm -r /FireflyService/web/*
-cp -r web/* /FireflyService/web
+rm -r /etc/FireflyService/web/*
+cp -r web/* /etc/FireflyService/web

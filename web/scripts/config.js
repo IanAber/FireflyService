@@ -1,4 +1,6 @@
 let Electrolysers = [];
+let Links = [];
+
 // Remove element at the given index
 Array.prototype.remove = function(index) {
     this.splice(index, 1);
@@ -99,6 +101,10 @@ function loadSettings() {
                         if (data.FuelCellSettings.MaximumOutput !== "") {
                             $("#fcMaxOutput").val(data.FuelCellSettings.MaximumOutput);
                         }
+                        if (data.links != null) {
+                            Links = data.links;
+                        }
+
                         if (data.electrolysers != null) {
                             Electrolysers = data.electrolysers;
                         }
@@ -145,6 +151,8 @@ function loadSettings() {
                         pumpRelay.val(data.coolingPumpRelay);
                         $("#coolingPumpStartTemperature").val(data.coolingPumpStartTemperature);
                         $("#coolingPumpStopTemperature").val(data.coolingPumpStopTemperature);
+                        $("#boardVersion").text(data.boardVersion);
+                        RenderLinks();
                     });
             }
         })
@@ -192,9 +200,6 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip, enabled) {
     newRow += '<td class="elEnabled"><input class="settings" type="checkbox" id="' + elEnabledID + '" name="' + elEnabledID + '" value="Enabled" ' + IsEnabled + '></td>'
     newRow += '<td><img src="images/trash.png" alt="Delete" onclick="deleteElectrolyser(' + numElectrolysers + ')" class="button" /></td></tr>';
     $("#ElectrolysersBody").append(newRow);
-    // if (Dryer) {
-    //     $("#Dryer"+numElectrolysers).prop("checked", true);
-    // }
     $('#'+relayID).on("change", function() {
         Electrolysers[numElectrolysers].relay = parseInt($(this).val(), 10);
     });
@@ -314,8 +319,58 @@ function SetDCMeasurementSettings(channel) {
 
 function saveSettings() {
     if (validateElectrolyserRelays()) {
-        let relayJSON = JSON.stringify(Electrolysers)
+        let relayJSON = JSON.stringify(Electrolysers);
         $("#ElectrolyserRelays").val(relayJSON);
+        let linkJSON = JSON.stringify(Links);
+        $("#Links").val(linkJSON);
         $("#settingsForm").submit();
     }
+}
+
+function RenderLinks() {
+    $("#LinksBody").empty();
+    if (Links != null) {
+        Links.forEach(function (lk) { RenderLink(lk); } );
+    }
+}
+
+function RenderLink(lk) {
+    let numLinks = $("#LinksBody tr").length;
+    let nameID = "lk" + numLinks + "Name";
+    let internalID = "lk" + numLinks + "internal";
+    let externalID = "lk" + numLinks + "external";
+    let showOnCustomerScreen = "lk" + numLinks + "customer";
+
+    let IsCustomerEnabled = lk.showOnCustomerScreen ? "checked" : "";
+    let newRow = '<tr class="lkSetting" id="lk' + numLinks + 'Row">';
+    newRow += '<td class="lkSetting"><input class="settings" type="text" id="' + nameID + '" name="' + nameID + '" value="' + lk.name + '"></td>';
+    newRow += '<td class="lkSetting"><input class="settings" type="text" id="' + internalID + '" name="' + internalID + '" value="' + lk.internal + '"></td>';
+    newRow += '<td class="lkSetting"><input class="settings" type="text" id="' + externalID + '" name="' + externalID + '" value="' + lk.external + '"></td>';
+    newRow += '<td class="lkShowOnCustomer"><input class="settings" type="checkbox" id="' + showOnCustomerScreen + '" name="' + showOnCustomerScreen + '" value="Enabled" ' + IsCustomerEnabled + '></td>'
+    newRow += '<td><img src="images/trash.png" alt="Delete" onclick="deleteLink(' + numLinks + ')" class="button" /></td></tr>';
+
+    $("#LinksBody").append(newRow);
+
+    $('#'+nameID).on("change", function() {
+        Links[numLinks].name = $(this).val();
+    });
+    $('#'+internalID).on("change", function() {
+        Links[numLinks].internal = $(this).val();
+    });
+    $('#'+externalID).on("change", function() {
+        Links[numLinks].external = $(this).val();
+    });
+    $('#'+showOnCustomerScreen).on("change", function() {
+        Links[numLinks].showOnCustomerScreen = $(this).prop("checked");
+    })
+}
+
+function deleteLink(num) {
+    Links.remove(num);
+    RenderLinks();
+}
+
+function appendLink() {
+    Links.push({name:"", internal:"", external:"", showOnCustomerScreen:false});
+    RenderLinks();
 }

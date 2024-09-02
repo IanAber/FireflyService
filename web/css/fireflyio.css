@@ -196,6 +196,13 @@ h2.DCMeasurement {
 h2.Electrolysers {
     color: greenyellow;
 }
+h2.Links {
+    color: greenyellow;
+}
+td.LinksAdd{
+    font-style: italic;
+    text-decoration: underline;
+}
 h2.FuelCell {
     color: #93c3cd;
 }
@@ -311,8 +318,24 @@ table.ElectrolyserParams {
     margin: auto;
 }
 tr.ElectrolyserParams {
-
 }
+
+table.Links {
+    margin: auto;
+}
+table.LinksParams {
+    margin: auto;
+}
+tr.LinksParams {
+}
+td.LinksAdd{
+    font-style: italic;
+    text-decoration: underline;
+}
+h2.Links {
+    color: greenyellow;
+}
+
 tr.PowerHeader{
     background-color: black;
     color: mediumaquamarine;

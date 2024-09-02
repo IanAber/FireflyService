@@ -120,7 +120,7 @@
               step: 1,
             },
             minValue: 0,
-            maxValue: 10000,
+            maxValue: 18000,
             description: 'Power',
           },
           series: [{
@@ -176,6 +176,8 @@
         }]
       }
       setupChart(Settings);
+      $('#ChartContainer').jqxChart('hideSerie', 3, 0, NaN);
+      $('#ChartContainer').jqxChart('hideSerie', 4, 0, NaN);
     });
 
   </script>

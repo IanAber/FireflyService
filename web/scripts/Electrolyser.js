@@ -303,6 +303,8 @@ function MaintenanceClick() {
     $.ajax({
         method : "PUT",
         url: url
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        alert(textStatus);
     });
 }
 
