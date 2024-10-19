@@ -41,7 +41,7 @@ func CalculatePressure(bar float64, pressureUnits string) (float64, string) {
 	case "µbar":
 		return bar * 1000000, fmt.Sprintf("%.0f", bar*1000)
 	case "dcm2":
-		return bar * 1000000, fmt.Sprintf("%.0", bar*1000)
+		return bar * 1000000, fmt.Sprintf("%.0f", bar*1000)
 	case "kgm2":
 		return bar * 10197.16213, fmt.Sprintf("%.0f", bar*10197.16213)
 	case "kgcm2":
@@ -197,6 +197,7 @@ func getPressureLabel(units string) string {
 
 const R = 8.31446261815324 // Ideal gas constant
 // Ideal gas law : PV = nRT	where P = Pascal, V = cubic metres, n = moles, T = Kelvin
+
 const GramsPerMol = 2.01588
 const LitresPerMol = 22.71
 

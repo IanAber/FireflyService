@@ -21,7 +21,7 @@ type ElectrolyserStatusType struct {
 	State                                uint16                 `json:"state"`                                // 1200
 	ElectrolyteLevel                     ElectrolyteLevelType   `json:"electrolyteLevel"`                     // (7000 - 7003 four booleans)
 	ElectrolyteTankPressureTooHigh       bool                   `json:"electrolyteTankPressureTooHigh"`       // 7004
-	HydrogenPressureTooHigh              bool                   `json:"hudrogenPressureTooHigh"`              // 7005
+	HydrogenPressureTooHigh              bool                   `json:"hydrogenPressureTooHigh"`              // 7005
 	DownstreamHighTemperature            bool                   `json:"downstreamHighTemperature"`            // 7006
 	ElectronicCompartmentHighTemp        bool                   `json:"electronicCompartmentHighTemp"`        // 7007
 	VeryLowElectrolyteTemp               bool                   `json:"veryLowElectrolyteTemp"`               // 7008
@@ -67,7 +67,7 @@ type ElectrolyserJSONStatusType struct {
 	State                                uint16               `json:"state"`                                // 1200
 	ElectrolyteLevel                     ElectrolyteLevelType `json:"electrolyteLevel"`                     // (7000 - 7003 four booleans)
 	ElectrolyteTankPressureTooHigh       bool                 `json:"electrolyteTankPressureTooHigh"`       // 7004
-	HydrogenPressureTooHigh              bool                 `json:"hudrogenPressureTooHigh"`              // 7005
+	HydrogenPressureTooHigh              bool                 `json:"hydrogenPressureTooHigh"`              // 7005
 	DownstreamHighTemperature            bool                 `json:"downstreamHighTemperature"`            // 7006
 	ElectronicCompartmentHighTemp        bool                 `json:"electronicCompartmentHighTemp"`        // 7007
 	VeryLowElectrolyteTemp               bool                 `json:"veryLowElectrolyteTemp"`               // 7008
@@ -121,7 +121,7 @@ func (elt *ElectrolyserStatusType) IsRunning() bool {
 	case 5:
 		return false // Curve
 	case 6:
-		return false // Blowdown
+		return false // Blow down
 	default:
 		return false // Unknown
 	}
@@ -272,7 +272,7 @@ func (elt *ElectrolyserStatusType) GetProductCode() string {
 	case 0x47:
 		return "ELE410508A2LSV01"
 	default:
-		return "Unkown Product Code"
+		return "Unknown Product Code"
 	}
 }
 

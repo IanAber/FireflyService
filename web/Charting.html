@@ -404,8 +404,8 @@ if (y > msg.targetHigh) {
 </head>
 <body onload="PopulateTitle()">
     <div id='ChartContainer' style="width:1200px; height:400px; position: relative; left: 0; top: 0;"></div>
-    <div style="display:inline-block">
-        <div style="float:left; padding-right:10px">
+    <div style="display:inline-block;">
+        <div style="float:left; padding-right:10px;">
             <div><label for="minXVal">Minimum X value</label><input type="number" id="minXVal" onchange="updateChartAxes()" /></div>
             <div><label for="maxXVal">Maximum X value</label><input type="number" id="maxXVal" onchange="updateChartAxes()" /></div>
             <div><label for="minYVal">Minimum Y value</label><input type="number" id="minYVal" onchange="updateChartAxes()" /></div>
@@ -414,7 +414,7 @@ if (y > msg.targetHigh) {
             <div><label for="yVar">Y Variable</label><input type="text" id="yVar" value="msg.YVal" /></div>
             <div><button onclick="calculateCoefficients()">Solve</button></div>
         </div>
-        <div style="float:left">
+        <div style="float:left;">
             <div>
                 <table class="coords">
                     <thead>
@@ -448,7 +448,7 @@ if (y > msg.targetHigh) {
             <div><b>Low Function</b>&nbsp;<button onclick='showLow()' >Show</button>&nbsp;<span id="solutionLow"></span></div>
         </div>
     </div>
-    <div style="float:none"><span><b>Function for use in NodeRed</b>&nbsp;<img title="Copy to clipboard" alt='Copy to clipboard' src='images/copy-to-clipboard-icon.jpg' onclick='copyToClip()' style='width: 25px' />&nbsp;<img title="Parse Function" alt='Parse Function' src='images/analyseClipboard.png' onclick='analyse()' style='width: 25px' /></span><br />
+    <div style="float:none;"><span><b>Function for use in NodeRed</b>&nbsp;<img title="Copy to clipboard" alt='Copy to clipboard' src='images/copy-to-clipboard-icon.jpg' onclick='copyToClip()' style='width: 25px;' />&nbsp;<img title="Parse Function" alt='Parse Function' src='images/analyseClipboard.png' onclick='analyse()' style='width: 25px;' /></span><br />
         <textarea id="function" rows="23" cols="130" title="function for NodRed"></textarea><br />
     </div>
 </body>

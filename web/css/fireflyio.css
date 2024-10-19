@@ -16,7 +16,7 @@ div.co2 {
     text-align:center;
     width: 100%;
     background-color: #4b9a1f;
-    color: white;
+    color: #ffffff;
 }
 header.header {
     background-color: black;
@@ -111,11 +111,13 @@ div.CoolantManagement{
 div.CoolantParams{
     text-align: center;
 }
+/*
 div.GasManagement{
     border-bottom-color: black;
     border-bottom-width: 1px;
     border-bottom-style: solid;
 }
+*/
 div.GasSettings{
     text-align: center;
 }
@@ -153,9 +155,11 @@ div.warnings {
 div.menu {
     float: left;
 }
+/*
 div.chart {
     float: left;
 }
+*/
 img.logo {
     float: right;
     height: 1.5em;
@@ -240,6 +244,7 @@ table.Electrolyser {
     background-color: azure;
     margin: auto;
 }
+/*
 table.Dryer {
     width: 28vw;
     border-color: darkslategray;
@@ -248,6 +253,7 @@ table.Dryer {
     background-color: azure;
     margin: auto;
 }
+*/
 table.FuelCell {
     width: 39vw;
     border-color: darkslategray;
@@ -382,42 +388,42 @@ th.DILow {
 th.DOHigh {
     background-color:green;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.DOLow {
     background-color:red;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.ButtonOn {
     background-color:green;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.ButtonOff {
     background-color:red;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.ButtonChanging {
     background-color:orange;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.RelayOn {
     background-color:green;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.RelayOff {
     background-color:red;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.RelayChanging {
     background-color:orange;
     color:white;
-    padding:10px
+    padding:10px;
 }
 th.DeviceName {
     width:10em;
@@ -447,7 +453,7 @@ td.ElectrolyserAdd{
     font-style: italic;
     text-decoration: underline;
 }
-td.el
+td.el,
 td.buttonLabel {
     width:5em;
     text-align:right;

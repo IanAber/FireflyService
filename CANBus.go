@@ -163,7 +163,7 @@ func NewCANBus(interfaceName string) *CANBus {
 	canBus.FrameHandlers[CanAlarmsMsg] = CanAlarmsHandler
 	canBus.FrameHandlers[CanStackOutputMsg] = CanStackOutputHandler
 	canBus.FrameHandlers[CanCff1Msg] = CanCff1Handler
-	canBus.FrameHandlers[CanInsulationMsg] = CanInsulationHanddler
+	canBus.FrameHandlers[CanInsulationMsg] = CanInsulationHandler
 	canBus.FrameHandlers[CanStackCellsID1to4Msg] = CanStackHandler
 	canBus.FrameHandlers[CanStackCellsID5to8Msg] = CanStackHandler
 	canBus.FrameHandlers[CanStackCellsID9to12Msg] = CanStackHandler
@@ -301,6 +301,7 @@ func CanPowerModeHandler(frame can.Frame, _ *CANBus) {
 		if FuelCell.PowerMode.PowerModeState == PM_Shutdown || FuelCell.PowerMode.PowerModeState == PMInit {
 			output.FuelCellRunEnable = FCNoCommand
 		}
+	default:
 	}
 	FuelCell.LastMessageReceived = time.Now()
 }
@@ -340,7 +341,7 @@ func CanCff1Handler(frame can.Frame, _ *CANBus) {
 	FuelCell.CffMsg.Load(frame.Data)
 	FuelCell.LastMessageReceived = time.Now()
 }
-func CanInsulationHanddler(frame can.Frame, _ *CANBus) {
+func CanInsulationHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.Insulation.Load(frame.Data)
@@ -417,15 +418,15 @@ func relayHandler(frame can.Frame, _ *CANBus) {
 }
 
 func analogInputs0to3Handler(frame can.Frame, _ *CANBus) {
-	AnalogInputs.SetAnanlog0To3(frame.Data)
+	AnalogInputs.SetAnalog0To3(frame.Data)
 }
 
 func analogInputs4to7Handler(frame can.Frame, _ *CANBus) {
-	AnalogInputs.SetAnanlog4To7(frame.Data)
+	AnalogInputs.SetAnalog4To7(frame.Data)
 }
 
 func analogInputsInternalHandler(frame can.Frame, _ *CANBus) {
-	AnalogInputs.SetAnanlogInternal(frame.Data)
+	AnalogInputs.SetAnalogInternal(frame.Data)
 	Inputs.SetAllInputs(frame.Data[6] & 0xf)
 }
 
@@ -657,7 +658,7 @@ func MonitorCANBusComms() {
 						canBus.bus = nil
 					}
 				} else {
-					log.Println("Could not determin if the can bus is up so resetting it.")
+					log.Println("Could not determine if the can bus is up so resetting it.")
 					canBus = nil
 				}
 			}

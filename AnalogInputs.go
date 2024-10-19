@@ -113,6 +113,7 @@ func (ai *AnalogInputsType) InitAnalogInputs() {
 	}
 }
 
+//goland:noinspection ALL
 const H2ByDay = `SELECT MIN(ROUND(UNIX_TIMESTAMP(logged_start))) as logged
      , SUM(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2)) AS increase
      , SUM(ROUND(GREATEST(start_h2_calculated - end_h2_calculated, 0), 2)) as decrease
@@ -140,6 +141,7 @@ func SendHydrogenByDay(w http.ResponseWriter, start time.Time, end time.Time) {
 //		  FROM IOValues
 //		 WHERE logged BETWEEN ? AND ?) as vals ORDER BY logged`
 
+//goland:noinspection ALL
 const H2ByHour = `SELECT ROUND(UNIX_TIMESTAMP(logged_start)) as logged
      , ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2) AS increase
      , ROUND(GREATEST(start_h2_calculated - end_h2_calculated, 0), 2) as decrease
@@ -157,7 +159,8 @@ func SendHydrogenByHour(w http.ResponseWriter, start time.Time, end time.Time) {
 	SendDataAsJSON(w, "SendHydrogenByHour", strSQL, hp.m, hp.c, hp.pv, hp.m, hp.c, hp.pv, start, end)
 }
 
-func (ai *AnalogInputsType) SetAnanlog0To3(data [8]byte) {
+//goland:noinspection ALL
+func (ai *AnalogInputsType) SetAnalog0To3(data [8]byte) {
 	ai.mu.Lock()
 	defer ai.mu.Unlock()
 
@@ -174,7 +177,8 @@ func (ai *AnalogInputsType) SetAnanlog0To3(data [8]byte) {
 	ai.Inputs[3].Value = (float32(ai.Inputs[3].Raw) * currentSettings.AnalogChannels[3].calibrationMultiplier) + currentSettings.AnalogChannels[3].calibrationConstant
 }
 
-func (ai *AnalogInputsType) SetAnanlog4To7(data [8]byte) {
+//goland:noinspection ALL
+func (ai *AnalogInputsType) SetAnalog4To7(data [8]byte) {
 	ai.mu.Lock()
 	defer ai.mu.Unlock()
 
@@ -188,7 +192,8 @@ func (ai *AnalogInputsType) SetAnanlog4To7(data [8]byte) {
 	ai.Inputs[7].Value = (float32(ai.Inputs[7].Raw) * currentSettings.AnalogChannels[7].calibrationMultiplier) + currentSettings.AnalogChannels[7].calibrationConstant
 }
 
-func (ai *AnalogInputsType) SetAnanlogInternal(data [8]byte) {
+//goland:noinspection ALL
+func (ai *AnalogInputsType) SetAnalogInternal(data [8]byte) {
 	ai.mu.Lock()
 	defer ai.mu.Unlock()
 
@@ -272,13 +277,15 @@ func (ai *AnalogInputsType) GetRawInput(port uint8) uint16 {
 }
 
 // Calculate the hydrogen in mol
-func CalculateHydrogenmol(pressure float32, gasTemperature float64) float64 {
+//
+//goland:noinspection ALL
+func CalculateHydrogenMol(pressure float32, gasTemperature float64) float64 {
 	// Calculate hydrogen using the ideal gas law PV=nRT
 	// M = (V * P * C1) / (T1 + T) Where V is litres, P is bar and T is Celsius
 	const C1 = 0.02424826
 	const T1 = 273.15
 	var (
-		volume      = float64(currentSettings.GasCapacity) / 23.6422 // mols based on capacity in Litres
+		volume      = float64(currentSettings.GasCapacity) / 23.6422 // mol based on capacity in Litres
 		gasPressure float64
 	)
 	gasPressure = float64(pressure)
