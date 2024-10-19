@@ -8,6 +8,7 @@ import (
 	"go.einride.tech/can/pkg/socketcan"
 	"log"
 	"net"
+	"os/exec"
 	"sync"
 	"time"
 
@@ -19,9 +20,6 @@ const CALIBRATE_DC_VOLTAGE_LOW = 1
 const CALIBRATE_DC_VOLTAGE_HIGH = 2
 const CALIBRATE_DC_CURRENT_LOW = 4
 const CALIBRATE_DC_CURRENT_HIGH = 8
-
-func init() {
-}
 
 type FrameHandler func(frame can.Frame, canBus *CANBus)
 
@@ -113,98 +111,98 @@ NewCANBus
 
 	connects to the given interface and starts receiving frames.
 */
-func NewCANBus(interfaceName string) (*CANBus, error) {
+func NewCANBus(interfaceName string) *CANBus {
 	canBus := new(CANBus)
 	canBus.interfaceName = interfaceName
 
-	var err error
+	//	var err error
 	canBus.FrameHandlers = make(map[uint32]FrameHandler)
-	if err != nil {
-		log.Println("CAN interface not available.", err)
-	} else {
-		//		canBus.bus.SubscribeFunc(canBus.handleCANFrame)
-		//canBus.FrameHandlers[RelaysAndDigitalOutCanId] = framesWeSend
-		//canBus.FrameHandlers[DCCalibration] = framesWeSend
-		//canBus.FrameHandlers[FlagsCanId] = flagsHandler
-		canBus.FrameHandlers[TemperatureCanId] = temperatureHandler
-		canBus.FrameHandlers[RelaysOutputsAndHeartbeat] = relayHandler
-		canBus.FrameHandlers[AnalogInputs0to3CanId] = analogInputs0to3Handler
-		canBus.FrameHandlers[AnalogInputs4to7CanId] = analogInputs4to7Handler
-		canBus.FrameHandlers[AnalogInputsInternalCanId] = analogInputsInternalHandler
-		canBus.FrameHandlers[AcVoltsAmpsCanId0] = acVoltsAndAmpsHandler0
-		canBus.FrameHandlers[AcPowerEnergyCanId0] = acPowerAndEnergyHandler0
-		canBus.FrameHandlers[AcHertzPfCanId0] = acPowerFactorAndFrequencyHandler0
-		canBus.FrameHandlers[AcErrorCanId0] = acErrorHandler0
-		canBus.FrameHandlers[AcVoltsAmpsCanId1] = acVoltsAndAmpsHandler1
-		canBus.FrameHandlers[AcPowerEnergyCanId1] = acPowerAndEnergyHandler1
-		canBus.FrameHandlers[AcHertzPfCanId1] = acPowerFactorAndFrequencyHandler1
-		canBus.FrameHandlers[AcErrorCanId1] = acErrorHandler1
-		canBus.FrameHandlers[AcVoltsAmpsCanId2] = acVoltsAndAmpsHandler2
-		canBus.FrameHandlers[AcPowerEnergyCanId2] = acPowerAndEnergyHandler2
-		canBus.FrameHandlers[AcHertzPfCanId2] = acPowerFactorAndFrequencyHandler2
-		canBus.FrameHandlers[AcErrorCanId2] = acErrorHandler2
-		canBus.FrameHandlers[AcVoltsAmpsCanId3] = acVoltsAndAmpsHandler3
-		canBus.FrameHandlers[AcPowerEnergyCanId3] = acPowerAndEnergyHandler3
-		canBus.FrameHandlers[AcHertzPfCanId3] = acPowerFactorAndFrequencyHandler3
-		canBus.FrameHandlers[AcErrorCanId3] = acErrorHandler3
-		canBus.FrameHandlers[DcVoltsAmpsCanId0] = dcVoltsAndAmpsHandler0
-		canBus.FrameHandlers[DcErrorCanId0] = dcErrorHandler0
-		canBus.FrameHandlers[DcVoltsAmpsCanId1] = dcVoltsAndAmpsHandler1
-		canBus.FrameHandlers[DcErrorCanId1] = dcErrorHandler1
-		canBus.FrameHandlers[DcVoltsAmpsCanId2] = dcVoltsAndAmpsHandler2
-		canBus.FrameHandlers[DcErrorCanId2] = dcErrorHandler2
-		canBus.FrameHandlers[DcVoltsAmpsCanId3] = dcVoltsAndAmpsHandler3
-		canBus.FrameHandlers[DcErrorCanId3] = dcErrorHandler3
+	//if err != nil {
+	//	log.Println("CAN interface not available.", err)
+	//} else {
+	//		canBus.bus.SubscribeFunc(canBus.handleCANFrame)
+	//canBus.FrameHandlers[RelaysAndDigitalOutCanId] = framesWeSend
+	//canBus.FrameHandlers[DCCalibration] = framesWeSend
+	//canBus.FrameHandlers[FlagsCanId] = flagsHandler
+	canBus.FrameHandlers[TemperatureCanId] = temperatureHandler
+	canBus.FrameHandlers[RelaysOutputsAndHeartbeat] = relayHandler
+	canBus.FrameHandlers[AnalogInputs0to3CanId] = analogInputs0to3Handler
+	canBus.FrameHandlers[AnalogInputs4to7CanId] = analogInputs4to7Handler
+	canBus.FrameHandlers[AnalogInputsInternalCanId] = analogInputsInternalHandler
+	canBus.FrameHandlers[AcVoltsAmpsCanId0] = acVoltsAndAmpsHandler0
+	canBus.FrameHandlers[AcPowerEnergyCanId0] = acPowerAndEnergyHandler0
+	canBus.FrameHandlers[AcHertzPfCanId0] = acPowerFactorAndFrequencyHandler0
+	canBus.FrameHandlers[AcErrorCanId0] = acErrorHandler0
+	canBus.FrameHandlers[AcVoltsAmpsCanId1] = acVoltsAndAmpsHandler1
+	canBus.FrameHandlers[AcPowerEnergyCanId1] = acPowerAndEnergyHandler1
+	canBus.FrameHandlers[AcHertzPfCanId1] = acPowerFactorAndFrequencyHandler1
+	canBus.FrameHandlers[AcErrorCanId1] = acErrorHandler1
+	canBus.FrameHandlers[AcVoltsAmpsCanId2] = acVoltsAndAmpsHandler2
+	canBus.FrameHandlers[AcPowerEnergyCanId2] = acPowerAndEnergyHandler2
+	canBus.FrameHandlers[AcHertzPfCanId2] = acPowerFactorAndFrequencyHandler2
+	canBus.FrameHandlers[AcErrorCanId2] = acErrorHandler2
+	canBus.FrameHandlers[AcVoltsAmpsCanId3] = acVoltsAndAmpsHandler3
+	canBus.FrameHandlers[AcPowerEnergyCanId3] = acPowerAndEnergyHandler3
+	canBus.FrameHandlers[AcHertzPfCanId3] = acPowerFactorAndFrequencyHandler3
+	canBus.FrameHandlers[AcErrorCanId3] = acErrorHandler3
+	canBus.FrameHandlers[DcVoltsAmpsCanId0] = dcVoltsAndAmpsHandler0
+	canBus.FrameHandlers[DcErrorCanId0] = dcErrorHandler0
+	canBus.FrameHandlers[DcVoltsAmpsCanId1] = dcVoltsAndAmpsHandler1
+	canBus.FrameHandlers[DcErrorCanId1] = dcErrorHandler1
+	canBus.FrameHandlers[DcVoltsAmpsCanId2] = dcVoltsAndAmpsHandler2
+	canBus.FrameHandlers[DcErrorCanId2] = dcErrorHandler2
+	canBus.FrameHandlers[DcVoltsAmpsCanId3] = dcVoltsAndAmpsHandler3
+	canBus.FrameHandlers[DcErrorCanId3] = dcErrorHandler3
 
-		//		canBus.FrameHandlers[CanOutputControlMsg] = framesWeSend
-		//		canBus.FrameHandlers[CanBatteryVoltageLimitsMsg] = framesWeSend
-		canBus.FrameHandlers[CanPowerModeMsg] = CanPowerModeHandler
-		canBus.FrameHandlers[CanPressuresMsg] = CanPressuresHandler
-		canBus.FrameHandlers[CanStackCoolantMsg] = CanStackCoolantHandler
-		canBus.FrameHandlers[CanAirFlowMsg] = CanAirFlowHandler
-		canBus.FrameHandlers[CanAlarmsMsg] = CanAlarmsHandler
-		canBus.FrameHandlers[CanStackOutputMsg] = CanStackOutputHandler
-		canBus.FrameHandlers[CanCff1Msg] = CanCff1Handler
-		canBus.FrameHandlers[CanInsulationMsg] = CanInsulationHanddler
-		canBus.FrameHandlers[CanStackCellsID1to4Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID5to8Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID9to12Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID13to16Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID17to20Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID21to24Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID25to28Msg] = CanStackHandler
-		canBus.FrameHandlers[CanStackCellsID29to32Msg] = CanStackHandler
-		canBus.FrameHandlers[CanMaxMinCellsMsg] = CanStackHandler
-		canBus.FrameHandlers[CanTotalStackVoltageMsg] = CanStackHandler
-		canBus.FrameHandlers[CanATSCoolingFanMsg] = CanATSCoolingFanHandler
-		canBus.FrameHandlers[CanWaterPumpMsg] = CanWaterPumpHandler
-		canBus.FrameHandlers[CanDCDCConverterMsg] = CanDCDCConverterHandler
-		canBus.FrameHandlers[CanDCOutputMsg] = CanDCOutputHandler
-		canBus.FrameHandlers[CanBMSSettingsMsg] = CanBMSSettingsHandler
-		canBus.FrameHandlers[CanKeyOnMsg] = CanKeyOnHandler
-		canBus.FrameHandlers[CanRunTimeMsg] = CanRunTimeHandler
+	//		canBus.FrameHandlers[CanOutputControlMsg] = framesWeSend
+	//		canBus.FrameHandlers[CanBatteryVoltageLimitsMsg] = framesWeSend
+	canBus.FrameHandlers[CanPowerModeMsg] = CanPowerModeHandler
+	canBus.FrameHandlers[CanPressuresMsg] = CanPressuresHandler
+	canBus.FrameHandlers[CanStackCoolantMsg] = CanStackCoolantHandler
+	canBus.FrameHandlers[CanAirFlowMsg] = CanAirFlowHandler
+	canBus.FrameHandlers[CanAlarmsMsg] = CanAlarmsHandler
+	canBus.FrameHandlers[CanStackOutputMsg] = CanStackOutputHandler
+	canBus.FrameHandlers[CanCff1Msg] = CanCff1Handler
+	canBus.FrameHandlers[CanInsulationMsg] = CanInsulationHanddler
+	canBus.FrameHandlers[CanStackCellsID1to4Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID5to8Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID9to12Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID13to16Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID17to20Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID21to24Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID25to28Msg] = CanStackHandler
+	canBus.FrameHandlers[CanStackCellsID29to32Msg] = CanStackHandler
+	canBus.FrameHandlers[CanMaxMinCellsMsg] = CanStackHandler
+	canBus.FrameHandlers[CanTotalStackVoltageMsg] = CanStackHandler
+	canBus.FrameHandlers[CanATSCoolingFanMsg] = CanATSCoolingFanHandler
+	canBus.FrameHandlers[CanWaterPumpMsg] = CanWaterPumpHandler
+	canBus.FrameHandlers[CanDCDCConverterMsg] = CanDCDCConverterHandler
+	canBus.FrameHandlers[CanDCOutputMsg] = CanDCOutputHandler
+	canBus.FrameHandlers[CanBMSSettingsMsg] = CanBMSSettingsHandler
+	canBus.FrameHandlers[CanKeyOnMsg] = CanKeyOnHandler
+	canBus.FrameHandlers[CanRunTimeMsg] = CanRunTimeHandler
 
-		canBus.FrameHandlers[DCVolts0CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps0CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts1CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps1CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts2CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps2CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts3CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps3CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts4CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps4CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts5CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps5CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts6CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps6CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCVolts7CanID] = CanDCMeasurementHandler
-		canBus.FrameHandlers[DCAmps7CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts0CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps0CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts1CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps1CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts2CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps2CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts3CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps3CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts4CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps4CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts5CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps5CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts6CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps6CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCVolts7CanID] = CanDCMeasurementHandler
+	canBus.FrameHandlers[DCAmps7CanID] = CanDCMeasurementHandler
 
-		go ConnectAndPublish(canBus)
-	}
+	go ConnectAndPublish(canBus)
+	//	}
 	log.Println("Logging CAN bus messages")
-	return canBus, err
+	return canBus //, err
 }
 
 func ConnectAndPublish(canBus *CANBus) {
@@ -294,6 +292,16 @@ func CanPowerModeHandler(frame can.Frame, _ *CANBus) {
 	FuelCell.mu.Lock()
 	defer FuelCell.mu.Unlock()
 	FuelCell.PowerMode.Load(frame.Data)
+	switch output.FuelCellRunEnable {
+	case FCStartUp:
+		if FuelCell.PowerMode.PowerModeState != PMInit {
+			output.FuelCellRunEnable = FCNoCommand
+		}
+	case FCShutDown:
+		if FuelCell.PowerMode.PowerModeState == PM_Shutdown || FuelCell.PowerMode.PowerModeState == PMInit {
+			output.FuelCellRunEnable = FCNoCommand
+		}
+	}
 	FuelCell.LastMessageReceived = time.Now()
 }
 func CanPressuresHandler(frame can.Frame, _ *CANBus) {
@@ -384,6 +392,10 @@ func CanBMSSettingsHandler(frame can.Frame, _ *CANBus) {
 
 func temperatureHandler(frame can.Frame, _ *CANBus) {
 	temp := int16((uint16(frame.Data[0]) + (uint16(frame.Data[1]) * 256)))
+	CanError = binary.LittleEndian.Uint32(frame.Data[4:8])
+	if canLogging && CanError != 0 {
+		log.Println("CAN Error = %0x", CanError)
+	}
 	AnalogInputs.SetTemperature(float64(temp) / 100.0)
 }
 
@@ -394,8 +406,14 @@ func relayHandler(frame can.Frame, _ *CANBus) {
 	Relays.SetAllRelays(binary.LittleEndian.Uint16(frame.Data[0:2]))
 	//	Outputs.SetAllOutputs(frame.Data[2])
 	returnedHeartbeat = binary.LittleEndian.Uint16(frame.Data[4:6])
+	//if debugOutput {
+	//	log.Println(returnedHeartbeat, heartbeat)
+	//}
 	boardVersion := binary.LittleEndian.Uint16(frame.Data[6:8])
-	currentSettings.BoardVersion = fmt.Sprintf("%d.%d.%d", boardVersion/10000, (boardVersion/100)%100, boardVersion%100)
+	if currentSettings.boardVersion != boardVersion {
+		currentSettings.BoardVersion = fmt.Sprintf("%d.%d.%d", boardVersion/10000, (boardVersion/100)%100, boardVersion%100)
+		currentSettings.boardVersion = boardVersion
+	}
 }
 
 func analogInputs0to3Handler(frame can.Frame, _ *CANBus) {
@@ -620,11 +638,29 @@ func MonitorCANBusComms() {
 			log.Printf("CAN Heartbeat has been lost. Heartbeat = %d | returnedHeartbeat = %d\n", heartbeat, returnedHeartbeat)
 			heartbeat = 0
 			returnedHeartbeat = 0
-			// Reset the CAN bus interface
-			//			cmd := exec.Command("usbreset", "1d50:606f")
-			//			if err := cmd.Start(); err != nil {
-			//				log.Println("Failed to reset the CAN bus.", err)
-			//			}
+			//			Reset the CAN bus interface
+			cmd := exec.Command("usbreset", "1d50:606f")
+			// we might need to issue ifconfig eth0 txqueuelen 10000 to set the queue length unless it is done in udev.
+
+			if err := cmd.Start(); err != nil {
+				log.Println("Failed to reset the CAN bus.", err)
+			}
+			if up, err := canBus.bus.IsUp(); err != nil {
+				log.Println("Failed to check if CAN bus is up", err)
+				canBus.bus = nil
+			} else {
+				if up {
+					if err := canBus.bus.SetDown(); err != nil {
+						log.Println("Failed to set the CAN bus down.")
+						canBus = nil
+					} else {
+						canBus.bus = nil
+					}
+				} else {
+					log.Println("Could not determin if the can bus is up so resetting it.")
+					canBus = nil
+				}
+			}
 		} else {
 			heartbeat++
 		}

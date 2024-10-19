@@ -447,6 +447,7 @@ td.ElectrolyserAdd{
     font-style: italic;
     text-decoration: underline;
 }
+td.el
 td.buttonLabel {
     width:5em;
     text-align:right;
@@ -480,6 +481,31 @@ td.PowerName {
 td.PowerData {
     text-align: center;
 }
+td.elRelaySetting {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: auto;
+}
+td.elNameSetting {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: auto;
+}
+td.elIP {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: auto;
+}
+td.elEnabled {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: auto;
+}
+td.elDelete {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width:auto;
+}
 tr.ACHeader {
     background-color: black;
     color: greenyellow;
@@ -499,6 +525,8 @@ tr.DCData {
 }
 tr.DCError {
     background-color: paleturquoise;
+}
+tr.elSetting {
 }
 tr.errors {
     background-color:red;

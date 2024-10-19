@@ -25,9 +25,9 @@ func NewHydrogenParams() *HydrogenParamsType {
 	hp.c = float64(currentSettings.AnalogChannels[hp.gas].calibrationConstant)
 	hp.pv = float64(currentSettings.GasCapacity)
 	hp.field = fmt.Sprintf("a%d", currentSettings.GasPressureInput)
-	if currentSettings.GasUnits == "psi" {
-		hp.pv = hp.pv / 14.5038
-	}
+	//	if currentSettings.GasUnits == "psi" {
+	//		hp.pv = hp.pv / 14.5038
+	//	}
 	return hp
 }
 
@@ -162,7 +162,10 @@ func (ai *AnalogInputsType) SetAnanlog0To3(data [8]byte) {
 	defer ai.mu.Unlock()
 
 	ai.Inputs[0].Raw = binary.LittleEndian.Uint16(data[0:2])
+	// Set to 26.36 Bar for testing
+	//	ai.Inputs[0].Raw = 2491
 	ai.Inputs[0].Value = (float32(ai.Inputs[0].Raw) * currentSettings.AnalogChannels[0].calibrationMultiplier) + currentSettings.AnalogChannels[0].calibrationConstant
+
 	ai.Inputs[1].Raw = binary.LittleEndian.Uint16(data[2:4])
 	ai.Inputs[1].Value = (float32(ai.Inputs[1].Raw) * currentSettings.AnalogChannels[1].calibrationMultiplier) + currentSettings.AnalogChannels[1].calibrationConstant
 	ai.Inputs[2].Raw = binary.LittleEndian.Uint16(data[4:6])
@@ -199,6 +202,9 @@ func (ai *AnalogInputsType) SetTemperature(temperature float64) {
 	defer ai.mu.Unlock()
 
 	ai.GasTemperature = temperature
+
+	// Set to 24C for testing
+	//	ai.GasTemperature = 24.0
 }
 
 func (ai *AnalogInputsType) SetInputName(port uint8, name string) {
@@ -265,23 +271,16 @@ func (ai *AnalogInputsType) GetRawInput(port uint8) uint16 {
 	return ai.Inputs[port].Raw
 }
 
-// Calculate the hydrogen in kg
-func CalculateHydrogenKg(pressure float32, gasTemperature float64) float64 {
+// Calculate the hydrogen in mol
+func CalculateHydrogenmol(pressure float32, gasTemperature float64) float64 {
 	// Calculate hydrogen using the ideal gas law PV=nRT
 	// M = (V * P * C1) / (T1 + T) Where V is litres, P is bar and T is Celsius
 	const C1 = 0.02424826
 	const T1 = 273.15
 	var (
-		volume      = float64(currentSettings.GasCapacity)
+		volume      = float64(currentSettings.GasCapacity) / 23.6422 // mols based on capacity in Litres
 		gasPressure float64
 	)
-
-	if currentSettings.GasUnits == "bar" {
-		// SI units
-		gasPressure = float64(pressure)
-	} else {
-		// stupid units - convert to SI
-		gasPressure = float64(pressure) / 14.50377
-	}
+	gasPressure = float64(pressure)
 	return (volume * gasPressure * C1) / (T1 + gasTemperature)
 }

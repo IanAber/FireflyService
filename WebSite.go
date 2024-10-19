@@ -360,7 +360,7 @@ func serveUserControl(w http.ResponseWriter, r *http.Request) {
 	if role == "admin" {
 		adminLink = `<li><a id="adminLink" href="/admin.html">Administration</a></li>`
 	}
-	log.Println(r.RequestURI)
+	//	log.Println(r.RequestURI)
 	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
 	if page, err := os.ReadFile(webFiles + "/userControl.html"); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
@@ -391,7 +391,7 @@ func serveDefault(w http.ResponseWriter, r *http.Request) {
 	if role == "admin" {
 		adminLink = `<li><a id="adminLink" href="/admin.html">Administration</a></li>`
 	}
-	log.Println(r.RequestURI)
+	//	log.Println(r.RequestURI)
 	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
 
 	if page, err := os.ReadFile(webFiles + "/default.html"); err != nil {
@@ -482,6 +482,24 @@ func setCallLogging(w http.ResponseWriter, r *http.Request) {
 		callLogging = true
 	} else if (on == "off") || (on == "false") || (on == "0") {
 		callLogging = false
+	} else {
+		ReturnJSONErrorString(w, function, "Invalid value given for debug setting. Valid values are on, true, 1, off, false or 0", http.StatusBadRequest, true)
+		return
+	}
+	w.Header().Add("Cache-Control", "no-store")
+	http.ServeFile(w, r, webFiles+"/debug.html")
+}
+
+func setCANLogging(w http.ResponseWriter, r *http.Request) {
+	const function = "setCANLogging"
+	vars := mux.Vars(r)
+	on := vars["on"]
+
+	on = strings.ToLower(on)
+	if (on == "on") || (on == "true") || (on == "1") {
+		canLogging = true
+	} else if (on == "off") || (on == "false") || (on == "0") {
+		canLogging = false
 	} else {
 		ReturnJSONErrorString(w, function, "Invalid value given for debug setting. Valid values are on, true, 1, off, false or 0", http.StatusBadRequest, true)
 		return
@@ -836,13 +854,13 @@ func getH2Volume(w http.ResponseWriter, _ *http.Request) {
 		gasPressure float64
 	)
 
-	if currentSettings.GasUnits == "bar" {
-		// SI units
-		gasPressure = float64(AnalogInputs.Inputs[currentSettings.GasPressureInput].Value)
-	} else {
-		// stupid units - convert to SI
-		gasPressure = float64(AnalogInputs.Inputs[currentSettings.GasPressureInput].Value) / 14.50377
-	}
+	//	if currentSettings.GasUnits == "bar" {
+	// SI units
+	gasPressure = float64(AnalogInputs.Inputs[currentSettings.GasPressureInput].Value)
+	//	} else {
+	// stupid units - convert to SI
+	//		gasPressure = float64(AnalogInputs.Inputs[currentSettings.GasPressureInput].Value) / 14.50377
+	//	}
 	H2.TankRemaining = (volume * gasPressure * C1) / (T1 + AnalogInputs.GasTemperature)
 	H2.TankCapacity = (volume * 35.0 * C1) / (T1 + AnalogInputs.GasTemperature)
 
@@ -1541,7 +1559,9 @@ func setButton(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	log.Printf("Button (%s) pressed", button)
+	if debugOutput {
+		log.Printf("Button (%s) pressed", button)
+	}
 	ReturnJSONSuccess(w)
 }
 
@@ -1596,9 +1616,10 @@ type DCValuesType struct {
 }
 
 type SystemSettings struct {
-	MaxGasPressure        uint16  `json:"maxGas"`
-	GasUnits              string  `json:"gasUnits"`
-	GasDisplayUnits       string  `json:"gasDisplayUnits"`
+	MaxGasPressure uint16 `json:"maxGas"`
+	//	GasUnits              string  `json:"gasUnits"`
+	GasPressureUnits      string  `json:"gasPressureUnits"`
+	GasVolumeUnits        string  `json:"gasVolumeUnits"`
 	GasCapacity           uint32  `json:"gasCapacity"`
 	GasPressureInput      uint8   `json:"gasInput"`
 	GasDetectorInput      uint8   `json:"gasDetector"`
@@ -1613,6 +1634,17 @@ type SystemAlarmsType struct {
 }
 
 var SystemAlarms SystemAlarmsType
+
+type HydrogenType struct {
+	Pressure      float64 `json:"pressure"`
+	PressureText  string  `json:"pressureText"`
+	PressureUnits string  `json:"pressureUnits"`
+	Volume        float64 `json:"volume"`
+	VolumeText    string  `json:"volumeText"`
+	VolumeUnits   string  `json:"volumeUnits"`
+	MaxPressure   float64 `json:"maxPressure"`
+	MaxVolume     float64 `json:"maxVolume"`
+}
 
 type JsonDataType struct {
 	System            string                       `json:"System"`
@@ -1629,9 +1661,10 @@ type JsonDataType struct {
 	SystemSettings    SystemSettings               `json:"SystemSettings"`
 	SystemAlarms      *SystemAlarmsType            `json:"SystemAlarms"`
 	Power             []*PowerControlType          `json:"Power"`
-	Hydrogen          float64                      `json:"kgH2"`
+	Hydrogen          *HydrogenType                `json:"h2"`
 }
 
+// getJsonStatus returns the full system status as a JSON formatted message in a byte array to be sent to WEB clients
 func getJsonStatus(indent bool) ([]byte, error) {
 	var data JsonDataType
 
@@ -1662,7 +1695,6 @@ func getJsonStatus(indent bool) ([]byte, error) {
 
 	Electrolysers.mu.Lock()
 	for idx := range Electrolysers.Arr {
-
 		data.Electrolysers[idx].Device = Electrolysers.Arr[idx].status.Device
 		data.Electrolysers[idx].Name = Electrolysers.Arr[idx].status.Name
 		data.Electrolysers[idx].Powered = Electrolysers.Arr[idx].status.Powered
@@ -1692,6 +1724,7 @@ func getJsonStatus(indent bool) ([]byte, error) {
 		data.Electrolysers[idx].StackSerialNumber = Electrolysers.Arr[idx].status.GetStackSerial()
 		data.Electrolysers[idx].Warnings = Electrolysers.Arr[idx].GetWarnings()
 		data.Electrolysers[idx].Errors = Electrolysers.Arr[idx].GetErrors()
+		data.Electrolysers[idx].PowerRelayEnergised = Electrolysers.Arr[idx].status.PowerRelayEnergised()
 	}
 	Electrolysers.mu.Unlock()
 	i := 0
@@ -1729,8 +1762,9 @@ func getJsonStatus(indent bool) ([]byte, error) {
 	data.PanFuelCellStatus = FuelCell.GetStatus()
 	data.SystemSettings.GasPressureInput = currentSettings.GasPressureInput
 	data.SystemSettings.MaxGasPressure = currentSettings.MaxGasPressure
-	data.SystemSettings.GasUnits = currentSettings.GasUnits
-	data.SystemSettings.GasDisplayUnits = currentSettings.GasDisplayUnits
+	//	data.SystemSettings.GasUnits = currentSettings.GasUnits
+	data.SystemSettings.GasVolumeUnits = currentSettings.GasVolumeUnits
+	data.SystemSettings.GasPressureUnits = currentSettings.GasPressureUnits
 	data.SystemSettings.GasCapacity = currentSettings.GasCapacity
 	data.SystemSettings.GasDetectorInput = currentSettings.GasDetectorInput
 	data.SystemSettings.GasDetectorThreshold = currentSettings.GasDetectorThreshold
@@ -1739,7 +1773,7 @@ func getJsonStatus(indent bool) ([]byte, error) {
 
 	data.SystemAlarms = &SystemAlarms
 
-	data.Hydrogen = CalculateHydrogenKg(data.Analog.Inputs[currentSettings.GasPressureInput].Value, data.Analog.GasTemperature)
+	data.Hydrogen = CalculateHydrogen(float64(data.Analog.Inputs[currentSettings.GasPressureInput].Value), data.Analog.GasTemperature, float64(currentSettings.GasCapacity), currentSettings.GasVolumeUnits, currentSettings.GasPressureUnits)
 
 	var JSONBytes []byte
 	var err error

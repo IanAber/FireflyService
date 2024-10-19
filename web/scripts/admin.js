@@ -7,6 +7,7 @@ function RegisterWebSocket() {
     conn.onmessage = function (evt) {
         StartHeartbeat();
         try {
+//            debugger;
             jsonData = JSON.parse(evt.data);
             $("#system").text(jsonData.System);
             document.title = jsonData.System;
@@ -19,11 +20,7 @@ function RegisterWebSocket() {
             jsonData.Analog.Inputs.forEach(UpdateAnalog);
             jsonData.Buttons.forEach(UpdateButton);
             $("#temperature").html(jsonData.Analog.GasTemperature + "&deg;C");
-            if (jsonData.kgH2 > 1.0) {
-                $("#kgH2").text(jsonData.kgH2.toFixed(3) + "kg");
-            } else {
-                $("#kgH2").text((jsonData.kgH2 * 1000).toFixed(0) + "g")
-            }
+            $("#h2Vol").text(jsonData.h2.volumeText + " " + jsonData.h2.volumeUnits);
             if (jsonData.ACMeasurements.length > 0) {
                 $("#ACMeasurementsDiv").show();
                 jsonData.ACMeasurements.forEach(updateAC);
@@ -46,10 +43,11 @@ function RegisterWebSocket() {
             }
             let dialCount = jsonData.Electrolysers.length;
             let gridTemplate = "";
-            fcStackPower = $("#fcStackPower");
             StackContainer = $("#StackContainer");
             Systems = $("#systems");
             if (jsonData.PanFuelCellStatus != null) {
+                let fcStackPower = $("#fcStackPower");
+                StackContainer.show();
                 dialCount++;
                 for (i = 0; i < dialCount; i++) {
                     gridTemplate += " " + (100 / dialCount) + "%";
@@ -86,7 +84,7 @@ function RegisterWebSocket() {
                 fcStackPower.val(jsonData.PanFuelCellStatus.StackPower);
                 showFuelCellAlarms(jsonData.PanFuelCellStatus, $("#fcAlarms"));
             } else {
-                fcStackPower.hide();
+                StackContainer.hide();
                 for (i = 0; i < dialCount; i++) {
                     gridTemplate += " " + (100 / dialCount) + "%";
                 }

@@ -8,8 +8,9 @@
     <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
     <script type="text/ecmascript" src="scripts/config.js"></script>
     <script type="text/ecmascript" src="scripts/utils.js"></script>
+    <script type="text/ecmascript" src="scripts/units.js"></script>
 </head>
-<body onLoad="setupFields(); loadSettings(); PopulateTitle();" >
+<body onLoad="setupFields(); loadSettings(); PopulateTitle(); addVolumeUnitOptions($('#GasVolumeUnits')); addPressureUnitOptions($('#GasPressureUnits'))" >
     <header class="header">
         <h1>
             <span class="system" id="system">Loading...</span>
@@ -494,6 +495,14 @@
                     <table class="settings">
                         <tbody>
                             <tr>
+                                <td class="settingsLabel">
+                                    <label class="Electrolysers" for="subnet">Subnet for Electrolysers</label>
+                                </td>
+                                <td class="settingValue">
+                                    <input class="settings" id="subnet" name="subnet" type="text" value="192.168.88.0"  title="Set the subnet for the electrolysers."/>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td class="settingLabel">
                                     <label class="Electrolysers" for="electrolyserMaxStackVoltsForShutdown">Max Volts For Shutdown</label>
                                 </td>
@@ -550,7 +559,7 @@
                 </div>
                 <div class="Electrolysers">
                     <label for="ElectrolyserRelays"></label><input style="visibility: hidden;" name="ElectrolyserRelays" id="ElectrolyserRelays" value="[]">
-                    <table class="Electrolysers" id="Electrolysers">
+                    <table class="Electrolysers settings" id="Electrolysers">
                         <thead class="Electrolysers">
                             <tr class="Electrolysers">
                                 <th class="Electrolysers">Relay</th>
@@ -724,26 +733,19 @@
                         <tbody>
                             <tr>
                                 <td class="settingLabel">
-                                    <label for="GasUnits">Gas Pressure Units</label>
+                                    <label for="GasPressureUnits">Gas Pressure Units</label>
                                 </td>
                                 <td class="settingValue">
-                                    <select id="GasUnits" name="GasUnits" onchange="setGasDisplayOptions(null)">
-                                        <option value="bar" selected>Bar</option>
-                                        <option value="psi" >Pounds Per Square Inch</option>
+                                    <select id="GasPressureUnits" name="GasPressureUnits" >
                                     </select>
                                 </td>
                             </tr>
                             <tr>
                                 <td class="settingLabel">
-                                    <label for="GasDisplayUnits">Gas Display Units</label>
+                                    <label for="GasVolumeUnits">Gas Volume Units</label>
                                 </td>
                                 <td class="settingValue">
-                                    <select id="GasDisplayUnits" name="GasDisplayUnits" >
-                                        <option value="bar" selected>Bar</option>
-                                        <option value="psi" >Pounds Per Square Inch</option>
-                                        <option value="litres" >Litres</option>
-                                        <option value="cuft" >Cubic Feet</option>
-                                        <option value="kWhr" >Kilowatt Hours (kWhr)</option>
+                                    <select id="GasVolumeUnits" name="GasVolumeUnits" >
                                     </select>
                                 </td>
                             </tr>
@@ -830,6 +832,14 @@
                                 <option value="10" selected>10kW</option>
                                 <option value="20">20kW</option>
                             </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="settingLabel">
+                            <label for="fcEfficiency">Average Efficiency (%)</label>
+                        </td>
+                        <td class="settingValue">
+                            <input class="inputNumeric" id="fcEfficiency" name = "fcEfficiency" type="number" min="5" max="95" step="1">
                         </td>
                     </tr>
                     <tr>
@@ -944,7 +954,6 @@
                     </tfoot>
                 </table>
             </div>
-
             <input class="submitButton" type="button" value="Submit" onclick="saveSettings()">
         </form>
     </div>

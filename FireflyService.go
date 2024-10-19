@@ -52,10 +52,12 @@ var (
 	logFile               *os.File
 	logFileName           string
 	callLogging           = false
+	canLogging            = false
 	debugOutput           = false
 	store                 *sessions.CookieStore
 	certFile              string
 	keyFile               string
+	CanError              uint32
 )
 
 func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
@@ -156,12 +158,13 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 }
 
 func ConnectCANBus() *CANBus {
-	if Bus, err := NewCANBus(CANInterface); err != nil {
-		log.Println(err)
-		return nil
-	} else {
-		return Bus
-	}
+	//if Bus, err := NewCANBus(CANInterface); err != nil {
+	//	log.Println(err)
+	//	return nil
+	//} else {
+	//	return Bus
+	//}
+	return NewCANBus(CANInterface)
 }
 
 func init() {
@@ -253,6 +256,7 @@ func ClientLoop() {
 					FuelCell.bus = canBus
 				}
 				// Get the full status
+				//				log.Println("Status...")
 				if bytes, err := getJsonStatus(false); err != nil {
 					log.Print("Error marshalling the full data - ", err)
 				} else {
@@ -407,7 +411,7 @@ func DatabaseLogger() {
 CANHeartbeat sends CAN packets to the fuel cell
 */
 func CANHeartbeat() {
-	heartbeatTime := time.NewTicker(time.Millisecond * 500)
+	heartbeatTime := time.NewTicker(time.Millisecond * 2000)
 	for {
 		select {
 		case <-heartbeatTime.C:
@@ -441,12 +445,15 @@ func ElectrolyserLoop() {
 		select {
 		case <-electrolyserHeartbeat.C:
 			{
-				if !currentSettings.acquiringElectrolysers {
+				if !currentSettings.acquiringElectrolysers && !currentSettings.scanningElectrolysers {
 					gotDryer := false
 					for _, el := range Electrolysers.Arr {
 						// Is this electrolyser switched on?
-						if el.IsSwitchedOn() {
+						if Relays.GetRelay(el.powerRelay) {
 							if !gotDryer {
+								if debugOutput {
+									log.Println("Set dryer for ", el.status.Name)
+								}
 								el.hasDryer = true                                       // First active electrolyser gets to control the dryer
 								gotDryer = true                                          // We found an active electrolyser, so we have the dryer.
 								Relays.SetRelay(uint8(currentSettings.DryerRelay), true) // Make sure the dryer is powered on
@@ -454,11 +461,13 @@ func ElectrolyserLoop() {
 								if currentSettings.WaterDumpAction == ELRun {
 									Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), true)
 								}
-								// after 30 seconds, start the dryer error monitor
-								time.AfterFunc(time.Second*30, el.MonitorDryerErrors)
+								// after 60 seconds, start the dryer error monitor
+								time.AfterFunc(time.Second*60, el.MonitorDryerErrors)
 							} else {
 								el.hasDryer = false // We already have the dryer so this electrolyser can skip it.
 							}
+							//						}
+							//						if el.status.Powered {
 							// We must have a valid IP address
 							if !el.status.IP.Equal(net.IPv4zero) {
 
@@ -466,24 +475,26 @@ func ElectrolyserLoop() {
 								if debugOutput {
 									log.Println("polling electrolyser ", el.GetIPString())
 								}
-								if err := el.ReadValues(); err != nil {
-									log.Print(err)
-								} else {
-									// Write the data to the database
-									if err := el.RecordData(ElectrolyserStatement); err != nil {
-										log.Println(err)
-									}
-									if el.hasDryer {
-										if _, err := DryerStatement.Exec(el.GetDryerTemp(0),
-											el.GetDryerTemp(1),
-											el.GetDryerTemp(2),
-											el.GetDryerTemp(3),
-											el.status.Dryer.InputPressure,
-											el.status.Dryer.OutputPressure,
-											el.GetDryerErrorText(),
-											el.GetDryerWarningText()); err != nil {
-
+								if el.IsSwitchedOn() {
+									if err := el.ReadValues(); err != nil {
+										log.Print(err)
+									} else {
+										// Write the data to the database
+										if err := el.RecordData(ElectrolyserStatement); err != nil {
 											log.Println(err)
+										}
+										if el.hasDryer {
+											if _, err := DryerStatement.Exec(el.GetDryerTemp(0),
+												el.GetDryerTemp(1),
+												el.GetDryerTemp(2),
+												el.GetDryerTemp(3),
+												el.status.Dryer.InputPressure,
+												el.status.Dryer.OutputPressure,
+												el.GetDryerErrorText(),
+												el.GetDryerWarningText()); err != nil {
+
+												log.Println(err)
+											}
 										}
 									}
 								}
@@ -502,6 +513,9 @@ func ElectrolyserLoop() {
 					}
 					// If we did not find an active electrolyser, turn off the dryer and resort the electrolysers
 					if !gotDryer {
+						if debugOutput {
+							log.Println("Turn off the dryer")
+						}
 						Relays.SetRelay(uint8(currentSettings.DryerRelay), false)
 						// If the water relay is set to run whenever an electrolyser is on, turn it off
 						if currentSettings.WaterDumpAction == ELRun {

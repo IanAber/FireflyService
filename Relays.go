@@ -13,8 +13,9 @@ type RelayType struct {
 }
 
 type RelaysType struct {
-	Relays [16]RelayType `json:"Relays"`
-	mu     sync.Mutex
+	Relays            [16]RelayType `json:"Relays"`
+	lastReportedValue uint16
+	mu                sync.Mutex
 }
 
 func (rl *RelaysType) InitRelays() {
@@ -32,6 +33,7 @@ func (rl *RelaysType) SetAllRelays(settings uint16) {
 		rl.Relays[relay].On = (settings & 1) != 0
 		settings >>= 1
 	}
+	rl.lastReportedValue = settings
 }
 
 func (rl *RelaysType) GetAllRelays() uint16 {
@@ -112,8 +114,10 @@ func (rl *RelaysType) SetRelay(relay uint8, on bool) {
 		relays &= ^(uint16(1) << relay)
 	}
 	// Set the hardware
-	if err := canBus.SetRelays(relays); err != nil {
-		log.Print(err)
+	if relays != rl.lastReportedValue {
+		if err := canBus.SetRelays(relays); err != nil {
+			log.Print(err)
+		}
 	}
 	// Update the local copy
 	rl.SetAllRelays(relays)

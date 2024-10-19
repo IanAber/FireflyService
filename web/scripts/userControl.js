@@ -1,5 +1,24 @@
 var jsonData;
 
+// Add the fuel cell gauge
+function AddFuelCell() {
+    sCode = `<div id="FuelCell" class="centered" style="{visibility:hidden}"><div id="fcStackPower"></div></div>`;
+    jQuery('#systems').append(sCode);
+    FuelCell = $("#fcStackPower");
+    FuelCell.jqxGauge({
+        ticksMinor: {interval: 500, size: '5%'},
+        ticksMajor: {interval: 1000,size: '9%'},
+        labels: {interval:5000, position: "far"},
+        min: 0,
+        max: 15000,
+        value: 0,
+        animationDuration: 500,
+        cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
+        caption: {value: 'Stack Power ' + jsonData.PanFuelCellStatus.StackPower.toFixed(1) + ' kW', position: 'bottom', offset: [0, 10], visible: true},
+    });
+    return FuelCell;
+}
+
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws";
     let conn = new WebSocket(url);
@@ -33,19 +52,7 @@ function RegisterWebSocket() {
             if (jsonData.PanFuelCellStatus !== null) {
                 let FuelCell = $("#fcStackPower");
                 if (FuelCell.length === 0) {
-                    sCode = `<div id="FuelCell" class="centered" style="{visibility:hidden}"><div id="fcStackPower"></div></div>`;
-                    jQuery('#systems').append(sCode);
-                    FuelCell.jqxGauge({
-                        ticksMinor: {interval: 500, size: '5%'},
-                        ticksMajor: {interval: 1000,size: '9%'},
-                        labels: {interval:5000, position: "far"},
-                        min: 0,
-                        max: 15000,
-                        value: 0,
-                        animationDuration: 500,
-                        cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
-                        caption: {value: 'Stack Power ' + jsonData.PanFuelCellStatus.StackPower.toFixed(1) + ' kW', position: 'bottom', offset: [0, 10], visible: true},
-                    });
+                    FuelCell = AddFuelCell();
                 }
                 FuelCell.show();
                 if ((jsonData.PanFuelCellStatus.RunStatus === 'Start') ||
@@ -62,7 +69,9 @@ function RegisterWebSocket() {
                 showFuelCellAlarms(jsonData.PanFuelCellStatus, $("#fcAlarms"));
             }
             jsonData.Electrolysers.forEach((currentElement, index) => updateElectrolyser(currentElement, index));
-            updatePressure(jsonData.Analog.Inputs[jsonData.SystemSettings.gasInput].Value, jsonData.SystemSettings.gasUnits, jsonData.SystemSettings.gasDisplayUnits, jsonData.SystemSettings.gasCapacity);
+//            updatePressure(jsonData.Analog.Inputs[jsonData.SystemSettings.gasInput].Value, jsonData.SystemSettings.gasUnits, jsonData.SystemSettings.gasDisplayUnits, jsonData.SystemSettings.gasCapacity);
+//            updatePressure(jsonData.Analog.Inputs[jsonData.SystemSettings.gasInput].Value, jsonData.SystemSettings.gasDisplayUnits, jsonData.SystemSettings.gasCapacity);
+            updatePressure(jsonData.h2);
             updateConductivity(jsonData.Analog.Inputs[7], jsonData.SystemSettings.maxConductivityGreen, jsonData.SystemSettings.maxConductivityYellow);
         } catch (e) {
 //            alert(e);
@@ -142,150 +151,34 @@ function setupPage() {
     RegisterWebSocket();
 }
 
-function updatePressure(pressure, units, displayUnits, capacity) {
+//function updatePressure(pressure, units, displayUnits, capacity) {
+function updatePressure(h2) {
     let Gas = $("#gas");
     if (Gas.children().length < 1) {
         let gasTitle = $("#gasTitle");
-        switch (displayUnits)  {
-            case "bar" :
-                Gas.jqxLinearGauge({
-                    max: 35,
-                    min: 0,
-                    height: "80%",
-                    width: "100%",
-                    colorScheme: 'scheme02',
-                    ticksPosition: 'far',
-                    ticksOffset: [40, 15],
-                    ticksMajor: { size: '10%', interval: 10 },
-                    ticksMinor: { size: '5%', interval: 5, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
-                    labels: { interval: 5, position: "far"  },
-                    ranges: [
-                        { startValue: 0, endValue: 10, style: { fill: '#FF4800', stroke: '#FF4800'} },
-                        { startValue: 10, endValue: 25, style: { fill: '#FFA200', stroke: '#FFA200'}},
-                        { startValue: 25, endValue: 35, style: { fill: '#00B000', stroke: '#00B000'}}],
-                    pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
-                    value: 0,
-                    animationDuration: 0,
-                });
-                gasTitle.text("H2 Pressure (Bar)");
-                break;
-            case "psi" :
-                Gas.jqxLinearGauge({
-                    max: 500,
-                    min: 0,
-                    height: "80%",
-                    colorScheme: 'scheme02',
-                    ticksPosition: 'far',
-                    ticksOffset: [30, 15],
-                    ticksMajor: { size: '10%', interval: 100 },
-                    ticksMinor: { size: '5%', interval: 50, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
-                    labels: { interval: 100, position: 'far' },
-                    ranges: [
-                        { startValue: 0, endValue: 100, style: { fill: '#FF4800', stroke: '#FF4800'} },
-                        { startValue: 100, endValue: 300, style: { fill: '#FFA200', stroke: '#FFA200'}},
-                        { startValue: 300, endValue: 500, style: { fill: '#00B000', stroke: '#00B000'}}],
-                    pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
-                    value: 0,
-                    animationDuration: 0,
-                });
-                gasTitle.text("H2 Pressure (PSI)");
-                break;
-            case "litres" :
-                Gas.jqxLinearGauge({
-                    max: capacity,
-                    min: 0,
-                    height: "80%",
-                    colorScheme: 'scheme02',
-                    ticksPosition: 'far',
-                    ticksOffset: [20, 15],
-                    ticksMajor: { size: '10%', interval: 100 },
-                    ticksMinor: { size: '5%', interval: 50, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
-                    labels: { interval: Math.round(capacity / 5), position: 'far' },
-                    ranges: [
-                        { startValue: 0, endValue: Math.round(capacity /5), style: { fill: '#FF4800', stroke: '#FF4800'} },
-                        { startValue: Math.round(capacity /5), endValue: Math.round(capacity /5) * 3, style: { fill: '#FFA200', stroke: '#FFA200'}},
-                        { startValue: Math.round(capacity /5) * 3, endValue: capacity, style: { fill: '#00B000', stroke: '#00B000'}}],
-                    pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
-                    value: 0,
-                    animationDuration: 0,
-                });
-                gasTitle.text("H2 Volume (litres)");
-                break;
-            case "cuft" :
-                let cuft = capacity * 0.0353; // Conversion from litres to cubic feet
-                Gas.jqxLinearGauge({
-                    max: cuft,
-                    min: 0,
-                    height: "80%",
-                    colorScheme: 'scheme02',
-                    ticksPosition: 'far',
-                    ticksOffset: [20, 15],
-                    ticksMajor: { size: '10%', interval: 100 },
-                    ticksMinor: { size: '5%', interval: 50, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
-                    labels: { interval: Math.round(cuft / 5),
-                        position: 'far',
-                        formatValue: function(value){return Math.round(value);},
-                    },
+        let gaugeSettings = {
+            max : Math.round(h2.maxPressure),
+            min: 0,
+            height: "80%",
+            colorScheme: 'scheme02',
+            ticksPosition: 'far',
+            ticksOffset: [40, 15],
+            ticksMajor: { size: '10%', interval: h2.maxPressure / 5 },
+            ticksMinor: { size: '5%', interval: h2.maxPressure / 10, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
+            labels: { interval: Math.round(h2.maxPressure / 5), position: "far"  },
+            ranges: [
+                { startValue: 0, endValue: h2.maxPressure * 0.25, style: { fill: '#FF4800', stroke: '#FF4800'} },
+                { startValue: h2.maxPressure * 0.25, endValue: h2.maxPressure * 0.7, style: { fill: '#FFA200', stroke: '#FFA200'}},
+                { startValue: h2.maxPressure * 0.7, endValue: h2.maxPressure, style: { fill: '#00B000', stroke: '#00B000'}}],
+            pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
+            value: 0,
+            animationDuration: 0,
+        }
+        Gas.jqxLinearGauge(gaugeSettings);
+        gasTitle.text("H2 Pressure (" + h2.pressureUnits + ")");
+    }
+    Gas.val(h2.pressure);
 
-                    ranges: [
-                        { startValue: 0, endValue: Math.round(cuft / 5), style: { fill: '#FF4800', stroke: '#FF4800'} },
-                        { startValue: Math.round(cuft / 5), endValue: Math.round(cuft / 5) * 3, style: { fill: '#FFA200', stroke: '#FFA200'}},
-                        { startValue: Math.round(cuft / 5) * 3, endValue: cuft, style: { fill: '#00B000', stroke: '#00B000'}}],
-                    pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
-                    value: 0,
-                    animationDuration: 0,
-                });
-                gasTitle.text("H2 Volume (cubic feet)");
-                break;
-            case "kWhr" :
-                let kWhr = Math.round((capacity / 990) + 0.5); // Conversion from litres to kWhr
-                Gas.jqxLinearGauge({
-                    max: kWhr,
-                    min: 0,
-                    height: "80%",
-                    colorScheme: 'scheme02',
-                    ticksPosition: 'far',
-                    ticksOffset: [40, 15],
-                    ticksMajor: { size: '10%', interval: 100 },
-                    ticksMinor: { size: '5%', interval: 50, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
-                    labels: { interval: Math.round(kWhr / 5),
-                              position: 'far',
-                              formatValue: function(value){return Math.round(value);},
-                    },
-                    ranges: [
-                        { startValue: 0, endValue: Math.round(kWhr / 5), style: { fill: '#FF4800', stroke: '#FF4800'} },
-                        { startValue: Math.round(kWhr / 5), endValue: Math.round(kWhr / 5) * 3, style: { fill: '#FFA200', stroke: '#FFA200'}},
-                        { startValue: Math.round(kWhr / 5) * 3, endValue: kWhr, style: { fill: '#00B000', stroke: '#00B000'}}],
-                    pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
-                    value: 0,
-                    animationDuration: 0,
-                });
-                gasTitle.text("Energy Stored (kWhr)");
-                break;
-        }
-    }
-    if (units === "bar") {
-        switch (displayUnits) { // capacity is in litres
-            case "litres" : pressure = (pressure / 35) * capacity; // Bar -> litres
-                break;
-            case "cuft" : pressure = (pressure / 35) * capacity * 0.03535; // Bar -> cubic feet
-                break;
-            case "kWhr" : pressure = ((pressure / 35) * capacity) / 990; // Bar -> kwHr
-                break;
-            case "psi" : pressure = pressure * 14.5
-        }
-    } else if (units === "psi") {
-        switch (displayUnits) { // capacity is in litres
-            case "litres" : pressure = (pressure / 507.6) / capacity; // psi -> litres
-                break;
-            case "cuft" : pressure = (pressure / 507.6) * capacity * 0.03535; // psi -> cubic feet
-                break;
-            case "kWhr" : pressure = ((pressure / 507.6) * capacity) / 990; // psi -> kwHr
-                break;
-            case "bar" : pressure = pressure * 0.0689 // psi -> bar
-        }
-    }
-    Gas.val(pressure.toFixed(0))
 }
 
 function updateConductivity(conductivity, greenMax, yellowMax) {

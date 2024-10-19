@@ -89,6 +89,9 @@ function loadSettings() {
                         if (data.FuelCellSettings.Capacity !== "") {
                             $("#fcCapacity").val(data.FuelCellSettings.Capacity);
                         }
+                        if (data.FuelCellSettings.Efficiency !== "") {
+                            $("#fcEfficiency").val(data.FuelCellSettings.Efficiency);
+                        }
                         if (data.FuelCellSettings.StartSOC !== "") {
                             $("#fcStartSOC").val(data.FuelCellSettings.StartSOC);
                         }
@@ -136,9 +139,8 @@ function loadSettings() {
                         $("#GasDetectorThreshold").val(data.gasDetectorThreshold);
                         $("#MaxGasPressure").val(data.maxGasPressure);
                         $("#GasCapacity").val(data.gasCapacity);
-                        $("#GasUnits").val(data.gasUnits);
-                        setGasDisplayOptions(data.gasDisplayUnits);
-                        $("#GasDisplayUnits").val(data.gasDisplayUnits);
+                        $("#GasVolumeUnits").val(data.gasVolumeUnits);
+                        $("#GasPressureUnits").val(data.gasPressureUnits);
                         $("#GasInput").val(data.gasPressureInput);
                         $("#maxYellowConductivity").val(data.conductivityYellowMax);
                         $("#maxGreenConductivity").val(data.conductivityGreenMax);
@@ -198,7 +200,7 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip, enabled) {
 //    newRow += '<td class="elDryerSetting"><input class="settings_cb" type="radio" id="' + dryerID + '" name="Dryer" value=' + numElectrolysers + '><label for="' + dryerID + '">Dryer Control</label></td>';
     newRow += '<td class="elIP"><span class="settings" id="' + ipID + '">' + ip + '</span></td>';
     newRow += '<td class="elEnabled"><input class="settings" type="checkbox" id="' + elEnabledID + '" name="' + elEnabledID + '" value="Enabled" ' + IsEnabled + '></td>'
-    newRow += '<td><img src="images/trash.png" alt="Delete" onclick="deleteElectrolyser(' + numElectrolysers + ')" class="button" /></td></tr>';
+    newRow += '<td class="elDelete"><img src="images/trash.png" alt="Delete" onclick="deleteElectrolyser(' + numElectrolysers + ')" class="button" /></td></tr>';
     $("#ElectrolysersBody").append(newRow);
     $('#'+relayID).on("change", function() {
         Electrolysers[numElectrolysers].relay = parseInt($(this).val(), 10);

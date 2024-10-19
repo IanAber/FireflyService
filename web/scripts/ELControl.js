@@ -137,7 +137,7 @@ function updateElectrolyser(currentElement, index) {
         elect.width(elect.height());
     }
 //    el.height(el.width());
-    setOnOffButton("ELPower"+index, currentElement.on);
+    setOnOffButton("ELPower"+index, currentElement.powerRelayEnergised);
     elect.val(currentElement.h2Flow);
     if ((currentElement.state === 3) || (currentElement.state === 4)) {
         setOnOffButton("ELRun" + index, true)

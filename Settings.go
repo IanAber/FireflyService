@@ -70,6 +70,7 @@ type FuelCellSettingsType struct {
 	StopSOC             uint16  `json:"StopSOC"`             // Battery SOC at which the fuel cell will stop
 	MaxRunTime          uint16  `json:"MaxRunTime"`          // Maximum number of minutes the fuel cell is allowed to run
 	MaximumOutput       uint16  `json:"MaximumOutput"`       // Maximum power the fuel cell can deliver
+	Efficiency          uint8   `json:"Efficiency"`          // Average efficiency
 }
 
 type ElectrolyserSettingType struct {
@@ -108,6 +109,7 @@ type SettingsType struct {
 	FuelCellSettings                 FuelCellSettingsType      `json:"FuelCellSettings"`
 	ACMeasurement                    [4]ModbusNameType         `json:"ACMeasurement"`
 	DCMeasurement                    [4]ModbusNameType         `json:"DCMeasurement"`
+	Subnet                           string                    `json:"subnet"`
 	ElectrolyserMaxStackVoltsTurnOff int                       `json:"electrolyserMaxStackVoltsForShutdown"`
 	ElectrolyserStopToStartTime      int                       `json:"electrolyserStopToStartTime"`
 	ElectrolyserStartToStopTime      int                       `json:"electrolyserStartToStopTime"`
@@ -122,8 +124,8 @@ type SettingsType struct {
 	SessionKey                       string                    `json:"sessionKey"`
 	MaxGasPressure                   uint16                    `json:"maxGasPressure"`
 	GasCapacity                      uint32                    `json:"gasCapacity"`
-	GasUnits                         string                    `json:"gasUnits"`
-	GasDisplayUnits                  string                    `json:"gasDisplayUnits"`
+	GasVolumeUnits                   string                    `json:"gasVolumeUnits"`
+	GasPressureUnits                 string                    `json:"gasPressureUnits"`
 	GasPressureInput                 uint8                     `json:"gasPressureInput"`
 	GasDetectorThreshold             uint16                    `json:"gasDetectorThreshold"`
 	GasDetectorInput                 uint8                     `json:"gasDetectorInput"`
@@ -133,14 +135,17 @@ type SettingsType struct {
 	CoolingPumpStartTemperature      uint8                     `json:"coolingPumpStartTemperature"`
 	CoolingPumpStopTemperature       uint8                     `json:"coolingPumpStopTemperature"`
 	BoardVersion                     string                    `json:"boardVersion"`
-	Links                            []UrlLinkType             `json:"links"`
+	boardVersion                     uint16
+	Links                            []UrlLinkType `json:"links"`
 	filepath                         string
 	acquiringElectrolysers           bool
+	scanningElectrolysers            bool
 }
 
 func NewSettings() *SettingsType {
 	settings := new(SettingsType)
 	settings.Name = "FireflyService"
+	settings.Subnet = "192.168.88.0"
 	for idx := range settings.AnalogChannels {
 		settings.AnalogChannels[idx].Port = uint8(idx)
 		settings.AnalogChannels[idx].Name = fmt.Sprintf("Analog-%d", idx)
@@ -176,6 +181,7 @@ func NewSettings() *SettingsType {
 	settings.FuelCellSettings.StartSOC = 50
 	settings.FuelCellSettings.StopSOC = 70
 	settings.FuelCellSettings.MaxRunTime = 90
+	settings.FuelCellSettings.Efficiency = 42
 
 	for i := range settings.ACMeasurement {
 		settings.ACMeasurement[i].Name = ""
@@ -193,8 +199,8 @@ func NewSettings() *SettingsType {
 	settings.WaterDumpRelay = 0
 	settings.WaterDumpSeconds = 10
 	settings.MaximumConductivity = 2.5
-	settings.GasUnits = "bar"
-	settings.GasDisplayUnits = "bar"
+	settings.GasPressureUnits = "bar"
+	settings.GasVolumeUnits = "litres"
 	settings.MaxGasPressure = 35
 	settings.GasCapacity = 74724 // 8 standard tanks @ 35Bar
 	settings.GasPressureInput = 0
@@ -386,6 +392,7 @@ func (settings *SettingsType) SaveSettings(filepath string) error {
 			return err
 		}
 	}
+	log.Println("Settings written : volume=", settings.GasVolumeUnits, " pressure=", settings.GasPressureUnits)
 	return nil
 }
 
@@ -557,8 +564,9 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	} else {
 		settings.GasCapacity = uint32(val)
 	}
-	settings.GasUnits = r.FormValue("GasUnits")
-	settings.GasDisplayUnits = r.FormValue("GasDisplayUnits")
+	//	settings.GasUnits = r.FormValue("GasUnits")
+	settings.GasPressureUnits = r.FormValue("GasPressureUnits")
+	settings.GasVolumeUnits = r.FormValue("GasVolumeUnits")
 	if val, err := strconv.ParseInt(r.FormValue("GasInput"), 10, 8); err != nil {
 		ReturnJSONError(w, DeviceString+"GasInput", err, http.StatusInternalServerError, true)
 		return
@@ -608,6 +616,12 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	} else {
 		settings.FuelCellSettings.MaximumOutput = uint16(val)
 	}
+	if val, err := strconv.ParseInt(r.FormValue("fcEfficiency"), 10, 16); err != nil {
+		ReturnJSONError(w, DeviceString+"FuelCellEfficiency", err, http.StatusBadRequest, true)
+		return
+	} else {
+		settings.FuelCellSettings.Efficiency = uint8(val)
+	}
 
 	settings.ACMeasurement[0].Name = strings.TrimSpace(r.FormValue("ACMeasurement20"))
 	settings.ACMeasurement[0].SlaveID = 20
@@ -644,6 +658,20 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 		return
 	} else {
 		settings.ElectrolyserStartToStopTime = int(val)
+	}
+	log.Println("subnet = ", r.FormValue("subnet"))
+	if val := r.FormValue("subnet"); val != "" {
+		if ip := net.ParseIP(val); ip != nil {
+			if ip[3] == 0 {
+				settings.Subnet = val
+			} else {
+				log.Println("subnet should end in 0 - ", val)
+			}
+		} else {
+			log.Println("bad subnet - ", val)
+		}
+	} else {
+		log.Println("no subnet in settings")
 	}
 
 	if val, err := strconv.ParseInt(r.FormValue("dryerRelay"), 10, 16); err != nil {
@@ -788,7 +816,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	}
 
 	LinkSettings := r.FormValue("Links")
-	log.Println(LinkSettings)
+	//	log.Println(LinkSettings)
 	newLinks := make([]UrlLinkType, 0)
 	if err := json.Unmarshal([]byte(LinkSettings), &newLinks); err != nil {
 		ReturnJSONError(w, DeviceString+":Links", err, http.StatusBadRequest, true)

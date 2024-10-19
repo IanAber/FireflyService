@@ -243,6 +243,8 @@ func (t *OutputControlType) UpdateFuelCell(bus *CANBus) error {
 		t.repeats--
 		return bus.Publish(frame)
 	} else {
+		t.FuelCellRunEnable = FCNoCommand     // Reset the run/stop command after the repeat cycle
+		t.lastRunEnable = t.FuelCellRunEnable // Don't repeat the new, no-command, command.
 		return nil
 	}
 }
@@ -1098,7 +1100,7 @@ func (t *SystemInfoType) SetRunTime(hours byte, mins byte) {
 }
 
 func (t *SystemInfoType) SetExhaustFlag() {
-	log.Println("Set Exhaust")
+	//	log.Println("Set Exhaust")
 	t.ExhaustFlag = true
 	t.exhaustFlagTimer.Reset(time.Second)
 }
@@ -1369,6 +1371,7 @@ func (fc *PANFuelCell) updateOutput() error {
 
 			// if we are sending a start. Continue to send it as long as the fuel cell says it is in standby
 			if output.FuelCellRunEnable == FCStartUp && fc.PowerMode.PowerModeState != PMInit {
+				log.Println("fuel cell is not in standby. Not sending start command.")
 				output.FuelCellRunEnable = FCNoCommand
 			}
 			// if we are sending a stop. Continue to send it as long as the fuel cell says it is not in standby, init or off
@@ -1607,9 +1610,6 @@ func getFuelCellDCDCData(w http.ResponseWriter, r *http.Request) {
 			SendDataAsJSON(w, DeviceString, FuelCellDCDCVoltagesByMinute, start, end)
 		} else {
 			SendDataAsJSON(w, DeviceString, FuelCellDCDCVoltagesBySecond, start, end)
-		}
-		if err != nil {
-			ReturnJSONError(w, DeviceString, err, http.StatusInternalServerError, true)
 		}
 	}
 }

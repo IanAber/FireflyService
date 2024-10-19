@@ -387,7 +387,7 @@
     "sessionKey": "",
     "maxGasPressure": 35,
     "gasCapacity": 2160,
-    "gasUnits": "bar",
+//    "gasUnits": "bar",
     "gasDisplayUnits": "bar",
     "gasPressureInput": 0,
     "gasDetectorThreshold": 1000,

@@ -267,9 +267,9 @@ type DryerStatusType struct {
 //	DefaultProductionRate jsonFloat32 `json:"defaultRate"`        // H4396
 
 type ElectrolyserType struct {
-	status             ElectrolyserStatusType
-	OnOffTime          time.Time
-	OffDelayTime       time.Time
+	status ElectrolyserStatusType
+	//	OnOffTime          time.Time
+	// OffDelayTime       time.Time
 	OffRequested       *time.Timer
 	Client             *modbus.ModbusClient
 	clientConnected    bool
@@ -277,6 +277,7 @@ type ElectrolyserType struct {
 	lastConnectAttempt time.Time
 	failedConnections  uint8
 	powerRelay         uint8
+	poweredOn          time.Time
 	hasDryer           bool // This is updated as the electrolysers are running. Only one should be in control of the dryer
 	enabled            bool
 	mu                 sync.Mutex
@@ -346,6 +347,7 @@ func (el *ElectrolyserType) getJsonStatus() ([]byte, error) {
 	el.mu.Lock()
 	defer el.mu.Unlock()
 
+	el.IsSwitchedOn()
 	st.load(el.status)
 	return json.Marshal(st)
 }
@@ -403,8 +405,8 @@ func (el *ElectrolyserType) setClient(IP net.IP) {
 
 func NewElectrolyser(ip net.IP) *ElectrolyserType {
 	e := new(ElectrolyserType)
-	e.OnOffTime = time.Now().Add(0 - (time.Minute * 30))
-	e.OffDelayTime = time.Now()
+	//	e.OnOffTime = time.Now().Add(0 - (time.Minute * 30))
+	// e.OffDelayTime = time.Now()
 	e.OffRequested = nil
 
 	if debugOutput {
@@ -478,7 +480,7 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 		}
 	}
 	if debugOutput {
-		log.Println("Got serial number")
+		log.Printf("Got serial number - %0x", serialCode)
 	}
 
 	//  1 bit - reserved, must be 0
@@ -508,18 +510,46 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 	yearMonth := (serialCode >> 42) & 0x7ff
 	codes.Year = uint16(yearMonth / 12)
 	codes.Month = uint8(yearMonth % 12)
+	if codes.Month == 0 {
+		codes.Month = 12
+		codes.Year--
+	}
 	Product := uint16((serialCode >> 53) & 0x3ff)
 
 	var unicode [2]byte
-	unicode[1] = byte(Product%32) + 64
-	unicode[0] = byte(Product/32) + 64
+	unicode[1] = byte(Product>>5) + 64
+	unicode[0] = byte(Product&0x1f) + 64
 	codes.Product = string(unicode[:])
 
-	return fmt.Sprintf("%s%02d%02d%02d%02d%s%s", codes.Product, codes.Year, codes.Month, codes.Day, codes.Chassis, codes.Order, codes.Site), nil
+	serial := fmt.Sprintf("%s%02d%02d%02d%02d%s%s", codes.Product, codes.Year, codes.Month, codes.Day, codes.Chassis, codes.Order, codes.Site)
+	if debugOutput {
+		log.Printf("Serial = %s : %b\n", serial, serialCode)
+	}
+
+	return serial, nil
 }
 
+// Is the electrolyser switched on? If the relay turns on, wait 20 seconds before returning true.
 func (el *ElectrolyserType) IsSwitchedOn() bool {
-	el.status.Powered = Relays.GetRelay(el.powerRelay)
+	if !Relays.GetRelay(el.powerRelay) {
+		el.poweredOn = time.Time{}
+		el.status.Powered = false
+		return false
+	} else {
+		if el.poweredOn.IsZero() {
+			el.poweredOn = time.Now()
+		}
+	}
+	if el.status.Powered {
+		return true
+	}
+	if time.Since(el.poweredOn) > (time.Second * 20) {
+		el.status.Powered = true
+	} else {
+		if debugOutput {
+			log.Println("Waiting for electrolyser")
+		}
+	}
 	return el.status.Powered
 }
 
@@ -653,12 +683,14 @@ func (el *ElectrolyserType) ReadModelNumber() error {
 		el.status.Model = "EL-21"
 	case 0x45533430:
 		el.status.Model = "ES-40"
+	case 0x45533431:
+		el.status.Model = "ES-41"
 	default:
 		el.status.Model = ""
 		if debugOutput {
-			log.Println("not an EL21 or ES40")
+			log.Println("not a known electrolyser type (0x%X)", modelNumber)
 		}
-		return fmt.Errorf("not an EL21 or ES40")
+		return fmt.Errorf("not a known electrolyser type (0x%X)", modelNumber)
 	}
 	return nil
 }
@@ -667,7 +699,7 @@ func (el *ElectrolyserType) ReadModelNumber() error {
 func (el *ElectrolyserType) ReadValues() error {
 	// Add a modbus client if we do not have one assigned
 	if debugOutput {
-		log.Printf("Read values from %s", el.status.Name)
+		log.Printf("Read values from %s - %s", el.status.Name, el.status.IP.String())
 	}
 	if el.Client == nil {
 		if debugOutput {
@@ -708,6 +740,15 @@ func (el *ElectrolyserType) ReadValues() error {
 				}
 			}
 			el.status.Serial = serial
+			if elSetting := currentSettings.findElByName(el.status.Name); elSetting != nil {
+				elSetting.IP = el.status.IP.String()
+				elSetting.Serial = serial
+				if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
+					log.Println("failed to save the settings. ", err)
+				}
+			} else {
+				log.Println("Settings for electrolyser " + el.status.Name + " not found.")
+			}
 		} else {
 			if el.status.Serial != serial {
 				log.Printf("electrolyser at %s has a different serial number (%s). Rescanning...", el.GetIPString(), serial)
@@ -940,6 +981,7 @@ func (el *ElectrolyserType) getStatus() *ElectrolyserStatusType {
 	defer el.mu.Unlock()
 
 	status := new(ElectrolyserStatusType)
+	el.IsSwitchedOn()
 
 	*status = el.status
 	status.Errors.count = el.status.Errors.count
@@ -1696,19 +1738,21 @@ func (el *ElectrolyserType) Acquire() error {
 
 // GetOurSubnet returns the subnet for this computer
 func GetOurSubnet() (net.IP, error) {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err := conn.Close(); err != nil {
-			log.Print(err)
-		}
-	}()
+	//conn, err := net.Dial("udp", "8.8.8.8:80")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer func() {
+	//	if err := conn.Close(); err != nil {
+	//		log.Print(err)
+	//	}
+	//}()
+	//
+	//localAddr := conn.LocalAddr().(*net.UDPAddr)
+	//return localAddr.IP, nil
 
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP, nil
+	ip := net.ParseIP(currentSettings.Subnet)
+	return ip, nil
 }
 
 // scan searches from StartIP until it finds a recognisable electrolyser
@@ -1719,6 +1763,9 @@ func scan(StartIP byte) (net.IP, string, error) {
 	} else {
 		subnetIP = subnet
 	}
+	currentSettings.scanningElectrolysers = true
+	defer func() { currentSettings.scanningElectrolysers = false }()
+
 	log.Println("Subnet = ", subnetIP.String())
 
 	for ip := StartIP; ip < 255; ip++ {
@@ -1755,6 +1802,9 @@ func (el *ElectrolyserType) rescan(StartIP byte, knownSerial string) (net.IP, st
 		log.Println("Subnet = ", subnetIP.String())
 	}
 
+	currentSettings.scanningElectrolysers = true
+	defer func() { currentSettings.scanningElectrolysers = false }()
+
 	for ip := StartIP; ip < 255; ip++ {
 		IP := subnetIP.To4()
 		IP[3] = ip
@@ -1775,7 +1825,7 @@ func (el *ElectrolyserType) rescan(StartIP byte, knownSerial string) (net.IP, st
 					log.Println("Looking for ", knownSerial)
 					log.Println("Found       ", serial)
 				}
-				if knownSerial == serial {
+				if knownSerial == serial || strings.TrimSpace(knownSerial) == "" {
 					// Looks like we have our device, so we should update the IP address.
 					if debugOutput {
 						log.Println("Electrolyser", elType, "found at ", IP)
@@ -1829,21 +1879,32 @@ func CheckForElectrolyser(ip net.IP) (string, error) {
 				log.Print(err)
 			}
 		}()
+		if debugOutput {
+			log.Printf("Checking for model number on %s", ip.String())
+		}
 		model, err := Client.ReadUint32(Model, modbus.INPUT_REGISTER)
 		if err != nil {
 			log.Println("Not an electrolyser - ", err)
 			return "", err
 		}
-		// Is this an EL21 or an ES40?
+		// Is this a EL21, ES40 or ES41?
+		if debugOutput {
+			log.Printf("Electrolyser %0x found at %s", model, ip.String())
+		}
 		switch model {
 		case 0x454C3231:
 			return "EL-21", nil
 		case 0x45533430:
 			return "ES-40", nil
+		case 0x45533431:
+			return "ES-41", nil
 		default:
-			return "", fmt.Errorf("not an EL21 or ES40")
+			return "", fmt.Errorf("not an EL21, ES40 or ES41 (%0x)", model)
 		}
 	} else {
+		if debugOutput {
+			log.Printf("Failed to get a new Modbus client - %v", err)
+		}
 		return "", err
 	}
 }
@@ -1855,7 +1916,9 @@ func (el *ElectrolyserType) MonitorElectrolyserErrors() {
 		elTicker := time.NewTicker(time.Minute)
 		numErrors := 0 // Errors is incremented each time we reboot until we power cycle.
 		numLoops := 0  // Ensures that a reboot is only if we have seen multiple halt conditions
-		log.Print("Starting electrolyser monitor for ", el.status.Name)
+		if debugOutput {
+			log.Print("Starting electrolyser monitor for ", el.status.Name)
+		}
 		for {
 			select {
 			case <-elTicker.C:

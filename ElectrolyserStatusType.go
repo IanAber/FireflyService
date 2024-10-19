@@ -94,6 +94,7 @@ type ElectrolyserJSONStatusType struct {
 	IP                                   net.IP               `json:"ip"`
 	PowerRelay                           uint8                `json:"powerRelay"`
 	Enabled                              bool                 `json:"enabled"`
+	PowerRelayEnergised                  bool                 `json:"powerRelayEnergised"`
 }
 
 func (elt *ElectrolyserStatusType) GetStackSerial() string {
@@ -318,10 +319,15 @@ func (elt *ElectrolyserStatusType) Clear() {
 	elt.SystemState = 0
 }
 
+func (elt *ElectrolyserStatusType) PowerRelayEnergised() bool {
+	return Relays.GetRelay(elt.PowerRelay)
+}
+
 func (eljst *ElectrolyserJSONStatusType) load(elt ElectrolyserStatusType) {
 	eljst.Device = elt.Device
 	eljst.Name = elt.Name
 	eljst.Powered = elt.Powered
+	eljst.PowerRelayEnergised = elt.PowerRelayEnergised()
 	eljst.Model = elt.Model
 	eljst.Serial = elt.Serial
 	eljst.SystemState = elt.SystemState
