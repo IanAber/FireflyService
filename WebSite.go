@@ -1773,7 +1773,7 @@ func getJsonStatus(indent bool) ([]byte, error) {
 
 	data.SystemAlarms = &SystemAlarms
 
-	data.Hydrogen = CalculateHydrogen(float64(data.Analog.Inputs[currentSettings.GasPressureInput].Value), data.Analog.GasTemperature, float64(currentSettings.GasCapacity), currentSettings.GasVolumeUnits, currentSettings.GasPressureUnits)
+	data.Hydrogen = CalculateHydrogen(float64(data.Analog.Inputs[currentSettings.GasPressureInput].Value), data.Analog.GasTemperature, currentSettings.GasVolumeUnits, currentSettings.GasPressureUnits)
 
 	var JSONBytes []byte
 	var err error

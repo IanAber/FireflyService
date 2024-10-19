@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func CalculateHydrogen(pressure float64, temperature float64, capacity float64, volumeUnits string, pressureUnits string) *HydrogenType {
+func CalculateHydrogen(pressure float64, temperature float64, volumeUnits string, pressureUnits string) *HydrogenType {
 	result := new(HydrogenType)
 	result.Pressure, result.PressureText = CalculatePressure(pressure, pressureUnits)
 	result.PressureUnits = getPressureLabel(pressureUnits)
@@ -308,7 +308,6 @@ func CalculateVolume(bar float64, temperature float64, volumeUnits string) (floa
 	case "kWs":
 		kWs := kWh / 3600
 		return kWs, fmt.Sprintf("%.4f", kWs)
-		break
 	case "btu":
 		btu := kWh * 3412.141632
 		return btu, fmt.Sprintf("%d", int64(btu))
