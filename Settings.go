@@ -29,12 +29,12 @@ type AnalogSettingType struct {
 type actionType uint8
 
 const (
-	ElConductivityHigh = iota + 1
-	ElPowerAndConductivity
-	ElStartAndConductivity
-	ElPowered
-	ElStart
-	ELRun
+	ElConductivityHigh     = iota + 1 // Any time conductivity high
+	ElPowerAndConductivity            // On first electrolyser powered if conductivity is high
+	ElStartAndConductivity            // On first electrolyser started if conductivity is high
+	ElPowered                         // Always on first electrolyser powered
+	ElStart                           // Always on first electrolyser started
+	ELRun                             // Any time an electrolyser is powered up or conductivity is high
 )
 
 type PortNameType struct {
@@ -309,6 +309,7 @@ func (settings *SettingsType) LoadSettings(filepath string) error {
 	for i, dc := range settings.DCMeasurement {
 		DCMeasurements[i].Name = dc.Name
 	}
+	log.Println("Updating the electrolysers")
 	settings.UpdateElectrolyserArray()
 
 	return nil
@@ -336,8 +337,10 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 
 	for _, el := range settings.Electrolysers {
 		if el.Name != "" {
+			log.Printf("finding %s", el.Name)
 			if elect := Electrolysers.FindByRelay(el.PowerRelay); elect != nil {
 				// If we have an ip address, try and assign it.
+				log.Printf("%s ip = %s", el.Name, el.IP)
 				if el.IP != "" {
 					if err := elect.status.IP.UnmarshalText([]byte(el.IP)); err != nil {
 						// We failed to parse the ip address provided from the settings object
@@ -392,7 +395,6 @@ func (settings *SettingsType) SaveSettings(filepath string) error {
 			return err
 		}
 	}
-	log.Println("Settings written : volume=", settings.GasVolumeUnits, " pressure=", settings.GasPressureUnits)
 	return nil
 }
 

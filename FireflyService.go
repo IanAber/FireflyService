@@ -289,7 +289,7 @@ func ClientLoop() {
 
 				for _, el := range Electrolysers.Arr {
 					if bytes, err := el.getJsonStatus(); err != nil {
-						log.Print("Error marshalling the electrolyser data - ", err)
+						log.Printf("Error marshalling the electrolyser data for %s - %v", el.status.Name, err)
 					} else {
 						select {
 						case pool.Broadcast <- WSMessageType{
@@ -385,20 +385,27 @@ func DatabaseLogger() {
 				log.Println("Database is not connected")
 			}
 			// Check for water dump.
-			if currentSettings.WaterDumpAction == ElConductivityHigh {
-				on := false
-				_, conductivity := AnalogInputs.GetInput(7)
-				if conductivity > float32(currentSettings.MaximumConductivity) {
-					for _, el := range Electrolysers.Arr {
-						if el.IsSwitchedOn() {
-							on = true
+			_, conductivity := AnalogInputs.GetInput(7)
+			if currentSettings.WaterDumpAction == ELRun && conductivity > float32(currentSettings.MaximumConductivity) {
+				if currentSettings.WaterDumpRelay != 255 {
+					Relays.SetRelay(currentSettings.WaterDumpRelay, true)
+				}
+			} else {
+				if currentSettings.WaterDumpAction == ElConductivityHigh {
+					on := false
+					if conductivity > float32(currentSettings.MaximumConductivity) {
+						for _, el := range Electrolysers.Arr {
+							log.Printf("Check electrolyser switched on")
+							if el.IsSwitchedOn() {
+								on = true
+							}
 						}
 					}
-				}
-				// If there is an electrolyser that is running and the holdoff time has expired
-				if on && !WaterDumpHoldoff.After(time.Now()) {
-					go TurnOnWaterDumpValve()
-					WaterDumpHoldoff = time.Now().Add(time.Minute * 30)
+					// If there is an electrolyser that is running and the holdoff time has expired
+					if on && !WaterDumpHoldoff.After(time.Now()) {
+						go TurnOnWaterDumpValve()
+						WaterDumpHoldoff = time.Now().Add(time.Minute * 30)
+					}
 				}
 			}
 
@@ -440,6 +447,7 @@ func CANHeartbeat() {
 //
 //	and writes the data collected to the database.
 func ElectrolyserLoop() {
+	log.Printf("ElectrolyserLoop starting")
 	electrolyserHeartbeat := time.NewTicker(time.Second * 2)
 	for {
 		select {
@@ -452,7 +460,7 @@ func ElectrolyserLoop() {
 						if Relays.GetRelay(el.powerRelay) {
 							if !gotDryer {
 								if debugOutput {
-									log.Println("Set dryer for ", el.status.Name)
+									log.Printf("Set dryer for electrolyser %s", el.status.Name)
 								}
 								el.hasDryer = true                                       // First active electrolyser gets to control the dryer
 								gotDryer = true                                          // We found an active electrolyser, so we have the dryer.
@@ -462,7 +470,15 @@ func ElectrolyserLoop() {
 									Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), true)
 								}
 								// after 60 seconds, start the dryer error monitor
-								time.AfterFunc(time.Second*60, el.MonitorDryerErrors)
+								if el.MonitorTrigger != nil {
+									el.MonitorTrigger.Stop()
+									//if !el.MonitorTrigger.Stop() {
+									//	log.Println("Monitor not stopped")
+									//	<-el.MonitorTrigger.C
+									//}
+									el.MonitorTrigger = nil
+								}
+								el.MonitorTrigger = time.AfterFunc(time.Second*60, el.MonitorDryerErrors)
 							} else {
 								el.hasDryer = false // We already have the dryer so this electrolyser can skip it.
 							}
@@ -493,17 +509,21 @@ func ElectrolyserLoop() {
 												el.GetDryerErrorText(),
 												el.GetDryerWarningText()); err != nil {
 
-												log.Println(err)
+												log.Printf("Failed to write the dryer data from %s - %v", el.status.Name, err)
 											}
 										}
 									}
+								} else {
+									if debugOutput {
+										log.Printf("Electrolyser %s is off", el.status.Name)
+									}
 								}
 							} else {
-								log.Println("electrolyser has no ip address")
+								log.Printf("electrolyser %s has no ip address", el.status.Name)
 								if !el.CheckConnected() {
-									log.Println("cannot find electrolyser....")
+									log.Printf("cannot find electrolyser %s....", el.status.Name)
 								} else {
-									log.Println("Connected")
+									log.Printf("%s connected", el.status.Name)
 								}
 							}
 						} else {
@@ -511,15 +531,15 @@ func ElectrolyserLoop() {
 							el.status.ClearWarnings()
 						}
 					}
-					// If we did not find an active electrolyser, turn off the dryer and resort the electrolysers
+					// If we did not find an active electrolyser, turn off the dryer and restart the electrolysers
 					if !gotDryer {
-						if debugOutput {
-							log.Println("Turn off the dryer")
-						}
 						Relays.SetRelay(uint8(currentSettings.DryerRelay), false)
 						// If the water relay is set to run whenever an electrolyser is on, turn it off
 						if currentSettings.WaterDumpAction == ELRun {
-							Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), false)
+							if Relays.GetRelay(uint8(currentSettings.WaterDumpRelay)) {
+								log.Println("Turn off water dump.")
+								Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), false)
+							}
 						}
 						slices.SortStableFunc(Electrolysers.Arr[:], func(a *ElectrolyserType, b *ElectrolyserType) int {
 							return cmp.Compare(a.status.StackTotalRunTime, b.status.StackTotalRunTime)
@@ -542,6 +562,7 @@ func ElectrolyserPumpManagement() {
 				if currentSettings.CoolingPumpRelay < 16 {
 					tMax := 0.0
 					for _, el := range Electrolysers.Arr {
+						log.Printf("Check electrolyser switched on")
 						if el.IsSwitchedOn() {
 							if float64(el.status.ElectrolyteTemp) > tMax {
 								tMax = float64(el.status.ElectrolyteTemp)

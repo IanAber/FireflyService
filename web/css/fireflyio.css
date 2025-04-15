@@ -612,7 +612,6 @@ form.settings {
 input.settings {
     border: 2px solid #fee400;
     background-color: #373637;
-    width: 95%;
     font-family: serif;
     font-size: 18px;
     line-height: 25px;
@@ -757,6 +756,14 @@ span.error {
     font-weight: bold;
 }
 
+span.ValTrue {
+    color: green;
+}
+
+span.ValFalse {
+    color: red;
+}
+
 select.Electrolysers {
 
 }
@@ -772,4 +779,75 @@ span.warnings {
 span.errors {
     background-color: red;
     color: white;
+}
+div.buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+span.button {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+}
+div.button {
+    -webkit-user-select: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    user-select: none;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-top-color: #000000;
+    border-right-color: #000000;
+    border-bottom-color: #000000;
+    border-left-color: #000000;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+}
+div.ButtonOn {
+    border-top-style: inset;
+    border-right-style: inset;
+    border-bottom-style: inset;
+    border-left-style: inset;
+    background-color: #20cc2c;
+}
+div.ButtonOn:hover {
+    transition: all 0.3s ease;
+    transform: scale(1.01);
+}
+div.ButtonOff {
+    border-top-style: outset;
+    border-right-style: outset;
+    border-bottom-style: outset;
+    border-left-style: outset;
+    background-color: #f30834;
+}
+div.ButtonOff:hover {
+    transition: all 0.3s ease;
+    transform: scale(1.01);
+}
+div.ButtonChanging {
+    background-color: #fa9f05;
+}
+div.ButtonChanging:hover {
+    transition: all 0.3s ease;
+    transform: scale(1.01);
+}
+img.heartbeat {
+    width: 20px;
+    height: 20px;
+    padding-left: 10px;
+}
+header.alarm{
+    background-color: red;
 }

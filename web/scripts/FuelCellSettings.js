@@ -1,4 +1,5 @@
-var wstimeout;
+let jsonData;
+let wsConn;
 
 function smallest(x, y) {
     if ((x > y) && (y > 0)) {
@@ -208,16 +209,18 @@ function setupPage() {
         }, 500);
     });
     RegisterWebSocket();
+    MonitorWebService();
 }
-
-var jsonData;
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws/fuelcell";
-    let conn = new WebSocket(url);
+    wsConn = new WebSocket(url);
 
-    conn.onmessage = function (evt) {
-        // Restart the timeout timer
+    wsConn.onmessage = function (evt) {
+        if ((Date.now() - lastMessage) < 800) {
+            return;
+        }
+        lastMessage = Date.now();
         StartHeartbeat();
 
         try {
@@ -661,10 +664,4 @@ function setUpFuelCellGauges() {
 
 function WebSocketTimedOut() {
     RegisterWebSocket();
-}
-
-function StartHeartbeat() {
-    hb = $("#heartbeat");
-    hb.css({width: "20px", height: "20px"})
-    hb.animate({width: "15px", height: "15px"})
 }

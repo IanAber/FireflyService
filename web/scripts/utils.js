@@ -15,25 +15,33 @@ function PopulateTitle() {
         });
 }
 
-var wstimeout;
+let lastMessage = new(Date);
 
 function StartHeartbeat() {
+    $("header").removeClass("alarm");
     let hb = $("#heartbeat");
     if (hb.length < 1) {
         $("#system").after('<img class="heartbeat" alt="HeartBeat" id="heartbeat" src="images/heartbeat.png" />')
     }
-    hb.css({width: "20px", height: "20px"})
-    hb.animate({width: "15px", height: "15px"})
+    hb.stop(true,true);
+    hb.animate({width: "15px", height: "15px"}, 400, function () { $(this).removeAttr('style'); })
+}
 
-    // Clear the timeout timer if it is active
-    if (wstimeout !== 0) {
-        clearTimeout(wstimeout);
-    }
-    wstimeout = setTimeout(RegisterWebSocket, 5000)
+function MonitorWebService() {
+    setInterval(function(){
+        if ((Date.now() - lastMessage) > 5000) {
+            $("header").addClass("alarm");
+            wsConn.close();
+            RegisterWebSocket();
+        }
+    }, 5000);
 }
 
 function  clickButton(id) {
-    rl = $("#button" + id);
+    let rl = $("#buttonDiv" + id);
+    if (rl == null) {
+        rl = $("#button" + id);
+    }
     if (rl.hasClass("ButtonOff")) {
         action = "on";
     } else if (rl.hasClass("ButtonOn")){

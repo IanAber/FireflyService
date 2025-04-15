@@ -41,6 +41,7 @@ type ElectrolyserStatusType struct {
 	CurrentProductionRate                jsonFloat32            `json:"rate"`                                 // H1002
 	MaxTankPressure                      jsonFloat32            `json:"maxPressure"`                          // H4308
 	RestartPressure                      jsonFloat32            `json:"restartPressure"`                      // H4310
+	DryerNetworkEnabled                  bool                   `json:"dryerNetworkEnabled"`
 	DryerFailure                         string                 `json:"dryerFailure"`
 	Warnings                             ElectrolyserEventsType `json:"warnings"` // 768
 	Errors                               ElectrolyserEventsType `json:"errors"`   // 832
@@ -87,6 +88,7 @@ type ElectrolyserJSONStatusType struct {
 	CurrentProductionRate                jsonFloat32          `json:"rate"`                                 // H1002
 	MaxTankPressure                      jsonFloat32          `json:"maxPressure"`                          // H4308
 	RestartPressure                      jsonFloat32          `json:"restartPressure"`                      // H4310
+	DryerNetworkEnabled                  bool                 `json:"dryerNetworkEnabled"`
 	DryerFailure                         string               `json:"dryerFailure"`
 	Warnings                             []string             `json:"warnings"` // 768
 	Errors                               []string             `json:"errors"`   // 832
@@ -360,6 +362,7 @@ func (eljst *ElectrolyserJSONStatusType) load(elt ElectrolyserStatusType) {
 	eljst.CurrentProductionRate = elt.CurrentProductionRate
 	eljst.MaxTankPressure = elt.MaxTankPressure
 	eljst.RestartPressure = elt.RestartPressure
+	eljst.DryerNetworkEnabled = elt.DryerNetworkEnabled
 	eljst.DryerFailure = elt.DryerFailure
 	eljst.Warnings = elt.GetWarnings()
 	eljst.Errors = elt.GetErrors()

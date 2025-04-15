@@ -537,11 +537,17 @@ func dcErrorHandler3(frame can.Frame, _ *CANBus) {
 }
 
 func (bus *CANBus) SetRelays(relays uint16) error {
+	//	if Relays.GetAllRelays() != relays {
 	return bus.SetDigitalOutputsAndRelays(Outputs.GetAllOutputs(), relays)
+	//	}
+	//	return nil
 }
 
 func (bus *CANBus) SetDigitalOutputs(outputs uint8) error {
+	//	if Outputs.GetAllOutputs() != outputs {
 	return bus.SetDigitalOutputsAndRelays(outputs, Relays.GetAllRelays())
+	//	}
+	//	return nil
 }
 
 func (bus *CANBus) Valid() error {
@@ -662,8 +668,8 @@ func MonitorCANBusComms() {
 					canBus = nil
 				}
 			}
-		} else {
-			heartbeat++
+			//} else {
+			//	heartbeat++
 		}
 	}
 }

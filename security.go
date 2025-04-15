@@ -286,7 +286,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) (error, int) {
 				//			log.Println("Session saved")
 				return nil, 1 // Return err = nil but code = 1 to signify a new successful login
 			} else {
-				log.Println("Bad credentials")
+				log.Printf("Bad credentials %s [%s]", user, password)
 				return fmt.Errorf(UNAUTHORISED), http.StatusUnauthorized
 			}
 		}

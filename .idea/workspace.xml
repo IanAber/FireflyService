@@ -10,35 +10,37 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Rework units to add more options. Base units are now Bar and Litres but displayed H2 pressure and volume have selectable units.&#10;Added efficiency for the fuel cell to configuration settings to calculate energy available based on H2 quantity.">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AnalogInputs.go" beforeDir="false" afterPath="$PROJECT_DIR$/AnalogInputs.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CANBus.go" beforeDir="false" afterPath="$PROJECT_DIR$/CANBus.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ElectrolyserStatusType.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Relays.go" beforeDir="false" afterPath="$PROJECT_DIR$/Relays.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSiteRedirect.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hydrogen.go" beforeDir="false" afterPath="$PROJECT_DIR$/hydrogen.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ACData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ACData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/AnalogData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/AnalogData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/Charting.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Charting.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/DCData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/DCData.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/release/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/release/FireflyService" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/security.go" beforeDir="false" afterPath="$PROJECT_DIR$/security.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ElectrolyserData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/FuelCellCoolant.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellCoolant.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/FuelCellPressures.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellPressures.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/FuelCellSettings.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/FuelCellSettings.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/Login.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/PowerData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/PowerData.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/StackVoltage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/StackVoltage.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/css/api.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/api.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/css/jgauge.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/jgauge.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/dcdc.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/dcdc.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/registration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/registration.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/userControl.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userControl.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/userRegistration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userRegistration.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/userControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/utils.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,6 +94,7 @@
     <scope name="No Inspection" pattern="!file[FireflyService]:.idea/*&amp;&amp;!file[FireflyService]:dist/*&amp;&amp;!file:web/scripts/jquery-3.6.0.min.js&amp;&amp;!file:web/scripts/jquery-ui.js&amp;&amp;!file:web/css/jquery-ui.min.css&amp;&amp;!file:web/css/jquery-ui.structure.min.css&amp;&amp;!file:web/css/jquery-ui.theme.min.css" />
   </component>
   <component name="ProblemsViewState">
+    <option name="groupByToolId" value="true" />
     <option name="selectedTabId" value="CurrentFile" />
     <option name="showPreview" value="true" />
   </component>
@@ -113,16 +116,17 @@
     "DefaultGoTemplateProperty": "Go File",
     "DefaultHtmlFileTemplate": "HTML File",
     "Go Build.Linux X86 Development.executor": "Debug",
-    "Go Build.Linux X86 Release.executor": "Run",
+    "Go Build.Linux X86 Release.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
     "RunOnceActivity.go.vendoring.notification.had.been.shown": "true",
     "WebServerToolWindowFactoryState": "true",
-    "git-widget-placeholder": "DryerSeparation",
+    "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "/Users/ianaber/Documents/Projects/Go_Home/src/FireflyService/web",
@@ -194,8 +198,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-gosdk-5df93f7ad4aa-df9ad98b711f-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-242.23339.24" />
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-GO-242.23339.24" />
+        <option value="bundled-gosdk-d297c17c1fbd-57c114c3cede-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-243.26053.20" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-GO-243.26053.20" />
       </set>
     </attachedChunks>
   </component>
@@ -262,13 +266,18 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/default.js</url>
-          <line>327</line>
+          <line>371</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/fcAlarms.js</url>
           <line>4</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$USER_HOME$/Downloads/Users/ianaber/Documents/Projects/Go_Home/src/FireflyService/Electrolyser.go</url>
+          <line>13</line>
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

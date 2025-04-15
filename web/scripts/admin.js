@@ -1,13 +1,17 @@
 var jsonData;
+let wsConn;
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws";
-    let conn = new WebSocket(url);
+    wsConn = new WebSocket(url);
 
-    conn.onmessage = function (evt) {
+    wsConn.onmessage = function (evt) {
+        if ((Date.now() - lastMessage) < 800) {
+            return;
+        }
+        lastMessage = Date.now();
         StartHeartbeat();
         try {
-//            debugger;
             jsonData = JSON.parse(evt.data);
             $("#system").text(jsonData.System);
             document.title = jsonData.System;
@@ -18,7 +22,7 @@ function RegisterWebSocket() {
             jsonData.DigitalIn.Inputs.forEach(UpdateInput);
             jsonData.DigitalOut.Outputs.forEach(UpdateOutput);
             jsonData.Analog.Inputs.forEach(UpdateAnalog);
-            jsonData.Buttons.forEach(UpdateButton);
+            RenderButtons(jsonData.Buttons);
             $("#temperature").html(jsonData.Analog.GasTemperature + "&deg;C");
             $("#h2Vol").text(jsonData.h2.volumeText + " " + jsonData.h2.volumeUnits);
             if (jsonData.ACMeasurements.length > 0) {
@@ -166,6 +170,7 @@ function setupPage() {
     });
 
     RegisterWebSocket();
+    MonitorWebService();
 }
 
 function AddSource (source) {
@@ -267,21 +272,48 @@ function UpdateInput(Input, idx) {
     $("#InputText"+idx).text(Input.Name);
 }
 
-function UpdateButton(Button, idx) {
-    td_button = $("#button" + idx);
-    if (Button.Name.startsWith("Button-") || (Button.Name === "")) {
-        td_button.hide();
-    } else {
-        td_button.removeClass("ButtonChanging");
-        if (Button.Pressed) {
-            td_button.removeClass("ButtonOff");
-            td_button.addClass("ButtonOn");
-        } else {
-            td_button.removeClass("ButtonOn");
-            td_button.addClass("ButtonOff");
+function RenderButtons(buttons) {
+    const controls = $("#buttonsDiv");
+    let buttonCount = 0;
+    for (let button of buttons) {
+        if (button.Name !== "")
+            buttonCount++
+    }
+    if (controls.children().length === buttonCount) {
+        let buttonId = 0;
+        let buttonTag;
+        for (let button of buttons) {
+            if (button.Name !== "") {
+                const btn = $("#buttonDiv" + buttonId);
+
+                if (button.Pressed) {
+                    btn.removeClass("ButtonChanging");
+                    btn.removeClass("ButtonOff");
+                    btn.addClass("ButtonOn");
+                } else {
+                    btn.removeClass("ButtonChanging");
+                    btn.removeClass("ButtonOn");
+                    btn.addClass("ButtonOff");
+                }
+            }
+            buttonId++;
         }
-        $("#buttonText"+idx).text(Button.Name);
-        td_button.show();
+    } else {
+        controls.children().remove();
+        let buttonId = 0;
+        let buttonTag;
+        for (let button of buttons) {
+            if (button.Name !== "") {
+                let buttonClass = button.Pressed ? 'ButtonOn' : 'ButtonOff'
+                buttonTag = `<div class="button ${buttonClass}" onclick="clickButton(${buttonId})" id="buttonDiv${buttonId}"><span class="button" id="button${buttonId}">${button.Name}</span></div>`;
+                controls.append(buttonTag);
+                const btn = document.getElementById("buttonDiv" + buttonId);
+                btn.addEventListener("contextmenu", (e) => {
+                    e.preventDefault()
+                });
+            }
+            buttonId++;
+        }
     }
 }
 

@@ -86,6 +86,7 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/getSettings", "", "GET", "Get the current system settings", getSettings)
 	RegisterWebSiteAPI(router, "/setSettings", "", "POST", "Set the system settings", setSettings)
 	RegisterWebSiteAPI(router, "/getStatus", "", "GET", `Get the full system <a href="/getStatus">status</a>`, getStatus)
+	RegisterWebSiteAPI(router, "/hydrogen", "", "GET", "Returns the current hydrogen data", getHydrogen)
 	RegisterWebSiteAPI(router, "/getFuelCell", "", "GET", "Returns the current status of the fuel cell only", getFuelCell)
 	RegisterWebSiteAPI(router, "/setFuelCell/TargetPower/{power}", "", "PUT", "Set the target power output", setFcPower)
 	RegisterWebSiteAPI(router, "/setFuelCell/TargetBattHigh/{volts}", "", "PUT", "Set the battery high voltage setpoint", setFcBattHigh)
@@ -123,7 +124,7 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/setElectrolyser/Rescan/{electrolyser}", "", "PUT", "Scans for an electrolyser that has the same IP. Used to find an electrolyser that has moved to a new IP", rescanElectrolyser) //
 	RegisterWebSiteAPI(router, "/calibrateDC/{channel}/{type}/{value}", "", "PUT", "Sends the given calibration measured value to the DC monitor", calibrateDC)                                                    //
 	RegisterWebSiteAPI(router, "/calibrateDC/{channel}", "", "GET", "Opens the calibration form for the given DC device", openDCCalibration)                                                                       //
-	RegisterWebSiteAPI(router, "/title", "", "GET", "Returns the system title e.g. Florida", getTitle)                                                                                                             //
+	RegisterWebSiteAPI(router, "/title", "", "GET", "Returns the system title e.g. Florida", getTitle)
 
 	RegisterWebSiteAPI(router, "/debug/{on}", "", "GET", "Enable debug output", setDebug)
 	RegisterWebSiteAPI(router, "/logCalls/{on}", "", "GET", "Enable logging of all API calls", setCallLogging)

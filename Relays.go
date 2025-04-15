@@ -29,9 +29,10 @@ func (rl *RelaysType) InitRelays() {
 }
 
 func (rl *RelaysType) SetAllRelays(settings uint16) {
+	newSettings := settings
 	for relay := range rl.Relays {
-		rl.Relays[relay].On = (settings & 1) != 0
-		settings >>= 1
+		rl.Relays[relay].On = (newSettings & 1) != 0
+		newSettings >>= 1
 	}
 	rl.lastReportedValue = settings
 }
@@ -89,11 +90,18 @@ func (rl *RelaysType) SetRelay(relay uint8, on bool) {
 			}
 		}
 	}
-	// If this is the water management relay and we are trying to turn it off and we want it on when any electrolyser is on
+	// If this is the water management relay, and we are trying to turn it off and we want it on when any electrolyser is on
 	if !on && relay == uint8(currentSettings.WaterDumpRelay) && (currentSettings.WaterDumpAction == ELRun) {
+		// If the water dump is set to the recirculating pump and the conductivity is high do not turn off the relay
+		if currentSettings.WaterDumpAction == ELRun {
+			_, conductivity := AnalogInputs.GetInput(7)
+			if conductivity > float32(currentSettings.MaximumConductivity) {
+				return
+			}
+		}
 		for _, el := range Electrolysers.Arr {
-			// If an electrolyser is powered on then do not turn off the dryer
-			if el.IsSwitchedOn() && el.powerRelay != relay {
+			// If an electrolyser is powered on then do not turn off the water dump relay
+			if el.IsSwitchedOn() {
 				// We are trying to turn off the dryer relay but there is an electrolyser
 				// that is still powered on with a different relay, so ignore the request.
 
@@ -117,6 +125,20 @@ func (rl *RelaysType) SetRelay(relay uint8, on bool) {
 	if relays != rl.lastReportedValue {
 		if err := canBus.SetRelays(relays); err != nil {
 			log.Print(err)
+		} else {
+			mask := uint16(1)
+			for RL := 0; RL < 16; RL++ {
+				if (relays & mask) != (rl.lastReportedValue & mask) {
+					var newVal string
+					if (relays & mask) != 0 {
+						newVal = "ON"
+					} else {
+						newVal = "OFF"
+					}
+					log.Printf("Relay %s turned %s", rl.Relays[RL].Name, newVal)
+				}
+				mask = mask << 1
+			}
 		}
 	}
 	// Update the local copy

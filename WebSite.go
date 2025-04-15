@@ -107,9 +107,11 @@ func setUpWebSite() {
 	router.Use(RequestLoggerMiddleware(router))
 
 	// localPortAddress is the address for other devices on the local network connecting directly to this server
-	localPortAddress := fmt.Sprintf("%s:%s", GetLocalIP(), LocalPort)
+	//	localPortAddress := fmt.Sprintf("%s:%s", GetLocalIP(), LocalPort)
+	localPortAddress := fmt.Sprintf(":%s", LocalPort)
 	// remotePortAddress is the loopback address used by all traffic coming in over the reverse ssh tunnel from the cloud
-	remotePortAddress := fmt.Sprintf("127.0.0.1:%s", WebPort)
+	remotePortAddress := fmt.Sprintf(":%s", WebPort)
+	// remotePortAddress := fmt.Sprintf("127.0.0.1:%s", WebPort)
 
 	remoteServer := &http.Server{
 		Addr:    remotePortAddress,
@@ -128,7 +130,6 @@ func setUpWebSite() {
 			},
 		},
 	}
-
 	go func() { log.Fatal(remoteServer.ListenAndServeTLS("", "")) }()
 	go func() { log.Fatal(http.ListenAndServe(localPortAddress, router)) }()
 }
@@ -1161,8 +1162,9 @@ func rebootDryer(w http.ResponseWriter, _ *http.Request) {
 	for _, el := range Electrolysers.Arr {
 		if el.hasDryer {
 			if !el.IsSwitchedOn() {
-				ReturnJSONErrorString(w, function, "Electrolyse must be powered up first.", http.StatusBadRequest, false)
+				ReturnJSONErrorString(w, function, fmt.Sprintf("%s must be powered up first.", el.status.Name), http.StatusBadRequest, false)
 			} else {
+				log.Printf("attepting to reboot the dryer via %s after WEB request received", el.status.Name)
 				if err := el.RebootDryer(); err != nil {
 					ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 				} else {
@@ -1646,6 +1648,8 @@ type HydrogenType struct {
 	MaxVolume     float64 `json:"maxVolume"`
 }
 
+var H2 *HydrogenType
+
 type JsonDataType struct {
 	System            string                       `json:"System"`
 	Version           string                       `json:"Version"`
@@ -1713,6 +1717,7 @@ func getJsonStatus(indent bool) ([]byte, error) {
 		data.Electrolysers[idx].CurrentProductionRate = Electrolysers.Arr[idx].status.CurrentProductionRate
 		data.Electrolysers[idx].MaxTankPressure = Electrolysers.Arr[idx].status.MaxTankPressure
 		data.Electrolysers[idx].RestartPressure = Electrolysers.Arr[idx].status.RestartPressure
+		data.Electrolysers[idx].DryerNetworkEnabled = Electrolysers.Arr[idx].status.DryerNetworkEnabled
 		data.Electrolysers[idx].DryerFailure = Electrolysers.Arr[idx].status.DryerFailure
 		data.Electrolysers[idx].Dryer = Electrolysers.Arr[idx].status.Dryer
 		data.Electrolysers[idx].IP = Electrolysers.Arr[idx].status.IP
@@ -1773,7 +1778,8 @@ func getJsonStatus(indent bool) ([]byte, error) {
 
 	data.SystemAlarms = &SystemAlarms
 
-	data.Hydrogen = CalculateHydrogen(float64(data.Analog.Inputs[currentSettings.GasPressureInput].Value), data.Analog.GasTemperature, currentSettings.GasVolumeUnits, currentSettings.GasPressureUnits)
+	H2 = CalculateHydrogen(float64(data.Analog.Inputs[currentSettings.GasPressureInput].Value), data.Analog.GasTemperature, currentSettings.GasVolumeUnits, currentSettings.GasPressureUnits)
+	data.Hydrogen = H2
 
 	var JSONBytes []byte
 	var err error
@@ -1781,6 +1787,23 @@ func getJsonStatus(indent bool) ([]byte, error) {
 		JSONBytes, err = json.MarshalIndent(data, "", "  ")
 	} else {
 		JSONBytes, err = json.Marshal(data)
+	}
+	if err != nil {
+		return nil, err
+	} else {
+		return JSONBytes, nil
+	}
+}
+
+// getJsonHydrogen returns the hydrogen status as a JSON formatted message in a byte array to be sent to WEB clients
+func getJsonHydrogen(indent bool) ([]byte, error) {
+
+	var JSONBytes []byte
+	var err error
+	if indent {
+		JSONBytes, err = json.MarshalIndent(H2, "", "  ")
+	} else {
+		JSONBytes, err = json.Marshal(H2)
 	}
 	if err != nil {
 		return nil, err
@@ -1831,6 +1854,16 @@ func getStatus(w http.ResponseWriter, _ *http.Request) {
 	_, err = fmt.Fprint(w, string(sJSON))
 	if err != nil {
 		log.Println("failed to send the status - ", err)
+		return
+	}
+}
+
+func getHydrogen(w http.ResponseWriter, _ *http.Request) {
+	sJSON, err := getJsonHydrogen(true)
+	setContentTypeHeader(w)
+	_, err = fmt.Fprint(w, string(sJSON))
+	if err != nil {
+		log.Println("failed to send the hydrogen status - ", err)
 		return
 	}
 }

@@ -1,4 +1,5 @@
-var jsonData;
+let jsonData;
+let wsConn;
 
 // Add the fuel cell gauge
 function AddFuelCell() {
@@ -21,13 +22,13 @@ function AddFuelCell() {
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws";
-    let conn = new WebSocket(url);
+    wsConn = new WebSocket(url);
 
-    conn.onmessage = function (evt) {
-        if (wstimeout !== 0) {
-            clearTimeout(wstimeout);
+    wsConn.onmessage = function (evt) {
+        if ((Date.now() - lastMessage) < 800) {
+            return;
         }
-
+        lastMessage = Date.now();
         StartHeartbeat();
 
         try {

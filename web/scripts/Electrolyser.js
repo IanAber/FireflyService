@@ -1,7 +1,7 @@
-var wstimeout;
-var elName = "";
-var lockSlider = false;
-var jsonData;
+let elName = "";
+let lockSlider = false;
+let jsonData;
+let conn;
 
 function smallest(x, y) {
     if ((x > y) && (y > 0)) {
@@ -90,6 +90,7 @@ function setupPage(name) {
     })
 
     RegisterWebSocket();
+    MonitorWebService();
 
     $(window).resize(function () {
         if (this.resizeTO) clearTimeout(this.resizeTO);
@@ -105,9 +106,13 @@ function setupPage(name) {
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws/electrolyser/" + elName;
-    let conn = new WebSocket(url);
+    conn = new WebSocket(url);
 
     conn.onmessage = function (evt) {
+        if ((Date.now() - lastMessage) < 800) {
+            return;
+        }
+        lastMessage = Date.now()
         StartHeartbeat();
 
         if ($("#electrolyserName").length < 1) {
@@ -116,11 +121,6 @@ function RegisterWebSocket() {
         }
         try {
             jsonData = JSON.parse(evt.data);
-
-            if (wstimeout !== 0) {
-                clearTimeout(wstimeout);
-                $("#connection").hide();
-            }
 
             $("#name").text(jsonData.name);
             production = $("#production");
@@ -216,6 +216,16 @@ function RegisterWebSocket() {
                 break;
                 default : state.text("Unknown");
             }
+            const dryerNetwork = $("#dryerNetwork");
+            if (jsonData.dryerNetworkEnabled) {
+                dryerNetwork.text("Online");
+                dryerNetwork.addClass("ValTrue");
+                dryerNetwork.removeClass("ValFalse");
+            } else {
+                dryerNetwork.text("Offline");
+                dryerNetwork.addClass("ValFalse");
+                dryerNetwork.removeClass("ValTrue");
+            }
             if (jsonData.dryer == null) {
                 $("#DryerDiv").hide();
                 if (jsonData.dryerFailure !== "No Dryer") {
@@ -285,6 +295,8 @@ function RunClick() {
     $.ajax({
         method : "PUT",
         url: url
+    }).fail(function(jqxhr, status, err){
+        alert("Failed. - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -294,7 +306,12 @@ function MaintenanceClick() {
     if (button.hasClass("swOn")) {
         url = "/setElectrolyser/StopMaintenance/" + elName;
     } else {
-        if (confirm("Entering Maintenance Mode requires that you empty and refill the electrolyser.\nAre you really sure this is what you want to do?") === true) {
+        if (confirm("Entering Maintenance Mode requires that you empty and refill the electrolyser.\n" +
+            "You should disconnect the Oxygen output line before starting this.\n" +
+            "Drain the electrolyser completely watching for the level to go to Empty.\n" +
+            "Then refill to high with new electrolyte using 1.54%KOH.\n" +
+            "Assuming 90% pure KOH granules use 17g per litre of pure water.\n\n" +
+            "Are you really sure this is what you want to do?") === true) {
             url = "/setElectrolyser/StartMaintenance/" + elName;
         } else {
             return;
@@ -304,7 +321,7 @@ function MaintenanceClick() {
         method : "PUT",
         url: url
     }).fail(function( jqXHR, textStatus, errorThrown) {
-        alert(textStatus);
+        alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -315,7 +332,11 @@ function PreheatClick() {
     $.ajax({
         method : "PUT",
         url: url
-    }).done(function() {alert("Preheating " + elName)});
+    }).done(function() {
+        alert("Preheating " + elName)
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
+    });
 }
 
 function BlowDownClick() {
@@ -330,6 +351,8 @@ function BlowDownClick() {
         $.ajax({
             method : "PUT",
             url: url
+        }).fail(function( jqXHR, textStatus, errorThrown) {
+            alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
         });
     }
 }
@@ -348,14 +371,16 @@ function RescanClick() {
             url: url
         }).done(function() {
             $("#Rescan").removeClass("ButtonChanging");
-        })
+        }).fail(function( jqXHR, textStatus, errorThrown) {
+            alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
+        });
     }
 }
 
 function RefillClick() {
     let button = $("#Refill");
-    setButtonOnOff(button, true);
     if (button.hasClass("swOff")) {
+        setButtonOnOff(button, true);
         if (confirm("You are about to perform an Electrolyser Refill sequence.\nAre you really sure this is what you want to do?") === true) {
             url = "/setElectrolyser/Refill/" + elName;
         } else {
@@ -366,9 +391,11 @@ function RefillClick() {
             url: url
         }).done(function() {
             alert("Refill Requested");
+        }).fail(function( jqXHR, textStatus, errorThrown) {
+            alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
         });
+        setTimeout(clearRefill, 5000);
     }
-    setTimeout(clearRefill, 5000);
 }
 
 function clearRefill() {
@@ -383,6 +410,8 @@ function setRate(rate) {
     $.ajax({
         method : "PUT",
         url: url
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -393,6 +422,8 @@ function DryerStopClick() {
         url: url
     }).done(function() {
         alert("Dryer Stop Requested");
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -403,6 +434,8 @@ function DryerStartClick() {
         url: url
     }).done(function() {
         alert("Dryer Start Requested");
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
 
@@ -413,13 +446,9 @@ function DryerRebootClick() {
         url: url
     }).done(function() {
         alert("Dryer Reboot Requested");
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
-}
-
-function StartHeartbeat() {
-    let hb = $("#heartbeat")
-    hb.css({width: "20px", height: "20px"})
-    hb.animate({width: "15px", height: "15px"})
 }
 
 function RebootClick() {

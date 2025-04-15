@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -132,14 +134,14 @@ const DryerError = 6000 // Uint16	Dryer Error code (bitmask).
 //const DryerWarning = 6001                // Uint16	Dryer Warning	Dryer warning code (bitmask).
 
 const DryerTemp0 = 6002 // Float32	Dryer TT00	Temperature of heater element for cartridge 0 (first line).
-//const DryerTemp1 = 6004                  // Float32	Dryer TT01	Temperature of heater element for cartridge 1 (second line).
-//const DryerTemp2 = 6006                  // Float32	Dryer TT02	Temperature of heater element for cartridge 2 (first line).
-//const DryerTemp3 = 6008                  // Float32	Dryer TT03	Temperature of heater element for cartridge 3 (second line).
-//const DryerInputPressure = 6010          // Float32	Dryer PT00	Input pressure of the dryer.
-//const DryerOutputPressure = 6012         // Float32	Dryer PT01	Output pressure of the dryer.
-//const WifiOUI = 6100                     // Uint32	3 OUI octets for Wi-Fi MAC address	Ex: C8:2B:96
-//const WifiMAC = 6102                     // Uint32	3 NIC octets for Wi-Fi MAC address	Ex: A8:F5:2C
-//const DryerNetworkStatus = 6104          // Boolean	Dryer Control Network Connection Status	1 = Online; 0 = Offline
+// const DryerTemp1 = 6004                  // Float32	Dryer TT01	Temperature of heater element for cartridge 1 (second line).
+// const DryerTemp2 = 6006                  // Float32	Dryer TT02	Temperature of heater element for cartridge 2 (first line).
+// const DryerTemp3 = 6008                  // Float32	Dryer TT03	Temperature of heater element for cartridge 3 (second line).
+// const DryerInputPressure = 6010          // Float32	Dryer PT00	Input pressure of the dryer.
+// const DryerOutputPressure = 6012         // Float32	Dryer PT01	Output pressure of the dryer.
+// const WifiOUI = 6100                     // Uint32	3 OUI octets for Wi-Fi MAC address	Ex: C8:2B:96
+// const WifiMAC = 6102                     // Uint32	3 NIC octets for Wi-Fi MAC address	Ex: A8:F5:2C
+const DryerNetworkStatus = 6104 // Boolean	Dryer Control Network Connection Status	1 = Online; 0 = Offline
 
 const ElectrolyteHigh = 7000 // Boolean	High Electrolyte Level Switch (LSH102B_in)	1 = Electrolyte level over sensor; 0 = Electrolyte level below sensor.
 // const ElectrolyteVeryHigh = 7001         // Boolean	Very High Electrolyte Level Switch 1 = Electrolyte level over sensor; 0 = Electrolyte level below sensor.
@@ -217,11 +219,12 @@ const ElectrolyserDataBySecond = `select UNIX_TIMESTAMP(logged) as logged
 type jsonFloat32 float32
 
 func (value jsonFloat32) MarshalJSON() ([]byte, error) {
-	//	if value != value {
-	//		return json.Marshal(nil)
-	//	} else {
-	return json.Marshal(float32(value))
-	//	}
+	if math.IsNaN(float64(value)) {
+		log.Println("Tried to convert NaN float value to JSON")
+		return json.Marshal(nil)
+	} else {
+		return json.Marshal(float32(value))
+	}
 }
 
 type ElectrolyserEventsType struct {
@@ -284,12 +287,71 @@ type ElectrolyserType struct {
 	buf                bytes.Buffer
 	stopTime           time.Time
 	startTime          time.Time
+	MonitorTrigger     *time.Timer
 }
 
 // ElectrolysersType defines an array of electrolysers and provide a mutex to control access
 type ElectrolysersType struct {
 	Arr []*ElectrolyserType
 	mu  sync.Mutex
+}
+
+func (el *ElectrolysersType) Init() {
+	// Update the electrolysers or add new ones as necessary
+	el.mu.Lock()
+	defer el.mu.Unlock()
+
+	// Sort the array by stack time
+	els := currentSettings.Electrolysers[:]
+	slices.SortStableFunc(els, func(a ElectrolyserSettingType, b ElectrolyserSettingType) int {
+		return cmp.Compare(a.StackTime, b.StackTime)
+	})
+
+	for _, el := range currentSettings.Electrolysers {
+		if el.Name != "" {
+			if elect := Electrolysers.FindByRelay(el.PowerRelay); elect != nil {
+				// If we have an ip address, try and assign it.
+				if el.IP != "" {
+					if err := elect.status.IP.UnmarshalText([]byte(el.IP)); err != nil {
+						// We failed to parse the ip address provided from the settings object
+						log.Println(err)
+					}
+				}
+				elect.status.Name = el.Name
+				elect.status.PowerRelay = el.PowerRelay
+				elect.status.Enabled = el.Enabled
+				elect.enabled = el.Enabled
+			} else {
+				// We did not find an electrolyser on that relay, so we should add a new one
+				IP := net.IPv4zero
+				if el.IP != "" {
+					err := IP.UnmarshalText([]byte(el.IP))
+					if err != nil {
+						log.Println(err)
+					}
+				}
+				newEl := NewElectrolyser(IP)
+				newEl.powerRelay = el.PowerRelay
+				newEl.status.Name = el.Name
+				newEl.status.PowerRelay = el.PowerRelay
+				//				newEl.hasDryer = el.HasDryer
+				newEl.status.Enabled = el.Enabled
+				newEl.enabled = el.Enabled
+				Electrolysers.Arr = append(Electrolysers.Arr, newEl)
+			}
+		}
+	}
+	// Copy all the electrolysers that match one in the settings by relay
+	newArr := make([]*ElectrolyserType, 0)
+	for _, el := range Electrolysers.Arr {
+		if currentSettings.FindElectrolyserByRelay(el.powerRelay) != nil {
+			newArr = append(newArr, el)
+		}
+	}
+	// If the length is different, then replace the array to get rid of ones we no longer have
+	if len(newArr) != len(Electrolysers.Arr) {
+		Electrolysers.Arr = newArr
+	}
 }
 
 // FindByName returns a pointer to the electrolyser with the matching name or a nil pointer if not found
@@ -370,19 +432,30 @@ func (el *ElectrolyserType) setClient(IP net.IP) {
 	el.status.IP = IP
 	el.status.Serial = ""
 	if Client, err := modbus.NewClient(&config); err != nil {
-		log.Print("New modbus client error - ", err)
+		log.Printf("%s - New modbus client error - %v", el.status.Name, err)
 		return
 	} else {
 		el.Client = Client
-		if err := el.Client.Open(); err != nil {
-			log.Print(err)
+		var err error
+		for tries := 0; tries < 5; tries++ {
+			if err = el.Client.Open(); err == nil {
+				break
+			}
+			//			el.Client.Close()
+			time.Sleep(time.Duration(5) * time.Second)
+			if debugOutput {
+				log.Printf("%s - New modbus client error %d - %v", tries, el.status.Name, err)
+			}
+		}
+		if err != nil {
+			log.Printf("%s error - %v", el.status.Name, err)
 			el.Client = nil
 			el.connectErrorCount++
 			if el.connectErrorCount > 20 {
 				if elConfig := currentSettings.findElByIP(IP.String()); elConfig != nil {
-					log.Println("Rescanning for ", elConfig.Name)
+					log.Printf("Rescanning for %s", elConfig.Name)
 					if ip, elType, err := el.rescan(0, elConfig.Serial); err != nil {
-						log.Print(err)
+						log.Printf("%s error %v", el.status.Name, err)
 						return
 					} else {
 						el.status.IP = ip
@@ -412,7 +485,8 @@ func NewElectrolyser(ip net.IP) *ElectrolyserType {
 	if debugOutput {
 		log.Printf("Adding an electrolyser at [%s]\n", ip)
 	}
-	e.setClient(ip)
+	//	e.setClient(ip)
+	e.status.IP = ip
 	return e
 }
 
@@ -447,40 +521,46 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 
 	if !el.CheckConnected() {
 		if debugOutput {
-			log.Println("Not connected")
+			log.Printf("%s not connected", el.status.Name)
 		}
-		return "", fmt.Errorf("not conencted")
+		return "", fmt.Errorf("%s not conencted", el.status.Name)
 	}
 	if debugOutput {
-		log.Println("Reading the serial number")
+		log.Printf("Reading %s serial number", el.status.Name)
 	}
 	serialCode, err := el.Client.ReadUint64(ChassisSerial, modbus.INPUT_REGISTER)
 	if err != nil {
 		if strings.Contains(err.Error(), "broken pipe") {
 			// We lost communication, so we should try to recreate the pipe
 			if err := el.Client.Close(); err != nil {
-				log.Println("attempt to close modbus connection returned ", err)
+				log.Printf("attempt to close modbus connection to %s returned %v", el.status.Name, err)
 			}
 			el.clientConnected = false
 			if err := el.Client.Open(); err != nil {
-				log.Println("attempt to reopen modbus connection returned ", err)
+				log.Printf("attempt to reopen modbus connection to %s returned %v", el.status.Name, err)
 				el.Client = nil
-				return "", fmt.Errorf("broken pipe - failed to restablish connection")
+				return "", fmt.Errorf("broken pipe to %s - failed to restablish connection", el.status.Name)
 			} else {
 				if serialCode2, err := el.Client.ReadUint64(ChassisSerial, modbus.INPUT_REGISTER); err != nil {
-					log.Println("Error getting serial number after reconnect - ", err)
+					log.Printf("Error getting serial number from %s after reconnect - %v", el.status.Name, err)
 					return "", err
 				} else {
 					serialCode = serialCode2
 				}
 			}
 		} else {
-			log.Println("Error getting serial number - ", err)
+			log.Printf("Error getting serial number from %s - %v", el.status.Name, err)
 			return "", err
 		}
 	}
 	if debugOutput {
-		log.Printf("Got serial number - %0x", serialCode)
+		log.Printf("Got serial number from %s - %0x", el.status.Name, serialCode)
+	}
+	if serialCode == 0 {
+		if debugOutput {
+			log.Printf("no serial number found for %s!", el.status.Name)
+		}
+		return fmt.Sprintf("No Serial Number %s", el.status.IP.String()), nil
 	}
 
 	//  1 bit - reserved, must be 0
@@ -523,7 +603,7 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 
 	serial := fmt.Sprintf("%s%02d%02d%02d%02d%s%s", codes.Product, codes.Year, codes.Month, codes.Day, codes.Chassis, codes.Order, codes.Site)
 	if debugOutput {
-		log.Printf("Serial = %s : %b\n", serial, serialCode)
+		log.Printf("%s serial = %s : %b\n", el.status.Name, serial, serialCode)
 	}
 
 	return serial, nil
@@ -545,9 +625,12 @@ func (el *ElectrolyserType) IsSwitchedOn() bool {
 	}
 	if time.Since(el.poweredOn) > (time.Second * 20) {
 		el.status.Powered = true
+		if debugOutput {
+			log.Printf("%s powered on", el.status.Name)
+		}
 	} else {
 		if debugOutput {
-			log.Println("Waiting for electrolyser")
+			log.Printf("Waiting for electrolyser %s", el.status.Name)
 		}
 	}
 	return el.status.Powered
@@ -569,13 +652,13 @@ func (el *ElectrolyserType) CheckConnected() bool {
 	//}
 	if !el.IsSwitchedOn() {
 		if debugOutput {
-			log.Println("Electrolyser Switched Off")
+			log.Printf("%s is switched off", el.status.Name)
 		}
 		return false
 	}
 	if !el.clientConnected {
 		if debugOutput {
-			log.Println("Electrolyser switched on but not yet connected")
+			log.Printf("%s switched on but not yet connected", el.status.Name)
 		}
 		if time.Since(el.lastConnectAttempt) > time.Second*5 {
 			err := fmt.Errorf("no client")
@@ -583,17 +666,17 @@ func (el *ElectrolyserType) CheckConnected() bool {
 				err = el.Client.Open()
 			}
 			if err != nil {
-				log.Print("modbus client.open error - ", err)
+				log.Printf("%s modbus client.open error - %v", el.status.Name, err)
 				el.clientConnected = false
 				el.failedConnections++
 				if el.failedConnections > 2 {
 					//				if el.failedConnections > 10 {
 					setting := currentSettings.FindElectrolyserByRelay(el.powerRelay)
 					if setting == nil {
-						log.Println("Electrolyser not found in settings")
+						log.Printf("%s not found in settings", el.status.Name)
 						return false
 					}
-					log.Printf("seach for electrolyser with serial number %s\n", setting.Serial)
+					log.Printf("seach for %s with serial number %s", el.status.Name, setting.Serial)
 					if ip, elType, err := el.rescan(1, setting.Serial); err != nil {
 						log.Println(err)
 						el.clientConnected = false
@@ -615,18 +698,18 @@ func (el *ElectrolyserType) CheckConnected() bool {
 					}
 					el.failedConnections = 0
 				} else {
-					log.Printf("Waiting for failed connections > 10 (%d)\n", el.failedConnections)
+					log.Printf("%s waiting for failed connections > 10 (%d)\n", el.status.Name, el.failedConnections)
 				}
 			} else {
 				el.clientConnected = true
 				if debugOutput {
-					log.Println("Connected...")
+					log.Printf("%s connected...", el.status.Name)
 				}
 			}
 			el.lastConnectAttempt = time.Now()
 		} else {
 			if debugOutput {
-				log.Printf("Time since last connection attempt = %v", time.Since(el.lastConnectAttempt))
+				log.Printf("%s - Time since last connection attempt = %v", el.status.Name, time.Since(el.lastConnectAttempt))
 			}
 		}
 	} else {
@@ -641,9 +724,9 @@ func (el *ElectrolyserType) readEvents() {
 	}
 	events, err := el.Client.ReadRegisters(WarningsArray, 32, modbus.INPUT_REGISTER)
 	if err != nil {
-		log.Print("Modbus read register error - ", err)
+		log.Printf("Modbus read register error %s - %v", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
-			log.Print("Error closing modbus client - ", err)
+			log.Printf("Error closing modbus client to %s - %v", el.status.Name, err)
 			log.Print(el.buf)
 		}
 		el.clientConnected = false
@@ -655,10 +738,10 @@ func (el *ElectrolyserType) readEvents() {
 
 	events, err = el.Client.ReadRegisters(ErrorsArray, 32, modbus.INPUT_REGISTER)
 	if err != nil {
-		log.Print("Modbus read register error - ", err)
+		log.Printf("%s modbus read register error - %v", el.status.Name, err)
 		log.Print(el.buf)
 		if err := el.Client.Close(); err != nil {
-			log.Print("Error closing modbus client - ", err)
+			log.Printf("Error closing modbus client to %s - %v", el.status.Name, err)
 			log.Print(el.buf)
 		}
 		el.clientConnected = false
@@ -672,7 +755,7 @@ func (el *ElectrolyserType) ReadModelNumber() error {
 	modelNumber, err := el.Client.ReadUint32(0, modbus.INPUT_REGISTER)
 	if err != nil {
 		if debugOutput {
-			log.Println("No active device found at - "+el.status.IP.String(), err)
+			log.Printf("No active device for %s found at - %s - %v", el.status.Name, el.status.IP.String(), err)
 		}
 		el.status.Model = ""
 		return err
@@ -688,9 +771,9 @@ func (el *ElectrolyserType) ReadModelNumber() error {
 	default:
 		el.status.Model = ""
 		if debugOutput {
-			log.Println("not a known electrolyser type (0x%X)", modelNumber)
+			log.Printf("%s is not a known electrolyser type (0x%X)", el.status.Name, modelNumber)
 		}
-		return fmt.Errorf("not a known electrolyser type (0x%X)", modelNumber)
+		return fmt.Errorf("%s is not a known electrolyser type (0x%X)", el.status.Name, modelNumber)
 	}
 	return nil
 }
@@ -730,6 +813,9 @@ func (el *ElectrolyserType) ReadValues() error {
 	if serial, err := el.ReadSerialNumber(); err != nil {
 		return err
 	} else {
+		if debugOutput {
+			log.Printf("%s Serial number = %s", el.status.Name, serial)
+		}
 		if el.status.Serial == "" {
 			log.Printf("New serial number for %s = %s", el.status.Name, serial)
 			for _, electrolyser := range Electrolysers.Arr {
@@ -763,16 +849,11 @@ func (el *ElectrolyserType) ReadValues() error {
 						log.Print(err)
 					}
 				}
-			} else {
-				if debugOutput {
-					log.Printf("serial number read from %s = %s", el.status.Name, serial)
-				}
 			}
 		}
 	}
 
 	// Get the stack current and voltage, innerH2 pressure, outerH2 pressure, water pressure and electrolyte temperature.
-
 	if values, err := el.Client.ReadFloat32s(ElectrolyteCoolingFan, 11, modbus.INPUT_REGISTER); err != nil {
 		log.Print("Modbus reading float32 values - ", err)
 		log.Print(el.buf)
@@ -838,8 +919,6 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.status.MaxTankPressure = jsonFloat32(p[0])
 		el.status.RestartPressure = jsonFloat32(p[1])
 	}
-
-	//	log.Println("System State")
 	if state, err := el.Client.ReadRegister(SystemState, modbus.INPUT_REGISTER); err != nil {
 		log.Print("System state error - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
@@ -850,23 +929,32 @@ func (el *ElectrolyserType) ReadValues() error {
 	} else {
 		el.status.SystemState = state
 	}
-	//	log.Println("State")
 	if state, err := el.Client.ReadRegister(State, modbus.INPUT_REGISTER); err != nil {
-		log.Print("ElState - ", err, el.buf)
+		log.Printf("%s State - %v", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
-			log.Print("Error closing modbus client - ", err)
+			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
 		}
 		el.clientConnected = false
 		return err
 	} else {
 		el.status.State = state
 	}
+	if state, err := el.Client.ReadRegister(DryerNetworkStatus, modbus.INPUT_REGISTER); err != nil {
+		log.Printf("%s Dryer Network Status error - %v", el.status.Name, err)
+		if err := el.Client.Close(); err != nil {
+			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
+		}
+		el.clientConnected = false
+		return err
+	} else {
+		el.status.DryerNetworkEnabled = state != 0
+	}
 
 	//	log.Println("Product Code")
 	if stack, err := el.Client.ReadUint32s(ProductCode, 3, modbus.INPUT_REGISTER); err != nil {
-		log.Print("Product Code error - ", err, el.buf)
+		log.Printf("%s product code error - %v", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
-			log.Print("Error closing modbus client - ", err)
+			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
 		}
 		el.clientConnected = false
 		return err
@@ -881,7 +969,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	if stack, err := el.Client.ReadFloat32s(StackTotalProduction, 2, modbus.INPUT_REGISTER); err != nil {
 		log.Print("Current Production error - ", err, el.buf)
 		if err := el.Client.Close(); err != nil {
-			log.Print("Error closing modbus client - ", err)
+			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
 		}
 		el.clientConnected = false
 		return err
@@ -895,9 +983,9 @@ func (el *ElectrolyserType) ReadValues() error {
 	}
 	//	log.Println("Stack Serial")
 	if stack, err := el.Client.ReadUint64(StackSerial, modbus.INPUT_REGISTER); err != nil {
-		log.Print("Stack Serial error - ", err, el.buf)
+		log.Printf("%s stack serial error - ", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
-			log.Print("Error closing modbus client - ", err)
+			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
 		}
 		el.clientConnected = false
 		return err
@@ -906,9 +994,9 @@ func (el *ElectrolyserType) ReadValues() error {
 	}
 	//	log.Println("Rate")
 	if rate, err := el.Client.ReadFloat32(RATE, modbus.HOLDING_REGISTER); err != nil {
-		log.Print("current production rate error - ", err)
+		log.Printf("%s current production rate error - %v", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
-			log.Print("error closing modbus client - ", err)
+			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
 		}
 		el.clientConnected = false
 		return err
@@ -923,7 +1011,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	if el.hasDryer && !currentSettings.acquiringElectrolysers {
 		dryer, err := el.Client.ReadFloat32s(DryerTemp0, 6, modbus.INPUT_REGISTER)
 		if err != nil {
-			log.Println("Dryer error", err, el.buf)
+			log.Printf("%s dryer error - %v", el.status.Name, err)
 			//			if err := el.Client.Close(); err != nil {
 			//				log.Print("Error closing modbus client - ", err)
 			//			}
@@ -945,12 +1033,12 @@ func (el *ElectrolyserType) ReadValues() error {
 			el.status.Dryer.InputPressure = jsonFloat32(dryer[4])
 			el.status.Dryer.OutputPressure = jsonFloat32(dryer[5])
 			if dryerErrors, err := el.Client.ReadRegisters(DryerError, 2, modbus.INPUT_REGISTER); err != nil {
-				log.Print("Error reading dryer errors - ", err, el.buf)
+				log.Printf("Error reading dryer errors from %s - %v", el.status.Name, err)
 				if debugOutput {
 					if el.CheckConnected() {
-						log.Println("Electrolyser connected")
+						log.Printf("%s connected", el.status.Name)
 					} else {
-						log.Println("Electrolyser is NOT connected")
+						log.Printf("%s is NOT connected", el.status.Name)
 					}
 				}
 				//if err := el.Client.Close(); err != nil {
@@ -971,7 +1059,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		go el.MonitorElectrolyserErrors()
 	}
 	if debugOutput {
-		log.Println("Values read...")
+		log.Printf("%s values read...", el.status.Name)
 	}
 	return nil
 }
@@ -980,7 +1068,9 @@ func (el *ElectrolyserType) getStatus() *ElectrolyserStatusType {
 	el.mu.Lock()
 	defer el.mu.Unlock()
 
+	log.Printf("%s get status", el.status.Name)
 	status := new(ElectrolyserStatusType)
+	log.Println("Test Electrolyser")
 	el.IsSwitchedOn()
 
 	*status = el.status
@@ -1437,13 +1527,11 @@ func (el *ElectrolyserType) Start() (int, error) {
 				}
 				el.clientConnected = false
 			} else {
-				if debugOutput {
-					log.Printf("Electrolyser %s started", el.status.Name)
-				}
+				log.Printf("Disable maintenance command sent to %s", el.status.Name)
 				return http.StatusOK, nil
 			}
 		} else {
-			return http.StatusConflict, fmt.Errorf("too soon after last stop - %s", el.stopTime.Format(time.Kitchen))
+			return http.StatusConflict, fmt.Errorf("too soon after last stop - %s. Start allowed after %s", el.stopTime.Format(time.Kitchen), el.stopTime.Add(time.Minute*time.Duration(currentSettings.ElectrolyserStopToStartTime)).Format(time.Kitchen))
 		}
 	}
 	return http.StatusBadRequest, fmt.Errorf("electrolyser is not connected")
@@ -1466,6 +1554,7 @@ func (el *ElectrolyserType) Stop() (int, error) {
 				}
 				el.clientConnected = false
 			} else {
+				log.Printf("Stop command sent to %s", el.status.Name)
 				currentSettings.findElByName(el.status.Name).StackTime = el.status.StackTotalRunTime
 				if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 					log.Print("Error saving settings - ", err)
@@ -1473,7 +1562,7 @@ func (el *ElectrolyserType) Stop() (int, error) {
 				return http.StatusOK, nil
 			}
 		} else {
-			return http.StatusConflict, fmt.Errorf("too soon after start command - %s", el.startTime.Format(time.Kitchen))
+			return http.StatusConflict, fmt.Errorf("too soon after start command - %s. Stop allowed after %s", el.startTime.Format(time.Kitchen), el.startTime.Add(time.Minute*time.Duration(currentSettings.ElectrolyserStartToStopTime)).Format(time.Kitchen))
 		}
 	}
 	return http.StatusBadRequest, fmt.Errorf("electrolyser is not connected")
@@ -1491,6 +1580,8 @@ func (el *ElectrolyserType) Preheat() error {
 				}
 				el.clientConnected = false
 				return err
+			} else {
+				log.Printf("Preheat command sent to %s", el.status.Name)
 			}
 		} else {
 			return fmt.Errorf("preheat request ignored as temperature is already %f C", el.status.ElectrolyteTemp)
@@ -1511,6 +1602,8 @@ func (el *ElectrolyserType) Reboot() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Reboot command sent to %s", el.status.Name)
 		}
 		return nil
 	}
@@ -1528,6 +1621,8 @@ func (el *ElectrolyserType) Locate() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Locate command sent to %s", el.status.Name)
 		}
 		return nil
 	}
@@ -1536,7 +1631,7 @@ func (el *ElectrolyserType) Locate() error {
 
 // EnableMaintenance puts the electrolyser into maintenance mode
 func (el *ElectrolyserType) EnableMaintenance() error {
-	if !el.CheckConnected() {
+	if el.CheckConnected() {
 		err := el.Client.WriteRegister(MAINTENANCE, 1)
 		if err != nil {
 			log.Print("enable maintenance request failed - ", err, el.buf)
@@ -1545,8 +1640,10 @@ func (el *ElectrolyserType) EnableMaintenance() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Enable maintenance command sent to %s", el.status.Name)
+			return nil
 		}
-		return nil
 	}
 	return fmt.Errorf("electrolyser is not connected")
 }
@@ -1562,6 +1659,8 @@ func (el *ElectrolyserType) DisableMaintenance() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Disable maintenance command sent to %s", el.status.Name)
 		}
 		return nil
 	}
@@ -1579,6 +1678,8 @@ func (el *ElectrolyserType) BlowDown() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Blowdown command sent to %s", el.status.Name)
 		}
 		return nil
 	}
@@ -1596,6 +1697,8 @@ func (el *ElectrolyserType) Refill() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("%s refill command sent with level at %s", el.status.Name, el.status.ElectrolyteLevel)
 		}
 		return nil
 	}
@@ -1613,6 +1716,8 @@ func (el *ElectrolyserType) StartDryer() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Dryer star command sent via %s", el.status.Name)
 		}
 		return nil
 	}
@@ -1630,6 +1735,8 @@ func (el *ElectrolyserType) StopDryer() error {
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Dryer stop command sent via %s", el.status.Name)
 		}
 		return nil
 	}
@@ -1640,16 +1747,18 @@ func (el *ElectrolyserType) StopDryer() error {
 func (el *ElectrolyserType) RebootDryer() error {
 	if el.CheckConnected() {
 		if err := el.Client.WriteRegister(DryerReboot, 1); err != nil {
-			log.Print("Reboot Dryer Request failed - ", err, el.buf)
+			log.Printf("Reboot Dryer via %s Request failed - ", el.status.Name, err)
 			if err := el.Client.Close(); err != nil {
-				log.Print("Error closing modbus client - ", err)
+				log.Printf("Error closing modbus client to %s - %v", el.status.Name, err)
 			}
 			el.clientConnected = false
 			return err
+		} else {
+			log.Printf("Dryer reboot command sent via %s", el.status.Name)
 		}
 		return nil
 	}
-	return fmt.Errorf("electrolyser is not connected")
+	return fmt.Errorf("%s is not connected", el.status.Name)
 }
 
 // GetDryerErrorsHTML returns any errors from the connected dryer in an HTML table
@@ -1689,7 +1798,7 @@ func (el *ElectrolyserType) GetDryerWarningText() string {
 func (el *ElectrolyserType) Acquire() error {
 	// Make sure all electrolysers are powered down.
 	for _, el := range currentSettings.Electrolysers {
-		if Relays.Relays[el.PowerRelay].On {
+		if Relays.GetRelay(el.PowerRelay) {
 			return fmt.Errorf("all electrolysers must be turned off before performing a search")
 		}
 	}
@@ -1954,6 +2063,7 @@ func (el *ElectrolyserType) MonitorDryerErrors() {
 		select {
 		case <-dryerTicker.C:
 			// Drop out if the electrolyser is switched off or does not have a dryer attached
+			log.Println("Monitor dryer errors")
 			if !el.IsSwitchedOn() || !el.hasDryer {
 				return
 			}

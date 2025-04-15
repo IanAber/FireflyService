@@ -1,26 +1,21 @@
 var jsonData;
 let elCount = 0;
 let maxFlow = 0;
-
-// function smallest(v1, v2) {
-//     return (v1 < v2) ? v1 : v2;
-// }
-
-//let gasUnits = { units: '',
+let wsConn;
 let gasUnits = {
                  displayUnits: '',
                  capacity: 0};
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws";
-    let conn = new WebSocket(url);
+    wsConn = new WebSocket(url);
     let diameter = 0;
 
-    conn.onmessage = function (evt) {
-        if (wstimeout !== 0) {
-            clearTimeout(wstimeout);
+    wsConn.onmessage = function (evt) {
+        if ((Date.now() - lastMessage) < 800) {
+            return;
         }
-
+        lastMessage = Date.now();
         StartHeartbeat();
 
         try {
@@ -118,12 +113,60 @@ function RegisterWebSocket() {
             gasUnits.capacity = jsonData.SystemSettings.gasCapacity;
             updatePressure(jsonData.h2);
             updateConductivity(jsonData.Analog.Inputs[7], jsonData.SystemSettings.maxConductivityGreen, jsonData.SystemSettings.maxConductivityYellow);
+            RenderButtons(jsonData.Buttons);
         } catch (e) {
             $("#ErrorText").text(e);
             console.log(e);
         }
     }
 }
+
+function RenderButtons(buttons) {
+    const controls = $("#buttonsDiv");
+    let buttonCount = 0;
+    for (let button of buttons) {
+        if (button.ShowOnCustomer) {
+            buttonCount++
+        }
+    }
+    if (controls.children().length === buttonCount) {
+        let buttonId = 0;
+        let buttonTag;
+        for (let button of buttons) {
+            if (button.ShowOnCustomer) {
+                const btn = $("#buttonDiv" + buttonId);
+
+                if (button.Pressed) {
+                    btn.removeClass("ButtonChanging");
+                    btn.removeClass("ButtonOff");
+                    btn.addClass("ButtonOn");
+                } else {
+                    btn.removeClass("ButtonChanging");
+                    btn.removeClass("ButtonOn");
+                    btn.addClass("ButtonOff");
+                }
+            }
+            buttonId++;
+        }
+    } else {
+        controls.children().remove();
+        let buttonId = 0;
+        let buttonTag;
+        for (let button of buttons) {
+            if (button.ShowOnCustomer) {
+                let buttonClass = button.Pressed ? 'ButtonOn' : 'ButtonOff'
+                buttonTag = `<div class="button ${buttonClass}" onclick="clickButton(${buttonId})" id="buttonDiv${buttonId}"><span class="button" id="button${buttonId}">${button.Name}</span></div>`;
+                controls.append(buttonTag);
+                const btn = document.getElementById("buttonDiv" + buttonId);
+                btn.addEventListener("contextmenu", (e) => {e.preventDefault()});
+            }
+            buttonId++;
+        }
+    }
+}
+
+
+
 
 function openElectrolyser(name, id) {
     // Do nothing in the user interface, only used in the admin interface
@@ -267,6 +310,7 @@ function setupPage() {
     });
 //    buildChart();
     RegisterWebSocket();
+    MonitorWebService();
 }
 
 //function updatePressure(pressure, units, displayUnits, capacity) {

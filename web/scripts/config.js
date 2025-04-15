@@ -208,7 +208,7 @@ function RenderElectrolyser(relayNum, relayName, Dryer, ip, enabled) {
     $('#'+nameID).on("change", function() {
         Electrolysers[numElectrolysers].name = $(this).val();
     });
-    $('#'+elEnabledID).on("change", function() {
+    $('#'+elEnabledID).on("click", function() {
         Electrolysers[numElectrolysers].enabled = $(this).prop("checked");
     })
 }
