@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="firefly@firefly.home" uuid="2848a7b0-bf75-4c64-af6e-761ad9cade45">
+    <data-source source="LOCAL" name="firefly@cloud.elektrik.green" uuid="2848a7b0-bf75-4c64-af6e-761ad9cade45">
       <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
       <remarks>Firefly</remarks>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mariadb://firefly.home:3306/firefly</jdbc-url>
+      <jdbc-url>jdbc:mariadb://cloud.elektrik.green:41003/firefly</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />

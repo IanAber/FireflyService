@@ -24,6 +24,7 @@ type AnalogSettingType struct {
 	calibrationMultiplier  float32
 	MaxVal                 float32
 	MinVal                 float32
+	ShowOnCustomer         bool
 }
 
 type actionType uint8
@@ -546,6 +547,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 			settings.AnalogChannels[analog].MaxVal = float32(f)
 		}
 		settings.AnalogChannels[analog].calculateConstants()
+		settings.AnalogChannels[analog].ShowOnCustomer = r.FormValue(fmt.Sprintf("a%dShowOnCustomer", analog)) != ""
 	}
 	if r.FormValue("isoLowBehaviour") == "true" {
 		settings.FuelCellSettings.IgnoreIsoLow = true

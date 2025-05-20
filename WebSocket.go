@@ -58,10 +58,10 @@ type Pool struct {
 }
 
 func (p *Pool) Init() {
-	p.Clients = make(map[*Client]bool, 5)
-	p.Register = make(chan *Client, 5)
-	p.Unregister = make(chan *Client, 5)
-	p.Broadcast = make(chan WSMessageType, 5)
+	p.Clients = make(map[*Client]bool, 10)
+	p.Register = make(chan *Client, 10)
+	p.Unregister = make(chan *Client, 10)
+	p.Broadcast = make(chan WSMessageType, 10)
 }
 
 func (pool *Pool) StartRegister() {
@@ -96,7 +96,7 @@ func (pool *Pool) StartBroadcast() {
 		select {
 		case message := <-pool.Broadcast:
 			//if debugOutput {
-			//	log.Printf("message received for service - %d (device = [%s]", message.service, message.device)
+			// log.Printf("message received for service - %d (device = [%s]", message.service, message.device)
 			//}
 			for client := range pool.Clients {
 				if client.Service == message.service {

@@ -299,7 +299,7 @@ func ClientLoop() {
 						}:
 						default:
 							if debugOutput {
-								log.Println("Channel would block!")
+								log.Printf("%s Channel would block!", el.status.Name)
 							}
 						}
 					}
@@ -462,12 +462,16 @@ func ElectrolyserLoop() {
 								if debugOutput {
 									log.Printf("Set dryer for electrolyser %s", el.status.Name)
 								}
-								el.hasDryer = true                                       // First active electrolyser gets to control the dryer
-								gotDryer = true                                          // We found an active electrolyser, so we have the dryer.
-								Relays.SetRelay(uint8(currentSettings.DryerRelay), true) // Make sure the dryer is powered on
+								el.hasDryer = true // First active electrolyser gets to control the dryer
+								gotDryer = true    // We found an active electrolyser, so we have the dryer.
+								if currentSettings.DryerRelay != 255 {
+									Relays.SetRelay(uint8(currentSettings.DryerRelay), true) // Make sure the dryer is powered on
+								}
 								// If the water management relay is set to turn on whenever an electrolyser is on, turn it on now.
 								if currentSettings.WaterDumpAction == ELRun {
-									Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), true)
+									if currentSettings.WaterDumpRelay != 255 {
+										Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), true)
+									}
 								}
 								// after 60 seconds, start the dryer error monitor
 								if el.MonitorTrigger != nil {
@@ -533,9 +537,11 @@ func ElectrolyserLoop() {
 					}
 					// If we did not find an active electrolyser, turn off the dryer and restart the electrolysers
 					if !gotDryer {
-						Relays.SetRelay(uint8(currentSettings.DryerRelay), false)
+						if currentSettings.DryerRelay != 255 {
+							Relays.SetRelay(uint8(currentSettings.DryerRelay), false)
+						}
 						// If the water relay is set to run whenever an electrolyser is on, turn it off
-						if currentSettings.WaterDumpAction == ELRun {
+						if currentSettings.WaterDumpAction == ELRun && currentSettings.WaterDumpRelay != 255 {
 							if Relays.GetRelay(uint8(currentSettings.WaterDumpRelay)) {
 								log.Println("Turn off water dump.")
 								Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), false)

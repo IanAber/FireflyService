@@ -143,6 +143,7 @@ function RegisterWebSocket() {
             stackVoltage.val(jsonData.stackVoltage);
             $("#model").text(jsonData.model);
             $("#serial").text(jsonData.serial);
+            $("#stackSerial").text(jsonData.stackSerial);
             $("#ip").text(jsonData.ip);
             $("#innerh2").text(jsonData.innerH2.toFixed(1));
             $("#outerh2").text(jsonData.outerH2.toFixed(1));
@@ -295,7 +296,7 @@ function RunClick() {
     $.ajax({
         method : "PUT",
         url: url
-    }).fail(function(jqxhr, status, err){
+    }).fail(function(jqxhr){
         alert("Failed. - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
@@ -320,7 +321,7 @@ function MaintenanceClick() {
     $.ajax({
         method : "PUT",
         url: url
-    }).fail(function( jqXHR, textStatus, errorThrown) {
+    }).fail(function( jqXHR, textStatus) {
         alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
@@ -334,7 +335,7 @@ function PreheatClick() {
         url: url
     }).done(function() {
         alert("Preheating " + elName)
-    }).fail(function( jqXHR, textStatus, errorThrown) {
+    }).fail(function( jqXHR, textStatus) {
         alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
@@ -351,7 +352,7 @@ function BlowDownClick() {
         $.ajax({
             method : "PUT",
             url: url
-        }).fail(function( jqXHR, textStatus, errorThrown) {
+        }).fail(function( jqXHR, textStatus) {
             alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
         });
     }
@@ -371,7 +372,7 @@ function RescanClick() {
             url: url
         }).done(function() {
             $("#Rescan").removeClass("ButtonChanging");
-        }).fail(function( jqXHR, textStatus, errorThrown) {
+        }).fail(function( jqXHR, textStatus) {
             alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
         });
     }
@@ -391,7 +392,7 @@ function RefillClick() {
             url: url
         }).done(function() {
             alert("Refill Requested");
-        }).fail(function( jqXHR, textStatus, errorThrown) {
+        }).fail(function( jqXHR, textStatus) {
             alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
         });
         setTimeout(clearRefill, 5000);
@@ -410,7 +411,7 @@ function setRate(rate) {
     $.ajax({
         method : "PUT",
         url: url
-    }).fail(function( jqXHR, textStatus, errorThrown) {
+    }).fail(function( jqXHR, textStatus) {
         alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
@@ -422,7 +423,7 @@ function DryerStopClick() {
         url: url
     }).done(function() {
         alert("Dryer Stop Requested");
-    }).fail(function( jqXHR, textStatus, errorThrown) {
+    }).fail(function( jqXHR, textStatus) {
         alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
@@ -434,7 +435,7 @@ function DryerStartClick() {
         url: url
     }).done(function() {
         alert("Dryer Start Requested");
-    }).fail(function( jqXHR, textStatus, errorThrown) {
+    }).fail(function( jqXHR, textStatus) {
         alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }
@@ -446,7 +447,7 @@ function DryerRebootClick() {
         url: url
     }).done(function() {
         alert("Dryer Reboot Requested");
-    }).fail(function( jqXHR, textStatus, errorThrown) {
+    }).fail(function( jqXHR, textStatus) {
         alert(textStatus + " - " + jqxhr.responseJSON.errors[0].Err);
     });
 }

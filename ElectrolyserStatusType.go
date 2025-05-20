@@ -1,23 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"log"
 	"net"
 )
 
 type ElectrolyserStatusType struct {
 	Device                               uint8                  `json:"device"`
 	Name                                 string                 `json:"name"`
-	Powered                              bool                   `json:"on"` // Relay is turned on
-	Model                                string                 `json:"model"`
-	Serial                               string                 `json:"serial"`      // 14
-	SystemState                          uint16                 `json:"systemState"` // 18
-	ProductCode                          uint32                 `json:"productCode"`
-	StackStartStopCycles                 uint32                 `json:"stackStartStopCycles"`
-	StackTotalRunTime                    uint32                 `json:"stackTotalRunTime"`
-	StackTotalProduction                 jsonFloat32            `json:"stackTotalProduction"`
-	H2Flow                               jsonFloat32            `json:"h2Flow"` // 1008
-	StackSerialNumber                    uint64                 `json:"stackSerialNumber"`
+	Powered                              bool                   `json:"on"`                                   // Relay is turned on
+	Model                                string                 `json:"model"`                                // 0
+	FirmwareMajor                        uint16                 `json:"firmwareMajor"`                        // 2
+	FirmwarePatch                        uint16                 `json:"firmwarePatch"`                        // 3
+	FirmwareBuild                        uint32                 `json:"firmwareBuild"`                        // 4
+	DeviceControlBoardSerial             string                 `json:"deviceControlBoardSerial"`             // 6
+	Serial                               string                 `json:"serial"`                               // 14
+	SystemState                          uint16                 `json:"systemState"`                          // 18
+	SystemHours                          jsonFloat32            `json:"liveTime"`                             // 20
+	StackSerialNumber                    string                 `json:"stackSerialNumber"`                    // 1000
+	StackStartStopCycles                 uint32                 `json:"stackStartStopCycles"`                 // 1002
+	StackTotalRunTime                    uint32                 `json:"stackTotalRunTime"`                    // 1004
+	StackTotalProduction                 jsonFloat32            `json:"stackTotalProduction"`                 // 1006
+	H2Flow                               jsonFloat32            `json:"h2Flow"`                               // 1008
+	ProductCode                          uint32                 `json:"productCode"`                          // 1010
 	State                                uint16                 `json:"state"`                                // 1200
 	ElectrolyteLevel                     ElectrolyteLevelType   `json:"electrolyteLevel"`                     // (7000 - 7003 four booleans)
 	ElectrolyteTankPressureTooHigh       bool                   `json:"electrolyteTankPressureTooHigh"`       // 7004
@@ -50,6 +56,7 @@ type ElectrolyserStatusType struct {
 	PowerRelay                           uint8                  `json:"powerRelay"`
 	Enabled                              bool                   `json:"enabled"`
 	monitored                            bool
+	elm                                  ELMaintenanceType
 }
 
 type ElectrolyserJSONStatusType struct {
@@ -62,6 +69,7 @@ type ElectrolyserJSONStatusType struct {
 	StackSerialNumber                    string               `json:"stackSerialNumber"`
 	StackStartStopCycles                 uint32               `json:"stackStartStopCycles"`
 	StackTotalRunTime                    uint32               `json:"stackTotalRunTime"`
+	SystemRunTime                        uint32               `json:"systemRunTime"`
 	StackTotalProduction                 jsonFloat32          `json:"stackTotalProduction"`
 	H2Flow                               jsonFloat32          `json:"h2Flow"` // 1008
 	ProductCode                          string               `json:"productCode"`
@@ -99,13 +107,14 @@ type ElectrolyserJSONStatusType struct {
 	PowerRelayEnergised                  bool                 `json:"powerRelayEnergised"`
 }
 
-func (elt *ElectrolyserStatusType) GetStackSerial() string {
-	stackType := (elt.StackSerialNumber & 0xffff) >> 1
-	stackYear := (elt.StackSerialNumber & 0x7ff0000) >> 16
-	stackDay := (elt.StackSerialNumber & 0xf8000000) >> 27
-	stackNumber := (elt.StackSerialNumber & 0xffffff00000000) > 32
-	stackSite := (elt.StackSerialNumber & 0xFF00000000000000) > 56
-	return fmt.Sprintf("Site: %d | Number: %d | Day: %d | Year: %d | Type: %d", stackSite, stackNumber, stackDay, stackYear, stackType)
+func (elt *ElectrolyserStatusType) loadMaintenance(pdb *sql.DB, elm string) {
+	if err := elt.elm.loadLatest(pdb, elt.Name); err != nil {
+		log.Println(elm, err)
+	}
+}
+
+func (elt *ElectrolyserStatusType) GetStackStartStopCycles() {
+
 }
 
 func (elt *ElectrolyserStatusType) IsRunning() bool {
@@ -333,10 +342,10 @@ func (eljst *ElectrolyserJSONStatusType) load(elt ElectrolyserStatusType) {
 	eljst.Model = elt.Model
 	eljst.Serial = elt.Serial
 	eljst.SystemState = elt.SystemState
-	eljst.StackSerialNumber = elt.GetStackSerial()
-	eljst.StackStartStopCycles = elt.StackStartStopCycles
-	eljst.StackTotalRunTime = elt.StackTotalRunTime
-	eljst.StackTotalProduction = elt.StackTotalProduction
+	eljst.StackSerialNumber = elt.StackSerialNumber
+	eljst.StackStartStopCycles = elt.StackStartStopCycles - elt.elm.RestartCyclesOffset
+	eljst.StackTotalRunTime = elt.StackTotalRunTime - elt.elm.StackHoursOffset
+	eljst.StackTotalProduction = elt.StackTotalProduction - jsonFloat32(elt.elm.StackProductionOffset)
 	eljst.H2Flow = elt.H2Flow
 	eljst.ProductCode = elt.GetProductCode()
 	eljst.State = elt.State

@@ -106,12 +106,8 @@ func setUpWebSite() {
 
 	router.Use(RequestLoggerMiddleware(router))
 
-	// localPortAddress is the address for other devices on the local network connecting directly to this server
-	//	localPortAddress := fmt.Sprintf("%s:%s", GetLocalIP(), LocalPort)
 	localPortAddress := fmt.Sprintf(":%s", LocalPort)
-	// remotePortAddress is the loopback address used by all traffic coming in over the reverse ssh tunnel from the cloud
 	remotePortAddress := fmt.Sprintf(":%s", WebPort)
-	// remotePortAddress := fmt.Sprintf("127.0.0.1:%s", WebPort)
 
 	remoteServer := &http.Server{
 		Addr:    remotePortAddress,
@@ -132,39 +128,6 @@ func setUpWebSite() {
 	}
 	go func() { log.Fatal(remoteServer.ListenAndServeTLS("", "")) }()
 	go func() { log.Fatal(http.ListenAndServe(localPortAddress, router)) }()
-}
-
-//func startInsecureSite(router *gin.Engine, errs chan error) {
-//	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", GetLocalIP(), Settings.LocalPort))
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	errs <- http.Serve(l, router)
-//}
-//
-//func startSecureSite(router *gin.Engine, errs chan error) {
-//	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", Settings.WebPort))
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	errs <- http.ServeTLS(l, router, Settings.SSLCertificateFile, Settings.SSLKeyFile)
-//}
-
-func GetLocalIP() string {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return ""
-	}
-	for _, address := range addrs {
-		// check the address type and if it is not a loopback and is an ipv4 address then return it
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
-			}
-		}
-	}
-	log.Fatal("No local IP addreses found")
-	return ""
 }
 
 type PowerBody struct {
@@ -636,6 +599,7 @@ func rescanElectrolyser(w http.ResponseWriter, r *http.Request) {
 			ReturnJSONError(w, function, err, http.StatusNotFound, true)
 		} else {
 			currentSettings.findElByName(request).IP = IP.String()
+			el.status.IP = IP
 			if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 			} else {
@@ -1532,9 +1496,7 @@ func setButton(w http.ResponseWriter, r *http.Request) {
 	var bOn bool
 	vars := mux.Vars(r)
 	button := vars["button"]
-	on := vars["on"]
-
-	on = strings.ToLower(on)
+	on := strings.ToLower(vars["on"])
 	if (on == "on") || (on == "true") || (on == "1") {
 		bOn = true
 	} else if (on == "off") || (on == "false") || (on == "0") {
@@ -1726,7 +1688,7 @@ func getJsonStatus(indent bool) ([]byte, error) {
 		data.Electrolysers[idx].StackTotalProduction = Electrolysers.Arr[idx].status.StackTotalProduction
 		data.Electrolysers[idx].StackStartStopCycles = Electrolysers.Arr[idx].status.StackStartStopCycles
 		data.Electrolysers[idx].StackTotalRunTime = Electrolysers.Arr[idx].status.StackTotalRunTime
-		data.Electrolysers[idx].StackSerialNumber = Electrolysers.Arr[idx].status.GetStackSerial()
+		data.Electrolysers[idx].StackSerialNumber = Electrolysers.Arr[idx].status.StackSerialNumber
 		data.Electrolysers[idx].Warnings = Electrolysers.Arr[idx].GetWarnings()
 		data.Electrolysers[idx].Errors = Electrolysers.Arr[idx].GetErrors()
 		data.Electrolysers[idx].PowerRelayEnergised = Electrolysers.Arr[idx].status.PowerRelayEnergised()
@@ -1902,6 +1864,7 @@ func acquireAllElectrolysers(w http.ResponseWriter) bool {
 	}
 
 	for _, el := range Electrolysers.Arr {
+		el.clearSerial()
 		el.setClient(net.IPv4zero)
 	}
 

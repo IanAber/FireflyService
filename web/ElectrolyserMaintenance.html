@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Electrolyser</title>
+    <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+    <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
+    <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
+    <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxcheckbox.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
+    <script type="text/javascript" src="scripts/jqwidgets/jqxtextarea.js"></script>
+    <script type="text/javascript" src="scripts/ElectrolyserMaintenance.js"></script>
+    <script type="text/ecmascript" src="scripts/utils.js"></script>
+</head>
+<body onload="PopulateTitle()">
+    <header class="header">
+        <h1>
+            <span class="system" id="system">Loading...</span>
+            <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+        </h1>
+    </header>
+    <div>
+        <form id="maintenanceForm" action="/recordMaintenance" method="post">
+            <div><label for="StackSerial">Stack Serial Number</label><input type="text" id="StackSerial" name="StackSerial" /></div>
+            <div><label for="action">Select an action</label><select id="action" name="action">
+                    <option value="RelaceStack">Replace Stack</option>
+                    <option value="Replace System">ReplaceSystem</option>
+                    <option value="Replace Electrolyte">ReplaceElectrolyte</option>
+                </select>
+            </div>
+            <div><label for="Notes">Notes</label><div id="notes"></div></div>
+        </form>
+    </div>
+    <footer class="firefly">
+        <span class="version">Version </span><span class="version" id="version">{{version}}</span>
+    </footer>
+</body>
+<script type="text/javascript">
+    $(document).ready(function() {setupPage('{{name}}');});
+</script>
+</html>

@@ -129,6 +129,7 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/debug/{on}", "", "GET", "Enable debug output", setDebug)
 	RegisterWebSiteAPI(router, "/logCalls/{on}", "", "GET", "Enable logging of all API calls", setCallLogging)
 	RegisterWebSiteAPI(router, "/logCanBus/{on}", "", "GET", "Enable logging of all CAN bus errors", setCANLogging)
+	RegisterWebSiteAPI(router, "/recordMaintenance", "", "POST", "Allows various maintenance operations to be recorded for an electrolyser", recordElMaintenance)
 
 	RegisterWebSiteAPI(router, "/recordPower", "", "POST", `Post a JSON block {"source":"firefly", current":i.i, "voltage": v.v, "soc":s.s, "hz":f.f, "solar":w } hz is optional, positive current is charging.`, recordPowerData)
 	RegisterWebSiteAPI(router, "/recordBatteryVolts", "", "POST", `Post a JSON block {"source":"firefly", "voltage": v.v }`, recordBatteryVolts)

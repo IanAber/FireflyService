@@ -131,7 +131,6 @@ function RenderButtons(buttons) {
     }
     if (controls.children().length === buttonCount) {
         let buttonId = 0;
-        let buttonTag;
         for (let button of buttons) {
             if (button.ShowOnCustomer) {
                 const btn = $("#buttonDiv" + buttonId);

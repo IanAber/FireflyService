@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cmp"
 	"database/sql"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -99,10 +100,10 @@ const DryerReboot = 6020
 
 const Model = 0
 
-//const Firmware = 2                       //	Uint16	Firmware MAJOR and MINOR Version	Ex: 267 => 267 // 256 = 1, 267 % 256 => 11 (1.11)
-//const Patch = 3                          // Uint16	Firmware PATCH Version	Ex: 3 => 3 (3)
-//const Build = 4                          // Uint32	Firmware Build Number	e.g. 0x4E343471
-//const BoardSerial = 6                    //	Uint128	Device Control Board Serial Number	9E25E695-A66A-61DD-6570-50DB4E73652D
+// const Firmware = 2                       //	Uint16	Firmware MAJOR and MINOR Version	Ex: 267 => 267 // 256 = 1, 267 % 256 => 11 (1.11)
+// const Patch = 3                          // Uint16	Firmware PATCH Version	Ex: 3 => 3 (3)
+// const Build = 4                          // Uint32	Firmware Build Number	e.g. 0x4E343471
+const BoardSerial = 6 //	Uint128	Device Control Board Serial Number	9E25E695-A66A-61DD-6570-50DB4E73652D
 
 const ChassisSerial = 14 //	Uint64	Chassis Serial Number	1 bits - reserved, must be 0 10 bits - Product Unicode, 11 bits - Year + Month, 5 bits - Day, 24 bits - Chassis Number, 5 bits - Order, 8 bits - Site
 const SystemState = 18   // Uint16	System State	0 = Internal Error, System not Initialized yet; 1 = System in Operation; 2 = Error; 3 = System in Maintenance Mode; 4 = Fatal Error; 5 = System in Expert Mode.
@@ -117,11 +118,9 @@ const ErrorsArray = 832   // Array of 32 Error Events Array	Error Events Array r
 const ProductCode = 1000  // Uint32	Product Code
 // const StackCycles = 1002                 // Uint32	Stack Start/Stop Cycles Quantity	How many Stack Start/Stop cycles
 // const StackRuntime = 1004                // Uint32	Stack Total Runtime	seconds
-
-const StackTotalProduction = 1006 // Float32	Stack Total H2 Production	NL
+// const StackTotalProduction = 1006 		// Float32	Stack Total H2 Production	NL
 // const FlowRate = 1008 // Float32	H2 Flow Rate	NL/hour, NAN when not producing H2;
-
-const StackSerial = 1010 // Uint64	Stack Serial Number	1 bits - reserved, must be 0, 15 bits - Stack Type , 11 bits - Year + Month , 5 bits - Day, 24 bits - Stack Number, 8 bits - Site
+// const StackSerial = 1010 // Uint64	Stack Serial Number	1 bits - reserved, must be 0, 15 bits - Stack Type , 11 bits - Year + Month , 5 bits - Day, 24 bits - Stack Number, 8 bits - Site
 
 const State = 1200 // Uint16	Electrolyser State	0 = Halted; 1= Maintenance mode; 2 = Idle; 3 = Steady; 4 = Stand-By (Max Pressure); 5 = Curve; 6 = BlowDown.
 //const ConfigInProgress = 4000            // Boolean	Configuration Progress	1 = Configuration is in progress.
@@ -337,6 +336,7 @@ func (el *ElectrolysersType) Init() {
 				//				newEl.hasDryer = el.HasDryer
 				newEl.status.Enabled = el.Enabled
 				newEl.enabled = el.Enabled
+				newEl.status.Serial = el.Serial
 				Electrolysers.Arr = append(Electrolysers.Arr, newEl)
 			}
 		}
@@ -501,9 +501,63 @@ func (el *ElectrolyserType) GetRate() int {
 	}
 }
 
-// ReadSerialNumber reads and decodes the serial number
-func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
-	type Codes struct {
+func (el *ElectrolyserType) BoardSerial() (string, error) {
+	if !el.CheckConnected() {
+		if debugOutput {
+			log.Printf("%s not connected", el.status.Name)
+		}
+		return "", fmt.Errorf("%s not connected", el.status.Name)
+	}
+	if debugOutput {
+		log.Printf("Reading %s Board Serial Number", el.status.Name)
+	}
+	if ID, err := el.Client.ReadUint64s(BoardSerial, 2, modbus.INPUT_REGISTER); err != nil {
+		return "", err
+	} else {
+		return fmt.Sprintf("%08x%08x", ID[0], ID[1]), nil
+	}
+}
+
+func DecodeStackSerialV1(serial uint64) string {
+	var decoded struct {
+		StackType string
+		Year      int
+		Month     int
+		Day       int
+		Number    int
+		Site      string
+	}
+	st := (serial >> 48) & 0x7F
+	switch st {
+	case 1:
+		decoded.StackType = "23E"
+	case 2:
+		decoded.StackType = "23D"
+	case 3:
+		decoded.StackType = "23V"
+	default:
+		decoded.StackType = fmt.Sprint(st)
+	}
+	ym := (serial >> 37) & 0x7FF
+	decoded.Year = int((ym - 1) / 12)
+	decoded.Month = int((ym-1)%12) + 1
+	decoded.Day = int((serial >> 32) & 0x1F)
+	decoded.Number = int((serial >> 8) & 0xFFFFFF)
+	site := serial & 0xFF
+	switch site {
+	case 0:
+		decoded.Site = "PI"
+	case 1:
+		decoded.Site = "SA"
+	default:
+		decoded.Site = fmt.Sprint(site)
+	}
+	//	fmt.Printf("type: %s | year: %d | month: %d | day: %d | number: %d | site: %s\n", decoded.StackType, decoded.Year, decoded.Month, decoded.Day, decoded.Number, decoded.Site)
+	return fmt.Sprintf("%s%02d%02d%02d%02d%s", decoded.StackType, decoded.Year, decoded.Month, decoded.Day, decoded.Number, decoded.Site)
+}
+
+func DecodeChassisSerialV1(serial uint64) string {
+	var codes struct {
 		Site    string
 		Order   string
 		Chassis uint32
@@ -512,8 +566,96 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 		Year    uint16
 		Product string
 	}
+	//  1 bit - reserved, must be 0
+	// 10 bits - Product Unicode
+	// 11 bits - Year + Month
+	//  5 bits - Day
+	// 24 bits - Chassis Number
+	//  5 bits - Order
+	//  8 bits - Site
 
-	var codes Codes
+	Site := uint8(serial & 0xff)
+	switch Site {
+	case 0:
+		codes.Site = "PI"
+	case 1:
+		codes.Site = "SA"
+	default:
+		codes.Site = "XX"
+	}
+
+	var Order [1]byte
+	Order[0] = byte((serial>>8)&0x1f) + 64
+	codes.Order = string(Order[:])
+
+	codes.Chassis = uint32((serial >> 13) & 0xffffff)
+	codes.Day = uint8((serial >> 37) & 0x1f)
+	yearMonth := (serial >> 42) & 0x7ff
+	codes.Year = uint16(yearMonth / 12)
+	codes.Month = uint8(yearMonth % 12)
+	if codes.Month == 0 {
+		codes.Month = 12
+		codes.Year--
+	}
+	Product := uint16((serial >> 53) & 0x3ff)
+
+	var unicode [2]byte
+	unicode[1] = byte(Product>>5) + 64
+	unicode[0] = byte(Product&0x1f) + 64
+	codes.Product = string(unicode[:])
+
+	return fmt.Sprintf("%s%02d%02d%02d%02d%s%s", codes.Product, codes.Year, codes.Month, codes.Day, codes.Chassis, codes.Order, codes.Site)
+}
+
+func DecodeSerialV2(serial uint64) string {
+	var decoded struct {
+		Product string
+		Year    int
+		Month   int
+		Day     int
+		Number  int
+		Site    string
+	}
+	prod := make([]byte, 1)
+	prodSerial := (serial >> 38) & 0xFFFFFF
+	prod[0] = byte((prodSerial % 26) + 'A')
+	prodSerial = prodSerial / 26
+	char := (prodSerial % 27)
+	if char > 0 {
+		prod = append(prod, byte(prodSerial%27)+'@')
+	}
+	for {
+		prodSerial = prodSerial / 27
+		char = (prodSerial % 27)
+		if char > 0 {
+			prod = append(prod, byte(prodSerial%27)+'@')
+		} else {
+			break
+		}
+	}
+
+	decoded.Product = string(prod)
+
+	ym := (serial >> 27) & 0x7FF
+	decoded.Year = int((ym - 1) / 12)
+	decoded.Month = int((ym-1)%12) + 1
+	decoded.Day = int((serial >> 22) & 0x1F)
+
+	decoded.Number = int(serial & 0xFFF)
+
+	site := (serial >> 12) & 0x3FF
+	siteCode := make([]byte, 2)
+	siteCode[0] = byte(site%26) + 'A'
+	site = site / 26
+	siteCode[1] = byte(site%27) + '@'
+	decoded.Site = string(siteCode)
+
+	//	fmt.Printf("type: %s | year: %d | month: %d | day: %d | number: %d | site: %s\n", decoded.StackType, decoded.Year, decoded.Month, decoded.Day, decoded.Number, decoded.Site)
+	return fmt.Sprintf("%s %02d %02d %02d %s %d", decoded.Product, decoded.Year, decoded.Month, decoded.Day, decoded.Site, decoded.Number)
+}
+
+// ReadSerialNumber reads and decodes the serial number
+func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 
 	if len(IP) > 0 {
 		el.setClient(IP[0])
@@ -523,7 +665,7 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 		if debugOutput {
 			log.Printf("%s not connected", el.status.Name)
 		}
-		return "", fmt.Errorf("%s not conencted", el.status.Name)
+		return "", fmt.Errorf("%s not connected", el.status.Name)
 	}
 	if debugOutput {
 		log.Printf("Reading %s serial number", el.status.Name)
@@ -560,53 +702,19 @@ func (el *ElectrolyserType) ReadSerialNumber(IP ...net.IP) (string, error) {
 		if debugOutput {
 			log.Printf("no serial number found for %s!", el.status.Name)
 		}
-		return fmt.Sprintf("No Serial Number %s", el.status.IP.String()), nil
+		if ucm, err := el.BoardSerial(); err != nil {
+			return "", err
+		} else {
+			return fmt.Sprintf("UCM-%s", ucm), nil
+		}
+		//		return fmt.Sprintf("No Serial Number %s", el.status.IP.String()), nil
 	}
 
-	//  1 bit - reserved, must be 0
-	// 10 bits - Product Unicode
-	// 11 bits - Year + Month
-	//  5 bits - Day
-	// 24 bits - Chassis Number
-	//  5 bits - Order
-	//  8 bits - Site
-
-	Site := uint8(serialCode & 0xff)
-	switch Site {
-	case 0:
-		codes.Site = "PI"
-	case 1:
-		codes.Site = "SA"
-	default:
-		codes.Site = "XX"
+	if serialCode&0x8000000000000000 > 0 {
+		return DecodeSerialV2(serialCode), nil
+	} else {
+		return DecodeChassisSerialV1(serialCode), nil
 	}
-
-	var Order [1]byte
-	Order[0] = byte((serialCode>>8)&0x1f) + 64
-	codes.Order = string(Order[:])
-
-	codes.Chassis = uint32((serialCode >> 13) & 0xffffff)
-	codes.Day = uint8((serialCode >> 37) & 0x1f)
-	yearMonth := (serialCode >> 42) & 0x7ff
-	codes.Year = uint16(yearMonth / 12)
-	codes.Month = uint8(yearMonth % 12)
-	if codes.Month == 0 {
-		codes.Month = 12
-		codes.Year--
-	}
-	Product := uint16((serialCode >> 53) & 0x3ff)
-
-	var unicode [2]byte
-	unicode[1] = byte(Product>>5) + 64
-	unicode[0] = byte(Product&0x1f) + 64
-	codes.Product = string(unicode[:])
-
-	serial := fmt.Sprintf("%s%02d%02d%02d%02d%s%s", codes.Product, codes.Year, codes.Month, codes.Day, codes.Chassis, codes.Order, codes.Site)
-	if debugOutput {
-		log.Printf("%s serial = %s : %b\n", el.status.Name, serial, serialCode)
-	}
-
-	return serial, nil
 }
 
 // Is the electrolyser switched on? If the relay turns on, wait 20 seconds before returning true.
@@ -814,7 +922,7 @@ func (el *ElectrolyserType) ReadValues() error {
 		return err
 	} else {
 		if debugOutput {
-			log.Printf("%s Serial number = %s", el.status.Name, serial)
+			log.Printf("%s Serial number = %s : ip= %s", el.status.Name, serial, el.status.IP.String())
 		}
 		if el.status.Serial == "" {
 			log.Printf("New serial number for %s = %s", el.status.Name, serial)
@@ -863,7 +971,6 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.clientConnected = false
 		return err
 	} else {
-
 		el.status.ElectrolyteCoolerFanSpeed = jsonFloat32(values[0])
 		el.status.AirCirculationFanSpeed = jsonFloat32(values[1])
 		el.status.ElectronicCompartmentCoolingFanSpeed = jsonFloat32(values[2])
@@ -951,7 +1058,7 @@ func (el *ElectrolyserType) ReadValues() error {
 	}
 
 	//	log.Println("Product Code")
-	if stack, err := el.Client.ReadUint32s(ProductCode, 3, modbus.INPUT_REGISTER); err != nil {
+	if buffer, err := el.Client.ReadBytes(ProductCode, 28, modbus.INPUT_REGISTER); err != nil {
 		log.Printf("%s product code error - %v", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
 			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
@@ -959,40 +1066,34 @@ func (el *ElectrolyserType) ReadValues() error {
 		el.clientConnected = false
 		return err
 	} else {
-
-		el.status.ProductCode = stack[0]
-		el.status.StackStartStopCycles = stack[1]
-		el.status.StackTotalRunTime = stack[2]
-	}
-
-	//	log.Println("Stack Total Production")
-	if stack, err := el.Client.ReadFloat32s(StackTotalProduction, 2, modbus.INPUT_REGISTER); err != nil {
-		log.Print("Current Production error - ", err, el.buf)
-		if err := el.Client.Close(); err != nil {
-			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
+		buf := bytes.NewReader(buffer)
+		var values struct {
+			ProductCode          uint32  // Product Code
+			StackStartStopCycles uint32  // 1002
+			StackTotalRuntime    uint32  // 1004
+			StackTotalProduction float32 // 1006
+			H2Flow               float32 // 1008
+			StackSerial          uint64  // 1010
 		}
-		el.clientConnected = false
-		return err
-	} else {
-		el.status.StackTotalProduction = jsonFloat32(stack[0])
-		if math.IsNaN(float64(stack[1])) {
+		if err := binary.Read(buf, binary.BigEndian, &values); err != nil {
+			log.Println("error reading stack values from %s - %v", el.status.Name, err)
+		}
+		el.status.ProductCode = values.ProductCode
+		el.status.StackStartStopCycles = values.StackStartStopCycles
+		el.status.StackTotalRunTime = values.StackTotalRuntime
+		el.status.StackTotalProduction = jsonFloat32(values.StackTotalProduction)
+		if math.IsNaN(float64(values.H2Flow)) {
 			el.status.H2Flow = 0.0
 		} else {
-			el.status.H2Flow = jsonFloat32(stack[1])
+			el.status.H2Flow = jsonFloat32(values.H2Flow)
+		}
+		if values.StackSerial&0x8000000000000000 > 0 {
+			el.status.StackSerialNumber = DecodeSerialV2(values.StackSerial)
+		} else {
+			el.status.StackSerialNumber = DecodeStackSerialV1(values.StackSerial)
 		}
 	}
-	//	log.Println("Stack Serial")
-	if stack, err := el.Client.ReadUint64(StackSerial, modbus.INPUT_REGISTER); err != nil {
-		log.Printf("%s stack serial error - ", el.status.Name, err)
-		if err := el.Client.Close(); err != nil {
-			log.Printf("Error closing modbus client for %s - %v", el.status.Name, err)
-		}
-		el.clientConnected = false
-		return err
-	} else {
-		el.status.StackSerialNumber = stack
-	}
-	//	log.Println("Rate")
+
 	if rate, err := el.Client.ReadFloat32(RATE, modbus.HOLDING_REGISTER); err != nil {
 		log.Printf("%s current production rate error - %v", el.status.Name, err)
 		if err := el.Client.Close(); err != nil {
@@ -1062,6 +1163,10 @@ func (el *ElectrolyserType) ReadValues() error {
 		log.Printf("%s values read...", el.status.Name)
 	}
 	return nil
+}
+
+func (el *ElectrolyserType) clearSerial() {
+	el.status.Serial = ""
 }
 
 func (el *ElectrolyserType) getStatus() *ElectrolyserStatusType {
@@ -1902,6 +2007,13 @@ func (el *ElectrolyserType) rescan(StartIP byte, knownSerial string) (net.IP, st
 	var subnetIP net.IP
 	var serial string
 
+	if el.clientConnected {
+		if err := el.Client.Close(); err != nil {
+			log.Println(err)
+		}
+		el.clientConnected = false
+	}
+
 	if subnet, err := GetOurSubnet(); err != nil {
 		log.Println(err)
 	} else {
@@ -1914,40 +2026,44 @@ func (el *ElectrolyserType) rescan(StartIP byte, knownSerial string) (net.IP, st
 	currentSettings.scanningElectrolysers = true
 	defer func() { currentSettings.scanningElectrolysers = false }()
 
-	for ip := StartIP; ip < 255; ip++ {
-		IP := subnetIP.To4()
-		IP[3] = ip
-		if debugOutput {
-			log.Print(IP.String())
-		}
-		if tryConnect(IP, 502) == nil {
-			// Something is there and responding on the Modbus port.
-			if elType, err := CheckForElectrolyser(IP); err == nil {
-				// It is an electrolyser so check the serial number
-				time.Sleep(time.Second * 5)
-				if s, err := el.ReadSerialNumber(IP); err != nil {
-					return IP, "", err
-				} else {
-					serial = s
-				}
-				if debugOutput {
-					log.Println("Looking for ", knownSerial)
-					log.Println("Found       ", serial)
-				}
-				if knownSerial == serial || strings.TrimSpace(knownSerial) == "" {
-					// Looks like we have our device, so we should update the IP address.
-					if debugOutput {
-						log.Println("Electrolyser", elType, "found at ", IP)
+	el.status.IP = net.IPv4zero
+	for tries := 0; tries < 5; tries++ {
+		for ip := StartIP; ip < 255; ip++ {
+			IP := subnetIP.To4()
+			IP[3] = ip
+			if debugOutput {
+				log.Print(IP.String())
+			}
+			if tryConnect(IP, 502) == nil {
+				// Something is there and responding on the Modbus port.
+				if elType, err := CheckForElectrolyser(IP); err == nil {
+					// It is an electrolyser so check the serial number
+					time.Sleep(time.Second * 5)
+					if s, err := el.ReadSerialNumber(IP); err != nil {
+						return IP, "", err
+					} else {
+						serial = s
 					}
-					return IP, elType, nil
+					if debugOutput {
+						log.Println("Looking for ", knownSerial)
+						log.Println("Found       ", serial)
+					}
+					if knownSerial == serial || strings.TrimSpace(knownSerial) == "" {
+						// Looks like we have our device, so we should update the IP address.
+						if debugOutput {
+							log.Println("Electrolyser", elType, "found at ", IP)
+						}
+						return IP, elType, nil
+					}
+				} else {
+					if debugOutput {
+						log.Println(err)
+					}
+					//				return IP, elType, err
 				}
-			} else {
-				if debugOutput {
-					log.Println(err)
-				}
-				//				return IP, elType, err
 			}
 		}
+		time.Sleep(time.Second * 10)
 	}
 	return net.IPv4zero, "Not Found", fmt.Errorf("no electrolyser found")
 }
@@ -2056,14 +2172,14 @@ func (el *ElectrolyserType) MonitorElectrolyserErrors() {
 
 // MonitorDryerErrors will watch for a dryer error and if it occurs it will reboot the dryer a maximum of 5 times.
 func (el *ElectrolyserType) MonitorDryerErrors() {
-	dryerTicker := time.NewTicker(time.Second) // Check every second
+	dryerTicker := time.NewTicker(time.Second * 5) // Check every five seconds
 	numErrors := 0
 	numSeconds := 0
 	for {
 		select {
 		case <-dryerTicker.C:
 			// Drop out if the electrolyser is switched off or does not have a dryer attached
-			log.Println("Monitor dryer errors")
+			log.Printf("%s Monitor dryer errors", el.status.Name)
 			if !el.IsSwitchedOn() || !el.hasDryer {
 				return
 			}

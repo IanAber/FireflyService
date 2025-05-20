@@ -1,5 +1,6 @@
 var jsonData;
 let wsConn;
+let elMap;
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws";
@@ -13,6 +14,17 @@ function RegisterWebSocket() {
         StartHeartbeat();
         try {
             jsonData = JSON.parse(evt.data);
+            let newMap = "";
+            for (let el of jsonData.Electrolysers) {
+                newMap = newMap + el.name;
+            }
+            if (elMap !== undefined) {
+                if (newMap !== elMap) {
+                    // Reload the page because the electrolyser layout has changed.
+                    location.reload();
+                }
+                elMap = newMap;
+            }
             $("#system").text(jsonData.System);
             document.title = jsonData.System;
             $("#version").text(jsonData.Version);
@@ -281,7 +293,6 @@ function RenderButtons(buttons) {
     }
     if (controls.children().length === buttonCount) {
         let buttonId = 0;
-        let buttonTag;
         for (let button of buttons) {
             if (button.Name !== "") {
                 const btn = $("#buttonDiv" + buttonId);

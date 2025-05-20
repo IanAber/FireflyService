@@ -9,38 +9,33 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Rework units to add more options. Base units are now Bar and Litres but displayed H2 pressure and volume have selectable units.&#10;Added efficiency for the fuel cell to configuration settings to calculate energy available based on H2 quantity.">
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fix heartbeat and add hydrogen status API endpoint.&#10;Change buttons to new look and feel.">
+      <change afterPath="$PROJECT_DIR$/ElectrolyserMaintenance.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/ElectrolyserMaintenance.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/web/scripts/ElectrolyserMaintenance.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45/storage_v2/_src_/schema/firefly.fWJezQ.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CANBus.go" beforeDir="false" afterPath="$PROJECT_DIR$/CANBus.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ElectrolyserStatusType.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Relays.go" beforeDir="false" afterPath="$PROJECT_DIR$/Relays.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WebSiteRedirect.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSocket.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/release/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/release/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/security.go" beforeDir="false" afterPath="$PROJECT_DIR$/security.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/StackVoltage.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/StackVoltage.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/config.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/config.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/keys/localhost.crt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/keys/localhost.key" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/FuelCellSettings.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/userControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/utils.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,8 +52,8 @@
       <list>
         <option value="Go Application" />
         <option value="HTML File" />
-        <option value="JavaScript File" />
         <option value="Go File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -116,7 +111,7 @@
     "DefaultGoTemplateProperty": "Go File",
     "DefaultHtmlFileTemplate": "HTML File",
     "Go Build.Linux X86 Development.executor": "Debug",
-    "Go Build.Linux X86 Release.executor": "Debug",
+    "Go Build.Linux X86 Release.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -136,7 +131,7 @@
     "node.js.selected.package.stylelint": "",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "aProject Default",
-    "settings.editor.selected.configurable": "preferences.lookFeel"
+    "settings.editor.selected.configurable": "settings.sync"
   },
   "keyToStringList": {
     "DatabaseDriversLRU": [
@@ -173,6 +168,38 @@
       <option name="run" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Linux X86 Development" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="FireflyService" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-v -o dist/amd64/FireflyService" />
+      <envs>
+        <env name="GOOS" value="linux" />
+        <env name="GOARCH" value="amd64" />
+      </envs>
+      <kind value="PACKAGE" />
+      <package value="FireflyService" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <option name="run" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Linux X86 Release" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false">
+      <module name="FireflyService" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-v -o dist/release/FireflyService" />
+      <envs>
+        <env name="GOOS" value="linux" />
+        <env name="GOARCH" value="amd64" />
+      </envs>
+      <kind value="PACKAGE" />
+      <package value="FireflyService" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <option name="run" value="false" />
+      <method v="2">
+        <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Version Incrementer" />
+      </method>
+    </configuration>
     <configuration name="Linux X86 Release" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false">
       <module name="FireflyService" />
       <working_directory value="$PROJECT_DIR$" />
@@ -204,6 +231,9 @@
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="StructureViewState">
+    <option name="selectedTab" value="HTML" />
+  </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
@@ -256,7 +286,8 @@
     <MESSAGE value="Changed local access to use http instead of https&#10;Added user configurable links to the menu on most pages. Links set up in the configuration screen." />
     <MESSAGE value="Fix base units to SI and only use display settings for non-SI units like PSI." />
     <MESSAGE value="Rework units to add more options. Base units are now Bar and Litres but displayed H2 pressure and volume have selectable units.&#10;Added efficiency for the fuel cell to configuration settings to calculate energy available based on H2 quantity." />
-    <option name="LAST_COMMIT_MESSAGE" value="Rework units to add more options. Base units are now Bar and Litres but displayed H2 pressure and volume have selectable units.&#10;Added efficiency for the fuel cell to configuration settings to calculate energy available based on H2 quantity." />
+    <MESSAGE value="Fix heartbeat and add hydrogen status API endpoint.&#10;Change buttons to new look and feel." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix heartbeat and add hydrogen status API endpoint.&#10;Change buttons to new look and feel." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
@@ -266,7 +297,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/default.js</url>
-          <line>371</line>
+          <line>370</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
