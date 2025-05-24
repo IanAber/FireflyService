@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="b4dd4353-5867-4a6c-ad08-4b0e6c2096cf" name="Cloud" url="/">
+        <fileTransfer mountedRoot="$PROJECT_DIR$/../../../../Elektrikgreen/Firefly/Installation/FireflyService" accessType="MOUNT" port="0" />
+      </webServer>
+      <webServer id="76bd87a2-bee5-4dad-9c1d-2fb8cf247a21" name="EGT2">
+        <fileTransfer accessType="SFTP" host="cloud.elektrik.green" port="41082" sshConfigId="899a9b56-3d54-4041-97e0-1ba153215483" sshConfig="EGT2">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="d1c86731-5b52-4076-8c37-70e70d2ed4dc" name="egdt">
+        <fileTransfer rootFolder="/projects/go/src" accessType="SFTP" host="cloud.elektrikgreen.com" port="41062" sshConfigId="aeb4e04a-7e6b-4860-a351-75b633360453" sshConfig="egadmin@cloud.elektrikgreen.com:41062 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="59e75eca-2b19-48e6-b778-27f81387f635" name="Breathe">
+        <fileTransfer rootFolder="/projects/go/src" accessType="SFTP" host="cloud.elektrik.green" port="41072" sshConfigId="fa2e4392-8547-4944-913d-455541ac2c8f" sshConfig="Breathe Transport">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="a8c11fa8-1019-473b-a8ca-c688a57e8b9e" name="Marval">
+        <fileTransfer rootFolder="/projects/go/src" accessType="SFTP" host="cloud.elektrik.green" port="41102" sshConfigId="b1428b28-c53c-4684-a85a-615a51f577cd" sshConfig="Marval">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="ff38382e-0bbe-4f98-bf46-e79be6bfcfff" name="EG1">
+        <fileTransfer rootFolder="/projects/go/src" accessType="SFTP" host="cloud.elektrik.green" port="41018" sshConfigId="20eb7cb8-790e-4a37-9861-b4284eab1fea" sshConfig="egadmin@cloud.elektrik.green:41018 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

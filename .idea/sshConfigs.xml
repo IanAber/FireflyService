@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="cloud.elektrikgreen.com" id="aeb4e04a-7e6b-4860-a351-75b633360453" port="41062" nameFormat="DESCRIPTIVE" username="egadmin" useOpenSSHConfig="true" />
+      <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="899a9b56-3d54-4041-97e0-1ba153215483" port="41082" customName="EGT2" nameFormat="CUSTOM" username="egadmin" useOpenSSHConfig="true">
+        <option name="customName" value="EGT2" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" connectionConfig="{&quot;serverAliveInterval&quot;:300}" host="cloud.cedartechnology.com" id="e8e12192-8a2a-4d4d-b7a0-a1f0e099a71c" port="41002" nameFormat="DESCRIPTIVE" username="ian" useOpenSSHConfig="false" />
+      <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="b1428b28-c53c-4684-a85a-615a51f577cd" port="41102" customName="Marval" nameFormat="CUSTOM" username="egadmin" useOpenSSHConfig="true">
+        <option name="customName" value="Marval" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="20eb7cb8-790e-4a37-9861-b4284eab1fea" port="41018" nameFormat="DESCRIPTIVE" username="egadmin" useOpenSSHConfig="true" />
+      <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="fa2e4392-8547-4944-913d-455541ac2c8f" port="41072" customName="Breathe Transport" nameFormat="CUSTOM" username="egadmin" useOpenSSHConfig="true">
+        <option name="customName" value="Breathe Transport" />
+      </sshConfig>
+    </configs>
+  </component>
+</project>
