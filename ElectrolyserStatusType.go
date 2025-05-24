@@ -67,9 +67,9 @@ type ElectrolyserJSONStatusType struct {
 	Serial                               string               `json:"serial"`      // 14
 	SystemState                          uint16               `json:"systemState"` // 18
 	StackSerialNumber                    string               `json:"stackSerialNumber"`
-	StackStartStopCycles                 uint32               `json:"stackStartStopCycles"`
-	StackTotalRunTime                    uint32               `json:"stackTotalRunTime"`
-	SystemRunTime                        uint32               `json:"systemRunTime"`
+	StackStartStopCycles                 int32                `json:"stackStartStopCycles"`
+	StackTotalRunTime                    int32                `json:"stackTotalRunTime"`
+	SystemRunTime                        int32                `json:"systemRunTime"`
 	StackTotalProduction                 jsonFloat32          `json:"stackTotalProduction"`
 	H2Flow                               jsonFloat32          `json:"h2Flow"` // 1008
 	ProductCode                          string               `json:"productCode"`
@@ -342,9 +342,13 @@ func (eljst *ElectrolyserJSONStatusType) load(elt ElectrolyserStatusType) {
 	eljst.Model = elt.Model
 	eljst.Serial = elt.Serial
 	eljst.SystemState = elt.SystemState
-	eljst.StackSerialNumber = elt.StackSerialNumber
-	eljst.StackStartStopCycles = elt.StackStartStopCycles - elt.elm.RestartCyclesOffset
-	eljst.StackTotalRunTime = elt.StackTotalRunTime - elt.elm.StackHoursOffset
+	if elt.elm.StackSerialNumber != "" {
+		eljst.StackSerialNumber = elt.StackSerialNumber + "(" + elt.elm.StackSerialNumber + ")"
+	} else {
+		eljst.StackSerialNumber = elt.StackSerialNumber
+	}
+	eljst.StackStartStopCycles = int32(elt.StackStartStopCycles) - elt.elm.RestartCyclesOffset
+	eljst.StackTotalRunTime = int32(elt.StackTotalRunTime) - elt.elm.StackTimeOffset
 	eljst.StackTotalProduction = elt.StackTotalProduction - jsonFloat32(elt.elm.StackProductionOffset)
 	eljst.H2Flow = elt.H2Flow
 	eljst.ProductCode = elt.GetProductCode()

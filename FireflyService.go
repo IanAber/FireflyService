@@ -22,10 +22,11 @@ CAN bus must be enabled before this service can be started
 https://www.pragmaticlinux.com/2021/07/automatically-bring-up-a-socketcan-interface-on-boot/
 */
 var (
-	canBus                *CANBus
-	CANInterface          string
-	WebPort               string
-	LocalPort             string
+	canBus       *CANBus
+	CANInterface string
+	//	WebPort               string
+	//	LocalPort             string
+	Port                  string
 	databaseServer        string
 	databasePort          string
 	databaseName          string
@@ -48,6 +49,7 @@ var (
 	ACStatement           *sql.Stmt
 	DCStatement           *sql.Stmt
 	PowerStatement        *sql.Stmt
+	logAnalog             *sql.Stmt
 	FuelCell              PANFuelCell
 	logFile               *os.File
 	logFileName           string
@@ -60,7 +62,8 @@ var (
 	CanError              uint32
 )
 
-func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
+func connectToDatabase() error {
+	var err error
 	if pDB != nil {
 		if closeErr := pDB.Close(); closeErr != nil {
 			log.Println(closeErr)
@@ -70,34 +73,34 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 	// Set the time zone to Local to correctly record times
 	var sConnectionString = databaseLogin + ":" + databasePassword + "@tcp(" + databaseServer + ":" + databasePort + ")/" + databaseName + "?loc=Local"
 
-	db, err := sql.Open("mysql", sConnectionString)
+	pDB, err = sql.Open("mysql", sConnectionString)
 	if err != nil {
 		log.Println(err)
-		return nil, nil, err
+		return err
 	}
-	err = db.Ping()
+	err = pDB.Ping()
 	if err != nil {
-		if closeErr := db.Close(); closeErr != nil {
+		if closeErr := pDB.Close(); closeErr != nil {
 			log.Println(closeErr)
 		}
 		pDB = nil
-		return nil, nil, err
+		return err
 	}
-	PowerStatement, err = db.Prepare(InsertPowerSQL)
+	PowerStatement, err = pDB.Prepare(InsertPowerSQL)
 	if err != nil {
 		log.Println(err)
-		if closeErr := db.Close(); closeErr != nil {
+		if closeErr := pDB.Close(); closeErr != nil {
 			log.Println(closeErr)
 		}
-		return nil, nil, err
+		return err
 	}
-	logAnalog, err := db.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, temperature, inputs, outputs, relays) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+	logAnalog, err = pDB.Prepare("INSERT INTO firefly.IOValues(a0, a1, a2, a3, a4, a5, a6, a7, vref, cpuTemp, rawCpuTemp, temperature, inputs, outputs, relays) VALUES  (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		log.Println(err)
-		if closeErr := db.Close(); closeErr != nil {
+		if closeErr := pDB.Close(); closeErr != nil {
 			log.Println(closeErr)
 		}
-		return nil, nil, err
+		return err
 	}
 	const fuelCellLogStatement = `INSERT INTO firefly.PANFuelCell (
 		StackCurrent, StackVoltage, OutputVoltage, OutputCurrent,
@@ -130,35 +133,35 @@ func connectToDatabase() (*sql.Stmt, *sql.DB, error) {
 			?,?,?,?,?,
             ?,?,?)`
 
-	if pStmt, err := db.Prepare(fuelCellLogStatement); err != nil {
+	if pStmt, err := pDB.Prepare(fuelCellLogStatement); err != nil {
 		log.Println("Failed to prepare the fuel cell log statement -", err)
-		return logAnalog, nil, err
+		return err
 	} else {
 		dbRecord.stmt = pStmt
 	}
 
-	ElectrolyserStatement, err = db.Prepare(ElectrolyserInsertStatement)
+	ElectrolyserStatement, err = pDB.Prepare(ElectrolyserInsertStatement)
 	if err != nil {
-		return logAnalog, nil, err
+		return err
 	}
-	DryerStatement, err = db.Prepare(DryerInsertStatement)
+	DryerStatement, err = pDB.Prepare(DryerInsertStatement)
 	if err != nil {
-		return logAnalog, nil, err
+		return err
 	}
-	ACStatement, err = db.Prepare(ACValuesInsertStatement)
+	ACStatement, err = pDB.Prepare(ACValuesInsertStatement)
 	if err != nil {
-		return logAnalog, nil, err
+		return err
 	}
-	DCStatement, err = db.Prepare(DCValuesInsertStatement)
+	DCStatement, err = pDB.Prepare(DCValuesInsertStatement)
 	if err != nil {
-		return logAnalog, nil, err
+		return err
 	}
 
-	return logAnalog, db, err
+	return err
 }
 
 func ConnectCANBus() *CANBus {
-	//if Bus, err := NewCANBus(CANInterface); err != nil {
+	//if Bus, err:= NewCANBus(CANInterface); err != nil {
 	//	log.Println(err)
 	//	return nil
 	//} else {
@@ -169,8 +172,9 @@ func ConnectCANBus() *CANBus {
 
 func init() {
 	flag.StringVar(&CANInterface, "can", "can0", "CAN Interface Name")
-	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
-	flag.StringVar(&LocalPort, "LocalPort", "8080", "Local Port")
+	//	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
+	//	flag.StringVar(&LocalPort, "LocalPort", "8080", "Local Port")
+	flag.StringVar(&Port, "Port", "80", "Port")
 	flag.StringVar(&jsonSettings, "jsonSettings", "/etc/FireflyService.json", "JSON file containing the system control parameters")
 	flag.StringVar(&webFiles, "webFiles", "/etc/FireflyService/web", "Path to the WEB files location")
 	flag.StringVar(&databaseServer, "sqlServer", "localhost", "MySQL Server")
@@ -189,7 +193,7 @@ func init() {
 	if err != nil {
 		log.Panic(err)
 	}
-	// set log out put
+	// set log output
 	log.SetOutput(logFile)
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
@@ -226,7 +230,6 @@ func init() {
 
 	log.Println("Starting the WEB site.")
 	go setUpWebSite()
-	go setUpLocalWebSocket()
 }
 
 // ClientLoop ticks every second and logs values to the database. It also broadcasts the values to any registered web socket clients.
@@ -313,10 +316,9 @@ var WaterDumpHoldoff time.Time
 
 func DatabaseLogger() {
 	var (
-		err       error
-		logAnalog *sql.Stmt
+		err error
 	)
-	logAnalog, pDB, err = connectToDatabase()
+	err = connectToDatabase()
 	if err != nil {
 		log.Println(err)
 	}
@@ -327,7 +329,7 @@ func DatabaseLogger() {
 		case <-loggingTime.C:
 			if pDB == nil {
 				log.Println("Reconnect to the database")
-				logAnalog, pDB, err = connectToDatabase()
+				err = connectToDatabase()
 				if err != nil {
 					log.Println(err)
 				}
@@ -424,7 +426,7 @@ func CANHeartbeat() {
 		case <-heartbeatTime.C:
 			{
 				if canBus != nil {
-					Relays.UpdateRelays() // Heartbeat to the FireflyService board. If we don't send this the board will turn all relays off after about a minute.
+					Relays.UpdateRelays() // Heartbeat to the FireflyService board. If we don't send this, the board will turn all relays off after about a minute.
 					if err := canBus.SetFlags(currentSettings.getModbusFlags(), 0, 0, 0, 0, 0, 0, 0); err != nil {
 						log.Println(err)
 					}
@@ -470,7 +472,7 @@ func ElectrolyserLoop() {
 								// If the water management relay is set to turn on whenever an electrolyser is on, turn it on now.
 								if currentSettings.WaterDumpAction == ELRun {
 									if currentSettings.WaterDumpRelay != 255 {
-										Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), true)
+										Relays.SetRelay(currentSettings.WaterDumpRelay, true)
 									}
 								}
 								// after 60 seconds, start the dryer error monitor
@@ -542,9 +544,9 @@ func ElectrolyserLoop() {
 						}
 						// If the water relay is set to run whenever an electrolyser is on, turn it off
 						if currentSettings.WaterDumpAction == ELRun && currentSettings.WaterDumpRelay != 255 {
-							if Relays.GetRelay(uint8(currentSettings.WaterDumpRelay)) {
+							if Relays.GetRelay(currentSettings.WaterDumpRelay) {
 								log.Println("Turn off water dump.")
-								Relays.SetRelay(uint8(currentSettings.WaterDumpRelay), false)
+								Relays.SetRelay(currentSettings.WaterDumpRelay, false)
 							}
 						}
 						slices.SortStableFunc(Electrolysers.Arr[:], func(a *ElectrolyserType, b *ElectrolyserType) int {
@@ -588,7 +590,7 @@ func ElectrolyserPumpManagement() {
 
 // LeakDetection sets up a timer to check the hydrogen sensor and conductivity every second.
 //
-//	If five consecutive readings are higher than the threshold the electrolysers are powered down.
+//	If five consecutive readings are higher than the threshold, the electrolysers are powered down.
 func LeakDetection() {
 	leakTimer := time.NewTicker(time.Second)
 	alarmCount := 0
@@ -701,11 +703,11 @@ WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
 
 	const DCValuesCleanupStatement = `DELETE FROM firefly.DCValues WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH));`
 
-	const PowerArchiveStatement = `INSERT INTO firefly.Power_Archive (logged, volts, amps, soc, frequency, solar)
-  SELECT min(logged), avg(volts), avg(amps), avg(soc), avg(frequency), avg(solar)
+	const PowerArchiveStatement = `INSERT INTO firefly.Power_Archive (logged, volts, amps, soc, frequency, solar, source)
+  SELECT min(logged), avg(volts), avg(amps), avg(soc), avg(frequency), avg(solar), source
     FROM firefly.Power
 WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
- GROUP BY UNIX_TIMESTAMP(logged) DIV 60;`
+ GROUP BY UNIX_TIMESTAMP(logged) DIV 60, source;`
 
 	const PowerCleanupStatement = `DELETE FROM firefly.Power WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH));`
 
@@ -882,6 +884,10 @@ func main() {
 		}
 	}()
 
+	if err := connectToDatabase(); err != nil {
+		log.Fatal(err)
+	}
+	LoadMaintenanceRecords(pDB)
 	go ElectrolyserLoop()
 	go CANHeartbeat()
 	go DatabaseLogger()

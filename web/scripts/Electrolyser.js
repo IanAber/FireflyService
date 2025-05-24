@@ -1,7 +1,7 @@
 let elName = "";
 let lockSlider = false;
 let jsonData;
-let conn;
+let wsConn;
 
 function smallest(x, y) {
     if ((x > y) && (y > 0)) {
@@ -106,9 +106,9 @@ function setupPage(name) {
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws/electrolyser/" + elName;
-    conn = new WebSocket(url);
+    wsConn = new WebSocket(url);
 
-    conn.onmessage = function (evt) {
+    wsConn.onmessage = function (evt) {
         if ((Date.now() - lastMessage) < 800) {
             return;
         }
@@ -116,8 +116,8 @@ function RegisterWebSocket() {
         StartHeartbeat();
 
         if ($("#electrolyserName").length < 1) {
-            let urlQueryString = new URLSearchParams(window.location.search);
-            $("#system").after('<span class="system" id="electrolyserName" > - ' + urlQueryString.get("name") + '</span>')
+//            let urlQueryString = new URLSearchParams(window.location.search);
+            $("#system").after('<span class="system" id="electrolyserName" > - ' + name + '</span>')
         }
         try {
             jsonData = JSON.parse(evt.data);
@@ -143,7 +143,6 @@ function RegisterWebSocket() {
             stackVoltage.val(jsonData.stackVoltage);
             $("#model").text(jsonData.model);
             $("#serial").text(jsonData.serial);
-            $("#stackSerial").text(jsonData.stackSerial);
             $("#ip").text(jsonData.ip);
             $("#innerh2").text(jsonData.innerH2.toFixed(1));
             $("#outerh2").text(jsonData.outerH2.toFixed(1));
@@ -167,6 +166,7 @@ function RegisterWebSocket() {
             $("#restartPressure").text(jsonData.restartPressure.toFixed(0));
             $("#stackHours").text((jsonData.stackTotalRunTime / 3600).toFixed(2));
             $("#stackCycles").text(jsonData.stackStartStopCycles);
+            $("#stackSerial").text(jsonData.stackSerialNumber);
             $("#stackTotalProduction").text(jsonData.stackTotalProduction.toFixed(2));
             if (jsonData.errors != null) {
                 $("#errors").text(jsonData.errors.join("<br />"));

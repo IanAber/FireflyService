@@ -6,7 +6,7 @@
       <paths name="Breathe">
         <serverdata>
           <mappings>
-            <mapping deploy="FireflyService" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/FireflyService" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
@@ -15,6 +15,13 @@
           <mappings>
             <mapping deploy="bin" local="$PROJECT_DIR$/dist/release" web="/" />
             <mapping deploy="web" local="$PROJECT_DIR$/web" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="EG1">
+        <serverdata>
+          <mappings>
+            <mapping deploy="FireflyService" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

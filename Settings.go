@@ -127,6 +127,7 @@ type SettingsType struct {
 	GasCapacity                      uint32                    `json:"gasCapacity"`
 	GasVolumeUnits                   string                    `json:"gasVolumeUnits"`
 	GasPressureUnits                 string                    `json:"gasPressureUnits"`
+	GasLevelType                     string                    `json:"gasLevelType"`
 	GasPressureInput                 uint8                     `json:"gasPressureInput"`
 	GasDetectorThreshold             uint16                    `json:"gasDetectorThreshold"`
 	GasDetectorInput                 uint8                     `json:"gasDetectorInput"`
@@ -202,6 +203,7 @@ func NewSettings() *SettingsType {
 	settings.MaximumConductivity = 2.5
 	settings.GasPressureUnits = "bar"
 	settings.GasVolumeUnits = "litres"
+	settings.GasLevelType = "volume"
 	settings.MaxGasPressure = 35
 	settings.GasCapacity = 74724 // 8 standard tanks @ 35Bar
 	settings.GasPressureInput = 0
@@ -571,6 +573,7 @@ func (settings *SettingsType) setSettings(w http.ResponseWriter, r *http.Request
 	//	settings.GasUnits = r.FormValue("GasUnits")
 	settings.GasPressureUnits = r.FormValue("GasPressureUnits")
 	settings.GasVolumeUnits = r.FormValue("GasVolumeUnits")
+	settings.GasLevelType = r.FormValue("GasLevelType")
 	if val, err := strconv.ParseInt(r.FormValue("GasInput"), 10, 8); err != nil {
 		ReturnJSONError(w, DeviceString+"GasInput", err, http.StatusInternalServerError, true)
 		return

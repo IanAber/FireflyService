@@ -1439,6 +1439,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="534" parent="508" name="ElectrolyserMantenanceLog">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
@@ -2104,15 +2105,15 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <Position>3</Position>
       <StoredType>date|0s</StoredType>
     </column>
-    <column id="676" parent="534" name="StackHoursOffset">
+    <column id="676" parent="534" name="StackTimeOffset">
       <NotNull>1</NotNull>
       <Position>4</Position>
-      <StoredType>int(10) unsigned|0s</StoredType>
+      <StoredType>float|0s</StoredType>
     </column>
-    <column id="677" parent="534" name="SystemHoursOffset">
+    <column id="677" parent="534" name="SystemTimeOffset">
       <NotNull>1</NotNull>
       <Position>5</Position>
-      <StoredType>int(10) unsigned|0s</StoredType>
+      <StoredType>float|0s</StoredType>
     </column>
     <column id="678" parent="534" name="RestartCyclesOffset">
       <Position>6</Position>
@@ -2120,7 +2121,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
     </column>
     <column id="679" parent="534" name="StackProductionOffset">
       <Position>7</Position>
-      <StoredType>int(10) unsigned|0s</StoredType>
+      <StoredType>float|0s</StoredType>
     </column>
     <column id="680" parent="534" name="StackSerial">
       <NotNull>1</NotNull>

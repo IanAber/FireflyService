@@ -293,10 +293,10 @@ function openElectrolyser(name, id) {
     if ($("#"+id).attr("on") === "1") {
         openElectrolyserMain(name);
     } else {
-        window.open("ElectrolyserData.html?name=" + name);
+        window.open("ElectrolyserData.html/" + name);
     }
 }
 
 function openElectrolyserMain(name) {
-    window.open("Electrolyser.html?name=" + name);
+    window.open("Electrolyser.html/" + name);
 }

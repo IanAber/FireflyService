@@ -115,8 +115,8 @@ func (ai *AnalogInputsType) InitAnalogInputs() {
 
 //goland:noinspection ALL
 const H2ByDay = `SELECT MIN(ROUND(UNIX_TIMESTAMP(logged_start))) as logged
-     , SUM(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2)) AS increase
-     , SUM(ROUND(GREATEST(start_h2_calculated - end_h2_calculated, 0), 2)) as decrease
+     , IF(SUM(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2)) > 0.1, SUM(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2)), 0) AS increase
+     , IF(SUM(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2)) > 0.1, SUM(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2)), 0) AS decrease
   FROM (SELECT DISTINCT FIRST_VALUE(logged) OVER (PARTITION BY (UNIX_TIMESTAMP(logged) DIV 3600) ORDER BY logged ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as logged_start
              , FIRST_VALUE((((hydrogen * ?) + (?)) * ? * 0.2016) / ((273.15 + temperature) * 8.314)) OVER (PARTITION BY (UNIX_TIMESTAMP(logged) DIV 3600) ORDER BY logged ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as start_h2_calculated
              , LAST_VALUE((((hydrogen * ?) + (?)) * ? * 0.2016) / ((273.15 + temperature) * 8.314)) OVER (PARTITION BY (UNIX_TIMESTAMP(logged) DIV 3600) ORDER BY logged ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as end_h2_calculated
@@ -143,8 +143,8 @@ func SendHydrogenByDay(w http.ResponseWriter, start time.Time, end time.Time) {
 
 //goland:noinspection ALL
 const H2ByHour = `SELECT ROUND(UNIX_TIMESTAMP(logged_start)) as logged
-     , ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2) AS increase
-     , ROUND(GREATEST(start_h2_calculated - end_h2_calculated, 0), 2) as decrease
+     , IF(ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2) > 0.019, ROUND(GREATEST(end_h2_calculated - start_h2_calculated, 0), 2), 0) AS increase
+     , IF(ROUND(GREATEST(start_h2_calculated - end_h2_calculated, 0), 2) > 0.019, ROUND(GREATEST(start_h2_calculated - end_h2_calculated, 0), 2), 0) as decrease
   FROM (SELECT DISTINCT FIRST_VALUE(logged) OVER (PARTITION BY (UNIX_TIMESTAMP(logged) DIV 3600) ORDER BY logged ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as logged_start
              , FIRST_VALUE((((hydrogen * ?) + (?)) * ? * 0.2016) / ((273.15 + temperature) * 8.314)) OVER (PARTITION BY (UNIX_TIMESTAMP(logged) DIV 3600) ORDER BY logged ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as start_h2_calculated
              , LAST_VALUE((((hydrogen * ?) + (?)) * ? * 0.2016) / ((273.15 + temperature) * 8.314)) OVER (PARTITION BY (UNIX_TIMESTAMP(logged) DIV 3600) ORDER BY logged ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as end_h2_calculated

@@ -75,18 +75,18 @@ func RequestLoggerMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 	}
 }
 
-func setUpLocalWebSocket() {
-	wsRouter := mux.NewRouter()
-	wsRouter.HandleFunc("/ws/fuelcell", startFuelCellWebSocket).Methods("GET")
-	wsRouter.HandleFunc("/ws/electrolyser/{electrolyser}", startElectrolyserWebSocket).Methods("GET")
-	wsRouter.HandleFunc("/ws", startDataWebSocket).Methods("GET")
-
-	if webPort, err := strconv.ParseInt(WebPort, 10, 16); err != nil {
-		log.Fatal(err)
-	} else {
-		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", webPort+1), wsRouter))
-	}
-}
+//func setUpLocalWebSocket() {
+//	wsRouter := mux.NewRouter()
+//	wsRouter.HandleFunc("/ws/fuelcell", startFuelCellWebSocket).Methods("GET")
+//	wsRouter.HandleFunc("/ws/electrolyser/{electrolyser}", startElectrolyserWebSocket).Methods("GET")
+//	wsRouter.HandleFunc("/ws", startDataWebSocket).Methods("GET")
+//
+//	if webPort, err := strconv.ParseInt(WebPort, 10, 16); err != nil {
+//		log.Fatal(err)
+//	} else {
+//		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", webPort+1), wsRouter))
+//	}
+//}
 
 var cert tls.Certificate
 
@@ -106,27 +106,27 @@ func setUpWebSite() {
 
 	router.Use(RequestLoggerMiddleware(router))
 
-	localPortAddress := fmt.Sprintf(":%s", LocalPort)
-	remotePortAddress := fmt.Sprintf(":%s", WebPort)
+	localPortAddress := fmt.Sprintf(":%s", Port)
+	//remotePortAddress := fmt.Sprintf(":%s", WebPort)
 
-	remoteServer := &http.Server{
-		Addr:    remotePortAddress,
-		Handler: router,
-		TLSConfig: &tls.Config{
-			GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
-				// Load the latest certificate and key if the certificate is nil
-				if cert.Certificate == nil {
-					if newCert, err := tls.LoadX509KeyPair(certFile, keyFile); err != nil {
-						log.Print(err)
-					} else {
-						cert = newCert
-					}
-				}
-				return &cert, nil
-			},
-		},
-	}
-	go func() { log.Fatal(remoteServer.ListenAndServeTLS("", "")) }()
+	//remoteServer := &http.Server{
+	//	Addr:    remotePortAddress,
+	//	Handler: router,
+	//	TLSConfig: &tls.Config{
+	//		GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+	//			// Load the latest certificate and key if the certificate is nil
+	//			if cert.Certificate == nil {
+	//				if newCert, err := tls.LoadX509KeyPair(certFile, keyFile); err != nil {
+	//					log.Print(err)
+	//				} else {
+	//					cert = newCert
+	//				}
+	//			}
+	//			return &cert, nil
+	//		},
+	//	},
+	//}
+	//	go func() { log.Fatal(remoteServer.ListenAndServeTLS("", "")) }()
 	go func() { log.Fatal(http.ListenAndServe(localPortAddress, router)) }()
 }
 
@@ -484,14 +484,15 @@ func replaceText(txt string, replacements ReplacementsType) string {
 
 func serveElectrolyser(w http.ResponseWriter, r *http.Request) {
 	const function = "serveElectrolyser"
+	vars := mux.Vars(r)
 
 	if fileContent, err := os.ReadFile(webFiles + "/Electrolyser.html"); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		return
 	} else {
 		replacements := make(ReplacementsType)
-		replacements["title"] = currentSettings.Name + " - " + r.FormValue("name")
-		replacements["name"] = r.FormValue("name")
+		replacements["title"] = currentSettings.Name + " - " + vars["electrolyser"]
+		replacements["name"] = vars["electrolyser"]
 		replacements["version"] = version
 
 		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
@@ -1143,19 +1144,19 @@ func rebootDryer(w http.ResponseWriter, _ *http.Request) {
 
 func getElectrolyserStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	request := strings.ToLower(vars["electrolyser"])
+	name := strings.ToLower(vars["electrolyser"])
 	const function = "getElectrolyserStatus"
 
 	status := make([]*ElectrolyserStatusType, 0)
 
-	if request == "all" {
+	if name == "all" {
 		for _, el := range Electrolysers.Arr {
 			status = append(status, el.getStatus())
 		}
 	} else {
-		el := Electrolysers.FindByName(request)
+		el := Electrolysers.FindByName(name)
 		if el == nil {
-			ReturnJSONErrorString(w, function, "Electrolyser not found - "+request, http.StatusBadRequest, false)
+			ReturnJSONErrorString(w, function, "Electrolyser not found - "+name, http.StatusBadRequest, false)
 			return
 		}
 		status = append(status, el.getStatus())
@@ -1584,6 +1585,7 @@ type SystemSettings struct {
 	//	GasUnits              string  `json:"gasUnits"`
 	GasPressureUnits      string  `json:"gasPressureUnits"`
 	GasVolumeUnits        string  `json:"gasVolumeUnits"`
+	GasLevelType          string  `json:"gasLevelType"`
 	GasCapacity           uint32  `json:"gasCapacity"`
 	GasPressureInput      uint8   `json:"gasInput"`
 	GasDetectorInput      uint8   `json:"gasDetector"`
@@ -1686,8 +1688,8 @@ func getJsonStatus(indent bool) ([]byte, error) {
 		data.Electrolysers[idx].PowerRelay = Electrolysers.Arr[idx].status.PowerRelay
 		data.Electrolysers[idx].Enabled = Electrolysers.Arr[idx].status.Enabled
 		data.Electrolysers[idx].StackTotalProduction = Electrolysers.Arr[idx].status.StackTotalProduction
-		data.Electrolysers[idx].StackStartStopCycles = Electrolysers.Arr[idx].status.StackStartStopCycles
-		data.Electrolysers[idx].StackTotalRunTime = Electrolysers.Arr[idx].status.StackTotalRunTime
+		data.Electrolysers[idx].StackStartStopCycles = int32(Electrolysers.Arr[idx].status.StackStartStopCycles)
+		data.Electrolysers[idx].StackTotalRunTime = int32(Electrolysers.Arr[idx].status.StackTotalRunTime)
 		data.Electrolysers[idx].StackSerialNumber = Electrolysers.Arr[idx].status.StackSerialNumber
 		data.Electrolysers[idx].Warnings = Electrolysers.Arr[idx].GetWarnings()
 		data.Electrolysers[idx].Errors = Electrolysers.Arr[idx].GetErrors()
@@ -1732,6 +1734,7 @@ func getJsonStatus(indent bool) ([]byte, error) {
 	//	data.SystemSettings.GasUnits = currentSettings.GasUnits
 	data.SystemSettings.GasVolumeUnits = currentSettings.GasVolumeUnits
 	data.SystemSettings.GasPressureUnits = currentSettings.GasPressureUnits
+	data.SystemSettings.GasLevelType = currentSettings.GasLevelType
 	data.SystemSettings.GasCapacity = currentSettings.GasCapacity
 	data.SystemSettings.GasDetectorInput = currentSettings.GasDetectorInput
 	data.SystemSettings.GasDetectorThreshold = currentSettings.GasDetectorThreshold

@@ -21,7 +21,7 @@ function StartHeartbeat() {
     $("header").removeClass("alarm");
     let hb = $("#heartbeat");
     if (hb.length < 1) {
-        $("#system").after('<img class="heartbeat" alt="HeartBeat" id="heartbeat" src="images/heartbeat.png" />')
+        $("#system").after('<img class="heartbeat" alt="HeartBeat" id="heartbeat" src="/images/heartbeat.png" />')
     }
     hb.stop(true,true);
     hb.animate({width: "15px", height: "15px"}, 400, function () { $(this).removeAttr('style'); })

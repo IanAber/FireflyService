@@ -62,7 +62,8 @@ function RegisterWebSocket() {
             let EL = $("#el");
             if (elCount !== jsonData.Electrolysers.length) {
                 elCount = jsonData.Electrolysers.length;
-                maxFlow = Math.round(elCount * ((5250 / 990) + 0.5)) / 10;
+//                maxFlow = Math.round(elCount * ((5250 / 990) + 0.5)) / 10;
+                maxFlow = 50 * elCount; // 0.08996g = 1NL : max for one electrolyser is 525NL/hr
                 EL.jqxGauge({
                     min: 0,
                     max: maxFlow,
@@ -72,7 +73,7 @@ function RegisterWebSocket() {
                     value: 0,
                     animationDuration: 500,
                     cap: {size: '5%', style: { fill: '#ff0000', stroke: '#00ff00' }, visible: true},
-                    caption: {value: 'kW', position: 'bottom', offset: [0, 10], visible: true},
+                    caption: {value: 'g/hr', position: 'bottom', offset: [0, 10], visible: true},
                 });
                 if (diameter === 0) {
                     diameter = EL.jqxGauge('height');
@@ -88,7 +89,7 @@ function RegisterWebSocket() {
                 diameter = EL.jqxGauge('width');
             }
             jsonData.Electrolysers.forEach((currentElement) => {flow += currentElement.h2Flow});
-            EL.val(flow / 990);
+            EL.val(flow * 0.08996);
 
             let storingH2Div = $("#storingH2Div");
             if (flow > 0) {
@@ -111,7 +112,11 @@ function RegisterWebSocket() {
             }
 
             gasUnits.capacity = jsonData.SystemSettings.gasCapacity;
-            updatePressure(jsonData.h2);
+            if (jsonData.h2.gasLevelType === "pressure") {
+               updatePressure(jsonData.h2);
+            } else {
+                updateVolume(jsonData.h2);
+            }
             updateConductivity(jsonData.Analog.Inputs[7], jsonData.SystemSettings.maxConductivityGreen, jsonData.SystemSettings.maxConductivityYellow);
             RenderButtons(jsonData.Buttons);
         } catch (e) {
@@ -242,6 +247,7 @@ function buildChart() {
         seriesGroups: [{
             type: 'column',
             valueAxis: {
+                minValue: 0,
                 gridLines: {
                     visible: false,
                 },
@@ -330,7 +336,7 @@ function updatePressure(h2) {
             ticksOffset: [40, 15],
             ticksMajor: { size: '10%', interval: h2.maxPressure / 5 },
             ticksMinor: { size: '5%', interval: h2.maxPressure / 10, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
-            labels: { interval: Math.round(h2.maxPressure / 5), position: "far"  },
+            labels: { interval: Math.round(h2.maxPressure / 5), position: "far", offset: 10  },
             ranges: [
                 { startValue: 0, endValue: h2.maxPressure * 0.25, style: { fill: '#FF4800', stroke: '#FF4800'} },
                 { startValue: h2.maxPressure * 0.25, endValue: h2.maxPressure * 0.7, style: { fill: '#FFA200', stroke: '#FFA200'}},
@@ -343,6 +349,39 @@ function updatePressure(h2) {
         gasTitle.text("H2 Pressure (" + h2.pressureUnits + ")");
     }
     Gas.val(h2.pressure);
+
+}
+
+function updateVolume(h2) {
+    let Gas = $("#gas");
+    if (gasUnits.displayUnits !== h2.volumeUnits) {
+        gasUnits.displayUnits = h2.volumeUnits;
+        buildChart();
+    }
+    if (Gas.children().length < 1) {
+        let gasTitle = $("#gasTitle");
+        let gaugeSettings = {
+            max : Math.round(h2.maxVolume),
+            min: 0,
+            height: "80%",
+            colorScheme: 'scheme02',
+            ticksPosition: 'far',
+            ticksOffset: [40, 15],
+            ticksMajor: { size: '10%', interval: h2.maxVolume / 5 },
+            ticksMinor: { size: '5%', interval: h2.maxVolume / 10, style: { 'stroke-width': 1, stroke: '#aaaaaa'} },
+            labels: { interval: Math.round(h2.maxVolume / 5), position: "far", offset: 10  },
+            ranges: [
+                { startValue: 0, endValue: h2.maxVolume * 0.25, style: { fill: '#FF4800', stroke: '#FF4800'} },
+                { startValue: h2.maxVolume * 0.25, endValue: h2.maxVolume * 0.7, style: { fill: '#FFA200', stroke: '#FFA200'}},
+                { startValue: h2.maxVolume * 0.7, endValue: h2.maxVolume, style: { fill: '#00B000', stroke: '#00B000'}}],
+            pointer: { pointerType: 'rectangle', size: '15%', visible: true, offset: 0 },
+            value: 0,
+            animationDuration: 0,
+        }
+        Gas.jqxLinearGauge(gaugeSettings);
+        gasTitle.text("Hydrogen (" + h2.volumeUnits + ")");
+    }
+    Gas.val(h2.volume);
 
 }
 

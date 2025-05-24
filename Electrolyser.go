@@ -1213,172 +1213,146 @@ func (el *ElectrolyserType) GetSystemState() string {
 }
 
 func decodeMessage(w uint16) string {
-	switch w {
-	case 0:
-		return "No error"
-	case 0x0FFF:
-		return "Hardware failure : Unexpected error"
-	case 0x1F81:
-		return "Voltage < 2.9V : Brownout detected"
-	case 0x1F82:
-		return "Updated firmware has new mandatory settings : New parameters have been added to the configuration"
-	case 0x1F83:
-		return "Hardware failure : Broken periphery"
-	case 0x3F84:
-		return "Power Button pressed for longer than 5sec	Sticky button : Power button is pushed."
-	case 0x3F85:
-		return "Too low battery. : Main board battery charge is to low."
-	case 0x108A:
-		return "Pump broken. : The electrolyte pump may be damaged."
-	case 0x1114:
-		return "Pressure drop > 2% : Possible hydrogen leak"
-	case 0x318A:
-		return "Pressure > 5 Bar : Water inlet pressure too high"
-	case 0x3194:
-		return "Pressure < 1.0 Bar : Water inlet pressure too low	Please provide water input pressure to the water inlet."
-	case 0x118A:
-		return "Water level is over very high level switch : Electrolyte level is too high. Please switch the electrolyser into maintenance mode and decrease the electrolyte level."
-	case 0x1194:
-		return "Water level is below low level switch	Electrolyte level too low. Please switch the electrolyser into maintenance mode, drain fully and then fill the electrolyte tank with fresh electrolyte solution."
-	case 0x11B2:
-		return "Conflict between water level sensors (low and medium level)"
-	case 0x11B3:
-		return "Conflict between water level sensors (medium and high level)"
-	case 0x11B4:
-		return "Conflict between water level sensors (high and very high level)"
-	case 0x11A8:
-		return "Refilling unsuccessful."
-	case 0x3195:
-		return "Refilling timeout	Please reboot device and ensure water inlet requirements are met."
-	case 0x3196:
-		return "Refilling failure	The refilling failed. Check water water supply system."
-	case 0x31B3:
-		return "Available only in Maintenance Mode	Drain completely	Electrolyte level is below minimum level. Electrolyser is ready for refill."
-	case 0x31B4:
-		return "Available only in Maintenance Mode	Refill to high level	Please continue filling the electrolyte."
-	case 0x31B5:
-		return "Electrolyte level is very high, drain to high level."
-	case 0x1201:
-		return "PSU bad current. PSU might be broken."
-	case 0x120A:
-		return "Broken membrane. Membrane inside the stack might be broken."
-	case 0x3215:
-		return "Pressure spike > 2%	Drifting PT101A. Pressure mismatch towards stack status has been detected."
-	case 0x3216:
-		return "System works with electrolyte level less than medium one and can not refill (during pressure limit and etc)	Refilling not happening	Please check the water supply - otherwise, the hydrogen production will stop soon."
-	case 0x321E:
-		return "Stack voltage is too high	Replace electrolyte	Replace electrolyte. If the error persists."
-	case 0x128A:
-		return "Temperature > 58°C	Electrolyte temperature too high	Please make sure that air ventilation is unobstructed or cooling liquid cooling loop operating and that ambient temperatures do not exceed device specifications"
-	case 0x3294:
-		return "Rotation < 600rpm	Electrolyte cooling fan broken. The electrolyte cooling fan should be checked."
-	case 0x228A:
-		return "Temperature < 6°C	Electrolyte temperature too low	Please make sure that room temperature is at least 6°C. Keep the EL powered to ensure the heating routine continues to protect the device internals."
-	case 0x330A:
-		return "Pressure is > atmospheric pressure + 10%	Gas side pressure is not atmospheric	Purge line pressure detected. Ramp-Up is not possible. Please check that the purge line is unobstructed."
-	case 0x230A:
-		return "Cannot start the heater because the water level in the internal electrolyser tank is too low.	Not enough warmup water	Heater can't be started due to a low electrolyte level. Refill electrolyser, restart and try again."
-	case 0x1401:
-		return "Pressure > 37bar	Hydrogen inner pressure too high. The hydrogen inner pressure exceeded 37 Bar (nominal, but high)."
-	case 0x1402:
-		return "Water sensor is wet	Water presence. Water is leaking inside the electrolyser. Please remove the water supply and power from the system and drain immediately."
-	case 0x1403:
-		return "No voltage from PSU	PSU broken. PSU failure detected. No voltage on stack."
-	case 0x1404:
-		return "Current > 58A	Stack current too high. Stack over current detected."
-	case 0x1405:
-		return "Back flow temperature too high. The stack outlet temperature is too high."
-	case 0x1407:
-		return "Temperature > 75°C	Electronic board temperature too high	The electronic board temperature is too high. Please check and clean ventilation openings."
-	case 0x1408:
-		return "vent line obstruction	Electrolyte tank pressure too high	Please make sure that O2 vent line is not blocked."
-	case 0x1409:
-		return "Electrolyte temperature too low	Please make sure that room temperature is at least 6°C. Keep the EL powered to ensure the heating routine continues to protect the device internals."
-	case 0x140A:
-		return "Hydrogen pressure too high. pressure transmitter calibration needs to be verified."
-	case 0x140B:
-		return "Temperature Sensor	Temperature > 75°C	Control Board MCU temperature too high	Please make sure that room temperature below 45°C."
-	case 0x141E:
-		return "Water inlet pressure transmitter broken. The water inlet pressure cannot be measured or bad water inlet pressure."
-	case 0x141F:
-		return "Electrolyte tank temperature transmitter broken. The electrolyte tank temperature cannot be measured."
-	case 0x1420:
-		return "Electrolyte flow meter broken. The electrolyte flow cannot be measured."
-	case 0x1421:
-		return "Electrolyte back flow temperature transmitter broken. The electrolyte back flow temperature cannot be measured."
-	case 0x1422:
-		return "Hydrogen inner pressure transmitter broken. The hydrogen inner pressure cannot be measured."
-	case 0x1423:
-		return "Outer hydrogen pressure transmitter broken. The outer hydrogen pressure cannot be measured."
-	case 0x1424:
-		return "Rotation < 3000rpm	Chassis circulation fan broken. The chassis air circulation fan speed cannot be measured."
-	case 0x1425:
-		return "Rotation < 3000rpm	Electronic compartment cooling fan broken. The electronic compartment cooling fan speed cannot be measured."
-	case 0x1426:
-		return "Electronic board temperature transmitter broken. The electronic board temperature cannot be measured."
-	case 0x1427:
-		return "Current sensor broken. The stack current cannot be measured."
-	case 0x1428:
-		return "Dry contact error	Dry contact triggered system stop. Please check your system to understand what triggered the dry contact."
-	case 0x3432:
-		return "Hydrogen inner pressure check disabled."
-	case 0x3433:
-		return "Water presence check disabled."
-	case 0x3434:
-		return "PSU check disabled."
-	case 0x3435:
-		return "Stack current check disabled."
-	case 0x3436:
-		return "Back flow temperature check disabled."
-	case 0x3437:
-		return "Electronic board temperature check disabled"
-	case 0x3438:
-		return "Electrolyte tank pressure check disabled."
-	case 0x3439:
-		return "Low electrolyte temperature check disabled."
-	case 0x343B:
-		return "Inlet pressure check disabled."
-	case 0x343C:
-		return "Electrolyte tank temperature check disabled."
-	case 0x343D:
-		return "Electrolyte flow meter check disabled."
-	case 0x343E:
-		return "Electrolyte cooling check disabled."
-	case 0x343F:
-		return "Electrolyte back flow temperature check disabled."
-	case 0x3440:
-		return "Hydrogen outer pressure check disabled."
-	case 0x3441:
-		return "Chassis circulation fan check disabled."
-	case 0x3442:
-		return "Electronic compartment cooling fan check disabled."
-	case 0x3443:
-		return "External switch		Dry contact check disabled."
-	case 0x3445:
-		return "MCU Temperature Sensor		Control Board MCU temperature check disabled."
-	case 0x148A:
-		return "Frozen pipes. Electrolyte flow outside pump control limits."
-	case 0x1501:
-		return "Possible hydrogen leak detected. Pressure readings below nominal values. The device needs to be checked or repaired."
-	case 0x350A:
-		return "Insufficient pressure drop	Insufficient pressure drop. Check that purge line from the electrolyser is not obstructed."
-	case 0x358A:
-		return "Pressure > 25 Bar Outer pressure is too high to run blow down routine Please reduce outlet pressure to below 25 bar in order to run the blow down routine."
-	case 0x3594:
-		return "The Blow down procedure will be started at H2 production start Blow down Routine Active. Please make sure that purge line is properly connected and leads to a safe area."
-	case 0x159E:
-		return "The purge line is obstructed"
-	case 0x360A:
-		return "ModBus Heartbeat Packet was not received in time : Lost ModBus safety heartbeat communication : Please check ModBus communication between Electrolyser and controller. Please check if Ethernet cable is properly installed and connection is established."
-	case 0x360B:
-		return "Gateway	Heartbeat Packet was not received in time : Lost Gateway safety heartbeat communication : Please check communication between Gateway and Electrolyser (UCM). Please check if WiFi connection is stable."
-	case 0x360C:
-		return "Heartbeat Packet was not received in time : Lost UCM safety heartbeat communication"
-	case 0x368A:
-		return "Polarization curve cannot be started."
-	default:
-		return "Unknown Error/Warning"
+	dec := map[uint16]string{0x0FFF: "Internal error",
+		0x108A: "Pump broken",
+		0x1114: "Inner hydrogen pressure reading is below the expected value",
+		0x118A: "Electrolyte level is too high",
+		0x1194: "Electrolyte level is too low",
+		0x11A8: "Refilling unsuccessful",
+		0x11B2: "Conflict between water level sensors (low and medium)",
+		0x11B3: "Conflict between water level sensors (medium and high)",
+		0x11B4: "Conflict between water level sensors (high and very high)",
+		0x1201: "Broken PSU",
+		0x120A: "Broken membrane",
+		0x120B: "Steady-state leak check failed",
+		0x120C: "Insufficient stack current",
+		0x128A: "Electrolyte temperature is too high",
+		0x130C: "Insufficient stack current",
+		0x1402: "Water presence detected",
+		0x1403: "PSU broken",
+		0x1404: "Stack current is too high",
+		0x1405: "Backflow temperature is too high",
+		0x1407: "Control board temperature is too high",
+		0x1408: "Electrolyte tank pressure is too high",
+		0x1409: "Electrolyte temperature is too low",
+		0x140A: "Hydrogen pressure is too high",
+		0x140B: "Control Board MCU temperature is too high",
+		0x140C: "Outer hydrogen pressure is too high",
+		0x140D: "High hydrogen presence detected",
+		0x141E: "Water inlet pressure transmitter broken",
+		0x141F: "Electrolyte tank temperature transmitter broken",
+		0x1420: "Electrolyte flow meter broken",
+		0x1421: "Electrolyte backflow temperature transmitter broken",
+		0x1422: "Inner hydrogen pressure transmitter broken",
+		0x1423: "Outer hydrogen pressure transmitter broken",
+		0x1424: "Chassis circulation fan broken",
+		0x1425: "Electronic compartment cooling fan broken",
+		0x1426: "Electronic board temperature transmitter broken",
+		0x1427: "Stack current sensor broken",
+		0x1428: "Dry contact triggered",
+		0x1429: "Water level sensor broken",
+		0x142A: "Common trip",
+		0x142B: "Insufficient electrolyte flow",
+		0x148A: "Frozen pipes",
+		0x1501: "Inner hydrogen pressure reading is below the expected value",
+		0x159E: "Hydrogen Purge line obstruction or blowdown failure",
+		0x170A: "Recombiner undertemperature",
+		0x170B: "Recombiner overtemperature",
+		0x1714: "Recombiner overcooling",
+		0x1715: "Recombiner underheating",
+		0x171E: "Recombiner frozen",
+		0x171F: "Recombiner heater malfunction",
+		0x178A: "INVALID COMMUNICATION PACKET",
+		0x1794: "DRY CONTACT",
+		0x1795: "COMMUNICATION FAILURE",
+		0x1796: "SAFE STATE REQUESTED BY CONTROL BOARD",
+		0x1797: "INCOMPATIBLE CONTROL BOARD VERSION",
+		0x1798: "RELAY BROKEN",
+		0x1799: "PROOF-TEST CANNOT BE STARTED",
+		0x179A: "PROOF-TEST FAILED",
+		0x179B: "INNER HYDROGEN PRESSURE TRANSMITTER BROKEN",
+		0x179C: "INCORRECT CONTROL BOARD",
+		0x179D: "RECOMBINER CHAMBER TEMPERATURE SENSOR BROKEN",
+		0x179E: "TACHOMETER OR FAN BROKEN",
+		0x179F: "SAFETY BOARD TEMPERATURE SENSOR BROKEN",
+		0x17A0: "CONTROL BOARD AND SAFETY BOARD PAIRED",
+		0x17A1: "Safety Board brownout",
+		0x17B3: "SIF1: HYDROGEN STACK OVERPRESSURE",
+		0x17B4: "SIF2: RECOMBINER CHAMBER OVERTEMPERATURE",
+		0x17B5: "SIF3: WATER LEAKAGE DETECTION",
+		0x17B6: "SIF4: TANK OVERPRESSURE",
+		0x17B7: "SIF5: DILUTION FAN FOR HYDROGEN CONCENTRATION",
+		0x17B8: "SIF6: SAFETY ELECTRONIC BOARD TEMPERATURE",
+		0x1F81: "Brownout detected",
+		0x1F82: "New configuration parameters added",
+		0x1F83: "Broken periphery",
+		0x1F86: "Insufficient resources for DCN / IDCN",
+		0x228A: "Electrolyte temperature is too low",
+		0x2314: "Target current could not be reached.",
+		0x2401: "Inner hydrogen pressure is too high",
+		0x318A: "Water inlet pressure is too high",
+		0x3194: "Water inlet pressure is too low",
+		0x3195: "Refilling timeout",
+		0x3196: "Refilling failure",
+		0x3197: "Draining timeout",
+		0x31B3: "Drain completely",
+		0x31B4: "Refill to high level",
+		0x31B5: "Drain to high level",
+		0x31B6: "Refill to medium level",
+		0x3214: "Standby mode",
+		0x3215: "Drift in inner hydrogen pressure sensor",
+		0x3216: "Refilling is not occurring",
+		0x321E: "Replace electrolyte",
+		0x321F: "Derating due to temperature",
+		0x3220: "Derating due to voltage",
+		0x3294: "Electrolyte cooling fan broken",
+		0x3295: "Slow electrolyte heating",
+		0x330A: "Gas-side pressure is not atmospheric",
+		0x330B: "Electrolyte level insufficient for start-up",
+		0x3314: "Ramp-up leak check failed",
+		0x340E: "Hydrogen presence detected",
+		0x340F: "Hydrogen sensor regeneration",
+		0x3410: "Electrolyte large temperature discrepancy",
+		0x3432: "Inner hydrogen pressure check disabled",
+		0x3433: "Water presence check disabled",
+		0x3434: "Power supply unit check is disabled",
+		0x3435: "Stack current check disabled",
+		0x3436: "Electrolyte backflow temperature check disabled",
+		0x3437: "Control board temperature check disabled",
+		0x3438: "Electrolyte tank pressure check disabled",
+		0x3439: "Low electrolyte temperature check disabled",
+		0x343A: "Inner overpressure check disabled",
+		0x343B: "Water inlet pressure check disabled",
+		0x343C: "Electrolyte tank temperature check disabled",
+		0x343D: "Electrolyte flow meter check disabled",
+		0x343E: "Electrolyte cooling fan check disabled",
+		0x343F: "Electrolyte backflow temperature check disabled",
+		0x3440: "Outer hydrogen pressure check disabled",
+		0x3441: "Chassis circulation fan check disabled",
+		0x3442: "Electronic compartment cooling fan check disabled",
+		0x3443: "Dry contact check disabled",
+		0x3444: "Water level check disabled",
+		0x3445: "Control Board temperature check disabled",
+		0x3446: "Hydrogen sensor check disabled",
+		0x3447: "Electrolyte flow check disabled",
+		0x3448: "Electrolyte sensors discrepancy check disabled",
+		0x348A: "Electrolyte anti-freeze routine is disabled",
+		0x350A: "Insufficient pressure drop",
+		0x358A: "Outer hydrogen pressure is too high for blowdown",
+		0x3594: "Blowdown routine is active",
+		0x360A: "Lost Modbus safety heartbeat communication",
+		0x360B: "Lost Enapter Gateway safety heartbeat communication",
+		0x360C: "Lost UCM communication",
+		0x368A: "Polarization curve start failed",
+		0x3701: "Recombiner anti-freeze routine is disabled",
+		0x37B2: "SIF-test has been started",
+		0x3F84: "Stuck power button",
+		0x3F85: "Low battery voltage",
 	}
+	if txt := dec[w]; txt != "" {
+		return txt
+	}
+	return fmt.Sprintf("Unknown error/warning : %x", w)
 }
 
 func (el *ElectrolyserType) GetSerial() string {

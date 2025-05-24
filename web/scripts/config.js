@@ -140,6 +140,7 @@ function loadSettings() {
                         $("#MaxGasPressure").val(data.maxGasPressure);
                         $("#GasCapacity").val(data.gasCapacity);
                         $("#GasVolumeUnits").val(data.gasVolumeUnits);
+                        $("#GasLevelType").val(data.gasLevelType);
                         $("#GasPressureUnits").val(data.gasPressureUnits);
                         $("#GasInput").val(data.gasPressureInput);
                         $("#maxYellowConductivity").val(data.conductivityYellowMax);

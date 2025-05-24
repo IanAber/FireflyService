@@ -101,7 +101,8 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/setFuelCell/ResetFault", "", "PUT", "Send the reset fault code to the fuel cell", resetFCFault)
 	RegisterWebSiteAPI(router, "/setFuelCell/TurnOnHeater", "", "PUT", "Turn on the fuel cell coolant heater", turnOnFCHeater)
 	RegisterWebSiteAPI(router, "/setFuelCell/TurnOffHeater", "", "PUT", "Turn off the fuel cell coolant heater", turnOffFCHeater)
-	RegisterWebSiteAPI(router, "/Electrolyser.html", "", "GET", "Open the Electrolyser screen", serveElectrolyser)
+	RegisterWebSiteAPI(router, "/Electrolyser.html/{electrolyser}", "", "GET", "Open the Electrolyser screen", serveElectrolyser)
+	RegisterWebSiteAPI(router, "/Electrolyser.html/{electrolyser}", "", "POST", "Allows various maintenance operations to be recorded for an electrolyser", recordElMaintenance)
 	RegisterWebSiteAPI(router, "/electrolyser/acquire}", "", "GET", "Go and find the electrolyser IP address based on its name or index.", acquireElectrolysers)
 	RegisterWebSiteAPI(router, "/getElectrolyser/{electrolyser}", "", "GET", "Get the status for an electrolyser by electrolyser name or index", getElectrolyserStatus)
 	RegisterWebSiteAPI(router, "/setElectrolyser/Production/{electrolyser}/{rate}", "", "PUT", "Set the electrolyser production rate (60-100) by electrolyser name or index.", setElectrolyserProductionRate)
@@ -116,6 +117,7 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/setElectrolyser/StopMaintenance/{electrolyser}", "", "PUT", "Stop the maintenance cycle for the electrolyser by electrolyser name or index", stopMaintenanceElectrolyser)    //
 	RegisterWebSiteAPI(router, "/setElectrolyser/PowerOn/{electrolyser}", "", "PUT", "Turn on the relay associated with the electrolyser by electrolyser name or index", powerOnElectrolyser)
 	RegisterWebSiteAPI(router, "/setElectrolyser/PowerOff/{electrolyser}", "", "PUT", "Turn off the relay associated with the electrolyser by electrolyser name or index", powerOffElectrolyser)
+	RegisterWebSiteAPI(router, "/ElectrolyserMaintenance/{electrolyser}", "", "GET", "Show the form to log maintenance activity on an electrolyser", showElectrolyserMaintenance)
 	RegisterWebSiteAPI(router, "/setDryer/Start", "", "PUT", "Start the dryer", startDryer)                                                                                                                        // Start the dryer
 	RegisterWebSiteAPI(router, "/setDryer/Stop", "", "PUT", "Stop the dryer", stopDryer)                                                                                                                           //
 	RegisterWebSiteAPI(router, "/setDryer/Reboot", "", "PUT", "Reboot the dryer", rebootDryer)                                                                                                                     //
@@ -129,7 +131,6 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/debug/{on}", "", "GET", "Enable debug output", setDebug)
 	RegisterWebSiteAPI(router, "/logCalls/{on}", "", "GET", "Enable logging of all API calls", setCallLogging)
 	RegisterWebSiteAPI(router, "/logCanBus/{on}", "", "GET", "Enable logging of all CAN bus errors", setCANLogging)
-	RegisterWebSiteAPI(router, "/recordMaintenance", "", "POST", "Allows various maintenance operations to be recorded for an electrolyser", recordElMaintenance)
 
 	RegisterWebSiteAPI(router, "/recordPower", "", "POST", `Post a JSON block {"source":"firefly", current":i.i, "voltage": v.v, "soc":s.s, "hz":f.f, "solar":w } hz is optional, positive current is charging.`, recordPowerData)
 	RegisterWebSiteAPI(router, "/recordBatteryVolts", "", "POST", `Post a JSON block {"source":"firefly", "voltage": v.v }`, recordBatteryVolts)

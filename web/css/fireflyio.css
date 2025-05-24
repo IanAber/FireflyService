@@ -432,7 +432,7 @@ th.DeviceMeasurement {
     width:6em;
 }
 td.label {
-    width:20em;
+    width:25em;
     text-align:right;
     border-right-style:solid;
     border-right-width:2px;
@@ -642,6 +642,15 @@ select {
     height: 2em;
     font-size: large;
     width: 100%;
+}
+
+select.maintenance {
+    color: white;
+    border: 2px solid #fee400;
+    background-color: #373637;
+    height: 2em;
+    font-size: large;
+    width: 25%;
 }
 
 div.inputUnits {

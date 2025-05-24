@@ -3,38 +3,38 @@
   <head>
       <meta charset="UTF-8">
       <title>Electrolyser</title>
-      <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
-      <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
-      <link rel="stylesheet" type="text/css" href="css/fireflyio.css" />
-      <script type="text/ecmascript" src="scripts/jquery-3.6.0.min.js"></script>
-      <script type="text/ecmascript" src="scripts/jquery-ui.js"></script>
-      <script type="text/ecmascript" src="scripts/Electrolyser.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxcheckbox.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxgauge.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxbuttons.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxbargauge.js"></script>
-      <script type="text/javascript" src="scripts/jqwidgets/jqxslider.js"></script>
-      <script type="text/ecmascript" src="scripts/utils.js"></script>
+      <link rel="stylesheet" href="/scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+      <link rel="stylesheet" href="/scripts/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="/css/fireflyio.css" />
+      <script type="text/ecmascript" src="/scripts/jquery-3.6.0.min.js"></script>
+      <script type="text/ecmascript" src="/scripts/jquery-ui.js"></script>
+      <script type="text/ecmascript" src="/scripts/Electrolyser.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxcore.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxcheckbox.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxdata.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxdraw.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxgauge.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxbuttons.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxbargauge.js"></script>
+      <script type="text/javascript" src="/scripts/jqwidgets/jqxslider.js"></script>
+      <script type="text/ecmascript" src="/scripts/utils.js"></script>
   </head>
   <body onload="PopulateTitle()">
       <header class="header">
           <h1>
               <span class="system" id="system">Loading...</span>
-              <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+              <img id="logo" class="logo" src="/images/logo.png" alt="ElektrikGreen Logo"/>
           </h1>
       </header>
       <div class="threegauges" >
           <div class="centered">
-              <div id="production" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
+              <div id="production" ondblclick="window.open('/ElectrolyserData.html?name={{name}}')"></div>
           </div>
           <div class="centered">
-              <div id="stackCurrent" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
+              <div id="stackCurrent" ondblclick="window.open('/ElectrolyserData.html?name={{name}}')"></div>
           </div>
           <div class="centered">
-              <div id="stackVoltage" ondblclick="window.open('ElectrolyserData.html?name={{name}}')"></div>
+              <div id="stackVoltage" ondblclick="window.open('/ElectrolyserData.html?name={{name}}')"></div>
           </div>
       </div>
       <div class="gauges" >
@@ -100,31 +100,31 @@
           <div class="centered">
               <table class="firefly">
                   <tr class="parameters">
-                      <td class="label"><img id="Run" class="swOff" src="images/power-off.png" alt="Enable" onclick="RunClick()" /></td>
+                      <td class="label"><img id="Run" class="swOff" src="/images/power-off.png" alt="Enable" onclick="RunClick()" /></td>
                       <td class="left"><label for="Run">Run</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Maintenance" class="swOff" src="images/power-off.png" alt="Enable" onclick="MaintenanceClick()" /></td>
+                      <td class="label"><img id="Maintenance" class="swOff" src="/images/power-off.png" alt="Enable" onclick="MaintenanceClick()" /></td>
                       <td class="left"><label for="Maintenance">Maintenance</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Blowdown" class="swOff" src="images/power-off.png" alt="Enable" onclick="BlowDownClick()" /></td>
+                      <td class="label"><img id="Blowdown" class="swOff" src="/images/power-off.png" alt="Enable" onclick="BlowDownClick()" /></td>
                       <td class="left"><label for="Blowdown">Blowdown</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Refill" class="swOff" src="images/power-off.png" alt="Enable" onclick="RefillClick()" /></td>
+                      <td class="label"><img id="Refill" class="swOff" src="/images/power-off.png" alt="Enable" onclick="RefillClick()" /></td>
                       <td class="left"><label for="Refill">Fill</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Preheat" class="swOff" src="images/power-off.png" alt="Enable" onclick="PreheatClick()" /></td>
+                      <td class="label"><img id="Preheat" class="swOff" src="/images/power-off.png" alt="Enable" onclick="PreheatClick()" /></td>
                       <td class="left"><label for="Preheat">Preheat</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Rescan" class="swOff" src="images/power-off.png" alt="Rescan" onclick="RescanClick()" /></td>
+                      <td class="label"><img id="Rescan" class="swOff" src="/images/power-off.png" alt="Rescan" onclick="RescanClick()" /></td>
                       <td class="left"><label for="Rescan">Rescan IP</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="Reboot" class="swOff" src="images/power-off.png" alt="Reboot" onclick="RebootClick()" /></td>
+                      <td class="label"><img id="Reboot" class="swOff" src="/images/power-off.png" alt="Reboot" onclick="RebootClick()" /></td>
                       <td class="left"><label for="Reboot">Reboot</label></td>
                   </tr>
               </table>
@@ -135,15 +135,15 @@
           <div class="centered" id="DryerDiv" style="display:none;">
               <table class="firefly">
                   <tr class="parameters">
-                      <td class="label"><img id="DryerStart" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerStartClick()" /></td>
+                      <td class="label"><img id="DryerStart" class="swOff" src="/images/power-off.png" alt="Enable" onclick="DryerStartClick()" /></td>
                      <td class="left"><label for="DryerStart">Start Dryer</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="DryerStop" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerStopClick()" /></td>
+                      <td class="label"><img id="DryerStop" class="swOff" src="/images/power-off.png" alt="Enable" onclick="DryerStopClick()" /></td>
                       <td class="left"><label for="DryerStop">Stop Dryer</label></td>
                   </tr>
                   <tr class="parameters">
-                      <td class="label"><img id="DryerReboot" class="swOff" src="images/power-off.png" alt="Enable" onclick="DryerRebootClick()" /></td>
+                      <td class="label"><img id="DryerReboot" class="swOff" src="/images/power-off.png" alt="Enable" onclick="DryerRebootClick()" /></td>
                       <td class="left"><label for="DryerReboot">Reboot Dryer</label></td>
                   </tr>
                   <tr class="parameters">
@@ -171,14 +171,15 @@
                       <td class="parameter"><span class="parameter" id="temp4"></span></td>
                   </tr>
               </table>
-
           </div>
       </div>
+      <a href="/ElectrolyserMaintenance/{{name}}">Log Maintenance Activity</a>
       <footer class="firefly">
           <span class="version">Version </span><span class="version" id="version">{{version}}</span>
       </footer>
   </body>
   <script type="text/javascript">
-      $(document).ready(function() {setupPage('{{name}}');});
+      const name='{{name}}';
+      $(document).ready(function() {setupPage(name);});
   </script>
 </html>
