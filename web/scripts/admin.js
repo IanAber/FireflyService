@@ -20,9 +20,9 @@ function RegisterWebSocket() {
             }
             if (elMap !== undefined) {
                 if (newMap !== elMap) {
-                    // Reload the page because the electrolyser layout has changed.
-                    location.reload();
+                    $(".electrolyser").remove();
                 }
+            } else {
                 elMap = newMap;
             }
             $("#system").text(jsonData.System);
@@ -30,6 +30,7 @@ function RegisterWebSocket() {
             $("#version").text(jsonData.Version);
             leakDetection(jsonData.SystemAlarms.h2Alarm);
             conductivityDetection(jsonData.SystemAlarms.conductivityAlarm);
+            acquiringElectrolysers(jsonData.acquiring)
             jsonData.Relays.Relays.forEach(UpdateRelay);
             jsonData.DigitalIn.Inputs.forEach(UpdateInput);
             jsonData.DigitalOut.Outputs.forEach(UpdateOutput);
@@ -134,12 +135,20 @@ function conductivityDetection(alarm) {
     }
 }
 
+function acquiringElectrolysers(status) {
+    if (status) {
+        $("#acquiringDiv").show();
+    } else {
+        $("#acquiringDiv").hide();
+    }
+}
+
 function openElectrolyser(name, id) {
 
     if ($("#"+id).attr("on") === "1") {
         window.open("Electrolyser.html?name=" + name);
     } else {
-        window.open("ElectrolyserData.html?name=" + name);
+        window.open("Electrolyser/Data.html?name=" + name);
     }
 }
 

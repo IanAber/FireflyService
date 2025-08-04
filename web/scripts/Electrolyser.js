@@ -164,7 +164,7 @@ function RegisterWebSocket() {
             $("#electrolyteLevel").text(level);
             $("#maxPressure").text(jsonData.maxPressure.toFixed(0));
             $("#restartPressure").text(jsonData.restartPressure.toFixed(0));
-            $("#stackHours").text((jsonData.stackTotalRunTime / 3600).toFixed(2));
+            $("#stackHours").text((jsonData.stackTotalRunTime / 3600).toFixed(3));
             $("#stackCycles").text(jsonData.stackStartStopCycles);
             $("#stackSerial").text(jsonData.stackSerialNumber);
             $("#stackTotalProduction").text(jsonData.stackTotalProduction.toFixed(2));

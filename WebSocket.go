@@ -70,21 +70,22 @@ func (pool *Pool) StartRegister() {
 		case client := <-pool.Register:
 			pool.Clients[client] = true
 			go readLoop(client)
-			//if debugOutput {
-			//	log.Println("Size of Connection Pool: ", len(pool.Clients), client.ID, " added for device ", client.Device, " on service ", client.Service)
-			//}
+			//			if debugOutput {
+			log.Println("Size of Connection Pool: ", len(pool.Clients), client.ID, " added for device ", client.Device, " on service ", client.Service)
+			//			}
 			break
 		}
 	}
 }
+
 func (pool *Pool) StartUnregister() {
 	for {
 		select {
 		case client := <-pool.Unregister:
 			delete(pool.Clients, client)
-			//if debugOutput {
-			//	log.Println("Size of Connection Pool: ", len(pool.Clients), client.ID, " dropped off.")
-			//}
+			//			if debugOutput {
+			log.Println("Size of Connection Pool: ", len(pool.Clients), client.ID, " dropped off.")
+			//			}
 			break
 		}
 	}
@@ -112,6 +113,8 @@ func (pool *Pool) StartBroadcast() {
 							if err := client.Conn.WriteMessage(websocket.TextMessage, message.data); err != nil {
 								log.Printf(ErrorText, err)
 								delete(pool.Clients, client)
+								//} else {
+								//	log.Printf("Broadcast sent")
 							}
 						}
 					}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cmp"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -11,7 +10,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"slices"
 	"strings"
 	"time"
 )
@@ -241,6 +239,7 @@ func ClientLoop() {
 		select {
 		case <-broadcastTime.C:
 			{
+				//				log.Println("Sending message to client")
 				// Make sure the CAN bus is up and running
 				if canBus == nil || canBus.bus == nil {
 					if debugOutput {
@@ -449,8 +448,13 @@ func CANHeartbeat() {
 //
 //	and writes the data collected to the database.
 func ElectrolyserLoop() {
+	log.Println("Acquiring the electrolysers")
+	if err := AcquireAllElectrolysers(); err != nil {
+		log.Println(err)
+	}
 	log.Printf("ElectrolyserLoop starting")
 	electrolyserHeartbeat := time.NewTicker(time.Second * 2)
+
 	for {
 		select {
 		case <-electrolyserHeartbeat.C:
@@ -549,9 +553,13 @@ func ElectrolyserLoop() {
 								Relays.SetRelay(currentSettings.WaterDumpRelay, false)
 							}
 						}
-						slices.SortStableFunc(Electrolysers.Arr[:], func(a *ElectrolyserType, b *ElectrolyserType) int {
-							return cmp.Compare(a.status.StackTotalRunTime, b.status.StackTotalRunTime)
-						})
+						//slices.SortStableFunc(Electrolysers.Arr[:], func(a *ElectrolyserType, b *ElectrolyserType) int {
+						//	return cmp.Compare(a.status.StackTotalRunTime, b.status.StackTotalRunTime)
+						//})
+						//log.Printf("Electrolysers: %s:%d, %s:%d, %s:%d",
+						//	Electrolysers.Arr[0].status.Name, Electrolysers.Arr[0].status.StackTotalRunTime,
+						//	Electrolysers.Arr[1].status.Name, Electrolysers.Arr[1].status.StackTotalRunTime,
+						//	Electrolysers.Arr[2].status.Name, Electrolysers.Arr[2].status.StackTotalRunTime)
 					}
 				}
 			}
@@ -883,7 +891,6 @@ func main() {
 			_, _ = fmt.Fprint(os.Stderr, err)
 		}
 	}()
-
 	if err := connectToDatabase(); err != nil {
 		log.Fatal(err)
 	}

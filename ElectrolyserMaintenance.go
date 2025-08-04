@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
@@ -25,18 +26,6 @@ type ELMaintenanceType struct {
 	Notes                 string    `json:"notes"`
 }
 
-// NewELMaintenance creates a new maintenance record from the current status
-//func NewELMaintenance(pdb *sql.DB, elst ElectrolyserStatusType) *ELMaintenanceType {
-//	elm := new(ELMaintenanceType)
-//	elm.SystemSerialNumber = elst.Serial
-//	elm.Name = elst.Name
-//	elm.StackSerialNumber = elst.StackSerialNumber
-//	if err := elm.loadLatest(pdb, elst.Name); err != nil {
-//		log.Println(err)
-//	}
-//	return elm
-//}
-
 // LoadMaintenanceRecords loads a new set of maintenance records with the latest data
 func LoadMaintenanceRecords(pdb *sql.DB) {
 	for _, el := range Electrolysers.Arr {
@@ -51,9 +40,9 @@ func LoadMaintenanceRecords(pdb *sql.DB) {
 
 // loadLatest reads the database to find the latest record
 func (elm *ELMaintenanceType) loadLatest(pdb *sql.DB, name string) error {
-	row := pdb.QueryRow(`select ID, Name, StackTimeOffset, SystemTimeOffset, RestartCyclesOffset, StackProductionOffset, StackSerial, SystemSerial, Activity, Notes from ElectrolyserMantenanceLog eml where Name = ? order by id desc`, name)
+	row := pdb.QueryRow(`select ID, Name, StackTimeOffset, SystemTimeOffset, RestartCyclesOffset, StackProductionOffset, StackSerial, SystemSerial, Activity, Notes from ElectrolyserMaintenanceLog eml where Name = ? order by id desc`, name)
 	if err := row.Scan(&elm.ID, &elm.Name, &elm.StackTimeOffset, &elm.SystemTimeOffset, &elm.RestartCyclesOffset, &elm.StackProductionOffset, &elm.StackSerialNumber, &elm.SystemSerialNumber, &elm.Activity, &elm.Notes); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		} else {
 			return err
@@ -64,7 +53,7 @@ func (elm *ELMaintenanceType) loadLatest(pdb *sql.DB, name string) error {
 
 // WriteToDB writes a new record to the database
 func (elm *ELMaintenanceType) WriteToDB(pdb *sql.DB) error {
-	_, err := pdb.Exec("INSERT INTO `ElectrolyserMantenanceLog` (Name, StackTimeOffset, StackSerial, RestartCyclesOffset, StackProductionOffset, SystemTimeOffset, SystemSerial, Activity, Notes) VALUES (?,?,?,?,?,?,?, ?,?)",
+	_, err := pdb.Exec("INSERT INTO `ElectrolyserMaintenanceLog` (Name, StackTimeOffset, StackSerial, RestartCyclesOffset, StackProductionOffset, SystemTimeOffset, SystemSerial, Activity, Notes) VALUES (?,?,?,?,?,?,?, ?,?)",
 		elm.Name, elm.StackTimeOffset, elm.StackSerialNumber, elm.RestartCyclesOffset, elm.StackProductionOffset, elm.SystemTimeOffset, elm.SystemSerialNumber, elm.Activity, elm.Notes)
 	if err != nil {
 		return err
@@ -130,7 +119,7 @@ func (elm *ELMaintenanceType) replaceElectrolyte(pdb *sql.DB, notes string) {
 	elm.Notes = notes
 	elm.Activity = "Replace Electrolyte"
 	st := Electrolysers.FindByName(elm.Name)
-	if _, err := pdb.Exec("INSERT INTO ElectrolyserMantenanceLog (Name, StackTimeOffset, StackSerial, RestartCyclesOffset, SystemTimeOffset, SystemSerial, Activity) VALUES (?,?,?,?,?,?,?)",
+	if _, err := pdb.Exec("INSERT INTO ElectrolyserMaintenanceLog (Name, StackTimeOffset, StackSerial, RestartCyclesOffset, SystemTimeOffset, SystemSerial, Activity) VALUES (?,?,?,?,?,?,?)",
 		elm.Name, elm.SystemTimeOffset, st.GetSerial(), elm.RestartCyclesOffset, elm.SystemTimeOffset, st.GetSerial(), "replceElectrolyte"); err != nil {
 		log.Println(err)
 	}

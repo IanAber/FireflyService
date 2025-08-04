@@ -154,8 +154,8 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/Power/Data", "source=firefly&start=datetime&end=datetime", "GET", "Get the historical data for the battery and solar inputs. Take start and end parameters to determining the time span.", getPowerData)
 
 	// Charts
-	RegisterWebSiteAPI(router, "/ElectrolyserData.html", "", "GET", "Display the graph for the electrolyser", serveElectrolyserData)
-	RegisterWebSiteAPI(router, "/AnalogData.html", "", "GET", "Display the graph for the analog inputs", serveAnalogData)
+	RegisterWebSiteAPI(router, "/Electrolyser/Data.html/{electrolyser}", "", "GET", "Display the graph for the electrolyser", serveElectrolyserData)
+	RegisterWebSiteAPI(router, "/Analog/Data.html", "", "GET", "Display the graph for the analog inputs", serveAnalogData)
 	RegisterWebSiteAPI(router, "/ACData.html", "", "GET", "Display the graph for the AC Device", serveACData)
 	RegisterWebSiteAPI(router, "/DCData.html", "", "GET", "Display the graph for the DC Device", serveDCData)
 

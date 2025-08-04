@@ -1338,12 +1338,14 @@ heatpump|schema||logger||UPDATE|G</Grants>
       <Charset>utf8mb4</Charset>
     </collation>
     <schema id="508" parent="1" name="firefly">
+      <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Current>1</Current>
       <Grants>PANFuelCell|||FireflyService||DELETE|G
 PANFuelCell|||FireflyService||INSERT|G
 PANFuelCell|||FireflyService||SELECT|G
 PANFuelCell|||FireflyService||UPDATE|G</Grants>
-      <LastIntrospectionLocalTimestamp>2025-04-20.20:47:39</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLevel>3</LastIntrospectionLevel>
+      <LastIntrospectionLocalTimestamp>2025-05-24.02:22:32</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_general_ci</CollationName>
     </schema>
     <schema id="509" parent="1" name="heatpump">
@@ -1375,115 +1377,140 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
     </user>
     <routine id="520" parent="508" name="28DayConsumption">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <RoutineKind>function</RoutineKind>
       <SourceTextLength>451</SourceTextLength>
     </routine>
     <routine id="521" parent="508" name="28DayUsedRate">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <RoutineKind>function</RoutineKind>
       <SourceTextLength>629</SourceTextLength>
     </routine>
     <routine id="522" parent="508" name="CalculateStoredEnergy">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <RoutineKind>function</RoutineKind>
       <SourceTextLength>1651</SourceTextLength>
     </routine>
     <routine id="523" parent="508" name="CalculateUsedEnergy">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <RoutineKind>function</RoutineKind>
       <SourceTextLength>1041</SourceTextLength>
     </routine>
     <routine id="524" parent="508" name="PowerStage">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <RoutineKind>function</RoutineKind>
       <SourceTextLength>386</SourceTextLength>
     </routine>
     <routine id="525" parent="508" name="archive_logging">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <RoutineKind>procedure</RoutineKind>
       <SourceTextLength>4393</SourceTextLength>
     </routine>
     <scheduled-event id="526" parent="508" name="archive_logging">
       <Definer>ian@%</Definer>
+      <DetailsLevel>3</DetailsLevel>
       <Interval>&apos;1&apos; DAY</Interval>
       <SourceTextLength>34</SourceTextLength>
       <Starts>&apos;2022-04-06 23:59:00&apos;</Starts>
       <Status>enabled</Status>
     </scheduled-event>
     <table id="527" parent="508" name="ACValues">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="528" parent="508" name="ACValues_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="529" parent="508" name="DCValues">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="530" parent="508" name="DCValues_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="531" parent="508" name="Dryer">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="532" parent="508" name="Dryer_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="533" parent="508" name="Electrolyser">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
-    <table id="534" parent="508" name="ElectrolyserMantenanceLog">
+    <table id="534" parent="508" name="ElectrolyserMaintenanceLog">
       <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="535" parent="508" name="Electrolyser_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="536" parent="508" name="IOValues">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="537" parent="508" name="IOValues_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="538" parent="508" name="PANAlarm">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="539" parent="508" name="PANFuelCell">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="540" parent="508" name="PANFuelCell_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="541" parent="508" name="Power">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="542" parent="508" name="Power_Archive">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="543" parent="508" name="h2_dispensed">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="544" parent="508" name="h2_flow">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
     <table id="545" parent="508" name="users">
+      <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_general_ci</CollationName>
     </table>
@@ -1520,7 +1547,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <StoredType>int(11)|0s</StoredType>
     </argument>
     <column id="554" parent="527" name="id">
-      <AutoIncrement>46153020</AutoIncrement>
+      <AutoIncrement>49022191</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -1641,7 +1668,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="578" parent="528" name="id">
-      <AutoIncrement>1363767</AutoIncrement>
+      <AutoIncrement>1432138</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -1762,7 +1789,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="602" parent="529" name="id">
-      <AutoIncrement>46153016</AutoIncrement>
+      <AutoIncrement>49022187</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -1823,7 +1850,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="614" parent="530" name="id">
-      <AutoIncrement>1364049</AutoIncrement>
+      <AutoIncrement>1432420</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -1890,7 +1917,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <StoredType>datetime|0s</StoredType>
     </column>
     <column id="627" parent="531" name="id">
-      <AutoIncrement>81014618</AutoIncrement>
+      <AutoIncrement>81370211</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -2010,7 +2037,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <StoredType>varchar(25)|0s</StoredType>
     </column>
     <column id="654" parent="533" name="ID">
-      <AutoIncrement>13226132</AutoIncrement>
+      <AutoIncrement>13787222</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -2108,12 +2135,12 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
     <column id="676" parent="534" name="StackTimeOffset">
       <NotNull>1</NotNull>
       <Position>4</Position>
-      <StoredType>float|0s</StoredType>
+      <StoredType>int(10)|0s</StoredType>
     </column>
     <column id="677" parent="534" name="SystemTimeOffset">
       <NotNull>1</NotNull>
       <Position>5</Position>
-      <StoredType>float|0s</StoredType>
+      <StoredType>int(10)|0s</StoredType>
     </column>
     <column id="678" parent="534" name="RestartCyclesOffset">
       <Position>6</Position>
@@ -2164,7 +2191,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <StoredType>varchar(25)|0s</StoredType>
     </column>
     <column id="688" parent="535" name="ID">
-      <AutoIncrement>1249199</AutoIncrement>
+      <AutoIncrement>1259236</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -2244,7 +2271,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="707" parent="536" name="id">
-      <AutoIncrement>64678650</AutoIncrement>
+      <AutoIncrement>67547821</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -2341,7 +2368,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="727" parent="537" name="id">
-      <AutoIncrement>20288623</AutoIncrement>
+      <AutoIncrement>20356994</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -2457,7 +2484,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="751" parent="539" name="id">
-      <AutoIncrement>61594885</AutoIncrement>
+      <AutoIncrement>64464056</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -2754,7 +2781,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="824" parent="540" name="id">
-      <AutoIncrement>15748049</AutoIncrement>
+      <AutoIncrement>15816420</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -3080,7 +3107,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
     <column id="904" parent="541" name="ID">
-      <AutoIncrement>30639196</AutoIncrement>
+      <AutoIncrement>33469064</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>
@@ -3129,7 +3156,7 @@ PANFuelCell|||FireflyService||UPDATE|G</Grants>
       <StoredType>varchar(100)|0s</StoredType>
     </column>
     <column id="915" parent="542" name="ID">
-      <AutoIncrement>721106</AutoIncrement>
+      <AutoIncrement>789477</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>8</Position>
       <StoredType>bigint(20) unsigned|0s</StoredType>

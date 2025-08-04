@@ -1,5 +1,5 @@
 // noinspection CommaExpressionJS
-const ELDIV = `<div class="centered">
+const ELDIV = `<div class="centered electrolyser">
     <div class="control" id="el{{id}}" ondblclick="openElectrolyser('{{name}}', 'el{{id}}')" oncontextmenu="openElectrolyserMain('{{name}}')">
     </div>
     <div class="control" id="elControls{{id}}">
@@ -293,7 +293,7 @@ function openElectrolyser(name, id) {
     if ($("#"+id).attr("on") === "1") {
         openElectrolyserMain(name);
     } else {
-        window.open("ElectrolyserData.html/" + name);
+        window.open("Electrolyser/Data.html/" + name);
     }
 }
 

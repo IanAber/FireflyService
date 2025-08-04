@@ -322,7 +322,7 @@ func serveUserControl(w http.ResponseWriter, r *http.Request) {
 	}
 	adminLink := ""
 	if role == "admin" {
-		adminLink = `<li><a id="adminLink" href="/admin.html">Administration</a></li>`
+		adminLink = `<li><a id="adminLink" href="/admin.html" target="_blank">Administration</a></li>`
 	}
 	//	log.Println(r.RequestURI)
 	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
@@ -353,7 +353,7 @@ func serveDefault(w http.ResponseWriter, r *http.Request) {
 	}
 	adminLink := ""
 	if role == "admin" {
-		adminLink = `<li><a id="adminLink" href="/admin.html">Administration</a></li>`
+		adminLink = `<li><a id="adminLink" href="/admin.html" target="_blank">Administration</a></li>`
 	}
 	//	log.Println(r.RequestURI)
 	links := currentSettings.buildLinks(IsExternal(r), role == "admin")
@@ -503,13 +503,14 @@ func serveElectrolyser(w http.ResponseWriter, r *http.Request) {
 
 func serveElectrolyserData(w http.ResponseWriter, r *http.Request) {
 	const function = "serveElectrolyserData"
+	vars := mux.Vars(r)
 
 	if fileContent, err := os.ReadFile(webFiles + "/ElectrolyserData.html"); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		return
 	} else {
 		replacements := make(ReplacementsType)
-		replacements["name"] = r.FormValue("name")
+		replacements["name"] = vars["electrolyser"]
 
 		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
 			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
@@ -1172,7 +1173,7 @@ func getElectrolyserStatus(w http.ResponseWriter, r *http.Request) {
 
 func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 	if debugOutput {
-		log.Print("WebSocket Endpoint Hit")
+		log.Print("WebSocket Endpoint Hit from ", r.RemoteAddr)
 	}
 	conn, err := Upgrade(w, r)
 	if err != nil {
@@ -1615,27 +1616,29 @@ type HydrogenType struct {
 var H2 *HydrogenType
 
 type JsonDataType struct {
-	System            string                       `json:"System"`
-	Version           string                       `json:"Version"`
-	Relays            *RelaysType                  `json:"Relays"`
-	Analog            *AnalogInputsType            `json:"Analog"`
-	Buttons           []ButtonType                 `json:"Buttons"`
-	DigitalOut        *DigitalOutputsType          `json:"DigitalOut"`
-	DigitalIn         *DigitalInputsType           `json:"DigitalIn"`
-	ACMeasurements    []ACValuesType               `json:"ACMeasurements"`
-	DCMeasurements    []DCValuesType               `json:"DCMeasurements"`
-	PanFuelCellStatus *PanStatus                   `json:"PanFuelCellStatus"`
-	Electrolysers     []ElectrolyserJSONStatusType `json:"Electrolysers"`
-	SystemSettings    SystemSettings               `json:"SystemSettings"`
-	SystemAlarms      *SystemAlarmsType            `json:"SystemAlarms"`
-	Power             []*PowerControlType          `json:"Power"`
-	Hydrogen          *HydrogenType                `json:"h2"`
+	System                 string                       `json:"System"`
+	Version                string                       `json:"Version"`
+	Relays                 *RelaysType                  `json:"Relays"`
+	Analog                 *AnalogInputsType            `json:"Analog"`
+	Buttons                []ButtonType                 `json:"Buttons"`
+	DigitalOut             *DigitalOutputsType          `json:"DigitalOut"`
+	DigitalIn              *DigitalInputsType           `json:"DigitalIn"`
+	ACMeasurements         []ACValuesType               `json:"ACMeasurements"`
+	DCMeasurements         []DCValuesType               `json:"DCMeasurements"`
+	PanFuelCellStatus      *PanStatus                   `json:"PanFuelCellStatus"`
+	Electrolysers          []ElectrolyserJSONStatusType `json:"Electrolysers"`
+	SystemSettings         SystemSettings               `json:"SystemSettings"`
+	SystemAlarms           *SystemAlarmsType            `json:"SystemAlarms"`
+	Power                  []*PowerControlType          `json:"Power"`
+	Hydrogen               *HydrogenType                `json:"h2"`
+	AcquiringElectrolysers bool                         `json:"acquiring"`
 }
 
 // getJsonStatus returns the full system status as a JSON formatted message in a byte array to be sent to WEB clients
 func getJsonStatus(indent bool) ([]byte, error) {
 	var data JsonDataType
 
+	data.AcquiringElectrolysers = currentSettings.acquiringElectrolysers
 	data.Power = PowerControl
 	data.System = currentSettings.Name
 	data.Version = version
@@ -1854,15 +1857,13 @@ func acquireElectrolysers(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func acquireAllElectrolysers(w http.ResponseWriter) bool {
-	const function = "Acquire Electrolyser"
+func AcquireAllElectrolysers() error {
 	currentSettings.acquiringElectrolysers = true
 	defer func() { currentSettings.acquiringElectrolysers = false }()
 
 	for _, el := range currentSettings.Electrolysers {
 		if Relays.Relays[el.PowerRelay].On {
-			ReturnJSONErrorString(w, function, "All electrolysers must be turned off before performing a search", http.StatusBadRequest, true)
-			return false
+			return fmt.Errorf("All electrolysers must be turned off before performing a search")
 		}
 	}
 
@@ -1871,34 +1872,43 @@ func acquireAllElectrolysers(w http.ResponseWriter) bool {
 		el.setClient(net.IPv4zero)
 	}
 
-	for _, el := range Electrolysers.Arr {
-		//		el := Electrolysers.Arr[idx]
+	relays := make([]uint8, len(Electrolysers.Arr))
+	for idx, el := range Electrolysers.Arr {
+		relays[idx] = el.powerRelay
+	}
+	//slices.SortStableFunc(relays, func(a uint8, b uint8) int {
+	//	return cmp.Compare(a, b)
+	//})
+
+	for _, rl := range relays {
+
+		el := Electrolysers.FindByRelay(rl)
 		log.Printf("Searching for electrolyser on relay %d", el.powerRelay)
 		if err := el.Acquire(); err != nil {
-			ReturnErrorPage(w, err, http.StatusInternalServerError, true)
-			return false
+			return err
 		}
-		if txt, err := json.Marshal(el.status); err != nil {
-			ReturnErrorPage(w, err, http.StatusInternalServerError, true)
-			return false
+		if elSetting := currentSettings.findElByName(el.status.Name); elSetting != nil {
+			elSetting.IP = el.status.IP.String()
+			elSetting.Serial = el.GetSerial()
 		} else {
-			if _, err := fmt.Fprint(w, string(txt)); err != nil {
-				log.Print(err)
-			}
-			if elSetting := currentSettings.findElByName(el.status.Name); elSetting != nil {
-				elSetting.IP = el.status.IP.String()
-				elSetting.Serial = el.GetSerial()
-			} else {
-				log.Println("Settings for electrolyser " + el.status.Name + " not found.")
-			}
+			log.Println("Settings for electrolyser " + el.status.Name + " not found.")
 		}
 		if debugOutput {
 			log.Println("Save settings")
 		}
-		if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
-			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			return false
-		}
+	}
+	if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func acquireAllElectrolysers(w http.ResponseWriter) bool {
+	const function = "Acquire Electrolyser"
+
+	if err := AcquireAllElectrolysers(); err != nil {
+		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		return false
 	}
 	return true
 }

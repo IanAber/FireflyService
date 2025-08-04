@@ -34,6 +34,9 @@
         </header>
         <div class="firefly">
             <h2 class="firefly Relays">Relays</h2>
+            <div id="acquiringDiv" style="display: none;">
+                <h1 style="color:red; text-align: center">Acquiring Electrolysers. This may take a few minutes.</h1>
+            </div>
             <table class="Relays">
                 <tr>
                     <th id=relay0 class="RelayOff" onclick="clickRelay(0)"><span id="relayText0">Relay 0</span></th>
@@ -89,7 +92,7 @@
         </div>
     <div class="firefly">
             <h2  class="firefly AnalogueInputs">Analogue Inputs</h2>
-            <table class="AnalogueInputs" ondblclick="window.open('AnalogData.html');">
+            <table class="AnalogueInputs" ondblclick="window.open('Analog/Data.html');">
                 <tr class="AnalogueHeader">
                     <th class="AnalogueName">Name</th>
                     <th class="AnalogueData">Raw Value</th>

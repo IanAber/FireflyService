@@ -1,26 +1,26 @@
 <html lang="en">
 <head>
   <title id='Description'>Electrolyser Data</title>
-  <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
-  <link rel="stylesheet" href="scripts/jqwidgets/styles/jqx.web.css" type="text/css" />
-  <link rel="stylesheet" type="text/css" href="css/fireflyio.css">
-  <script type="text/javascript" src="scripts/jquery-3.6.0.min.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxcore.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxchart.core.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxchart.rangeselector.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxdraw.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxdata.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxdatetimeinput.js"></script>
-  <script type="text/javascript" src="scripts/jqwidgets/jqxcalendar.js"></script>
-  <script type="text/javascript" src="scripts/charts.js"></script>
-  <script type="text/ecmascript" src="scripts/utils.js"></script>
+  <link rel="stylesheet" href="/scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+  <link rel="stylesheet" href="/scripts/jqwidgets/styles/jqx.web.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" href="/css/fireflyio.css">
+  <script type="text/javascript" src="/scripts/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxcore.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxchart.core.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxchart.rangeselector.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxdraw.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxdata.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxdatetimeinput.js"></script>
+  <script type="text/javascript" src="/scripts/jqwidgets/jqxcalendar.js"></script>
+  <script type="text/javascript" src="/scripts/charts.js"></script>
+  <script type="text/ecmascript" src="/scripts/utils.js"></script>
   <script type="text/javascript">
     var name = "{{name}}";
 
     function buildURLForTimes(start, end) {
       $("#startAt").jqxDateTimeInput('setDate', start );
       $("#endAt").jqxDateTimeInput('setDate', end );
-      url = encodeURI("../Electrolyser/Data/" + name + "?start="
+      url = encodeURI("/Electrolyser/Data/" + name + "?start="
               + start.getUTCFullYear() + "-" + (start.getUTCMonth() + 1) + "-" + start.getUTCDate() + " " + start.getUTCHours() + ":" + start.getUTCMinutes()
               + "&end=" + end.getUTCFullYear() + "-" + (end.getUTCMonth() + 1) + "-" +  end.getUTCDate() + " " + end.getUTCHours() + ":" + end.getUTCMinutes());
       return url;
@@ -263,7 +263,7 @@
     <header class="header">
       <h1>
         <span class="system" id="system">Loading...</span>
-        <img id="logo" class="logo" src="images/logo.png" alt="ElektrikGreen Logo"/>
+        <img id="logo" class="logo" src="/images/logo.png" alt="ElektrikGreen Logo"/>
       </h1>
     </header>
     <div id='ChartContainer' style="width:100%; height: 96%;" ></div>

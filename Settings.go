@@ -142,6 +142,7 @@ type SettingsType struct {
 	filepath                         string
 	acquiringElectrolysers           bool
 	scanningElectrolysers            bool
+	rescanElectrolysers              bool
 }
 
 func NewSettings() *SettingsType {
@@ -312,7 +313,7 @@ func (settings *SettingsType) LoadSettings(filepath string) error {
 	for i, dc := range settings.DCMeasurement {
 		DCMeasurements[i].Name = dc.Name
 	}
-	log.Println("Updating the electrolysers")
+	// log.Println("Updating the electrolysers")
 	settings.UpdateElectrolyserArray()
 
 	return nil
@@ -333,17 +334,25 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 	defer Electrolysers.mu.Unlock()
 
 	// Sort the array by stack time
+	// log.Printf("Electrolysers : %s=%d | %s=%d | %s = %d",
+	//	settings.Electrolysers[0].Name, settings.Electrolysers[0].StackTime,
+	//	settings.Electrolysers[1].Name, settings.Electrolysers[1].StackTime,
+	//	settings.Electrolysers[2].Name, settings.Electrolysers[2].StackTime)
 	els := settings.Electrolysers[:]
 	slices.SortStableFunc(els, func(a ElectrolyserSettingType, b ElectrolyserSettingType) int {
 		return cmp.Compare(a.StackTime, b.StackTime)
 	})
+	//log.Printf("Electrolysers after sort : %s=%d | %s=%d | %s = %d",
+	//	settings.Electrolysers[0].Name, settings.Electrolysers[0].StackTime,
+	//	settings.Electrolysers[1].Name, settings.Electrolysers[1].StackTime,
+	//	settings.Electrolysers[2].Name, settings.Electrolysers[2].StackTime)
 
 	for _, el := range settings.Electrolysers {
 		if el.Name != "" {
-			log.Printf("finding %s", el.Name)
+			//			log.Printf("finding %s", el.Name)
 			if elect := Electrolysers.FindByRelay(el.PowerRelay); elect != nil {
 				// If we have an ip address, try and assign it.
-				log.Printf("%s ip = %s", el.Name, el.IP)
+				//				log.Printf("%s ip = %s", el.Name, el.IP)
 				if el.IP != "" {
 					if err := elect.status.IP.UnmarshalText([]byte(el.IP)); err != nil {
 						// We failed to parse the ip address provided from the settings object
@@ -354,6 +363,7 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 				elect.status.PowerRelay = el.PowerRelay
 				elect.status.Enabled = el.Enabled
 				elect.enabled = el.Enabled
+				elect.status.StackTotalRunTime = el.StackTime
 			} else {
 				// We did not find an electrolyser on that relay, so we should add a new one
 				IP := net.IPv4zero
@@ -369,6 +379,7 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 				newEl.status.PowerRelay = el.PowerRelay
 				//				newEl.hasDryer = el.HasDryer
 				newEl.status.Enabled = el.Enabled
+				newEl.status.StackTotalRunTime = el.StackTime
 				newEl.enabled = el.Enabled
 				Electrolysers.Arr = append(Electrolysers.Arr, newEl)
 			}
@@ -381,10 +392,16 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 			newArr = append(newArr, el)
 		}
 	}
+
 	// If the length is different, then replace the array to get rid of ones we no longer have
 	if len(newArr) != len(Electrolysers.Arr) {
 		Electrolysers.Arr = newArr
+		log.Println("New electrolyser array assigned")
 	}
+	//log.Printf("Actual electrolysers :  %s=%d | %s=%d | %s = %d",
+	//	Electrolysers.Arr[0].status.Name, Electrolysers.Arr[0].status.StackTotalRunTime,
+	//	Electrolysers.Arr[1].status.Name, Electrolysers.Arr[1].status.StackTotalRunTime,
+	//	Electrolysers.Arr[2].status.Name, Electrolysers.Arr[2].status.StackTotalRunTime)
 }
 
 func (settings *SettingsType) SaveSettings(filepath string) error {
@@ -397,6 +414,9 @@ func (settings *SettingsType) SaveSettings(filepath string) error {
 			log.Println("Error writing JSON settings file -", err)
 			return err
 		}
+	}
+	if err := settings.LoadSettings(filepath); err != nil {
+		log.Println("Error loading settings file -", err)
 	}
 	return nil
 }
@@ -422,10 +442,31 @@ func (settings *SettingsType) SendSettingsJSON(w http.ResponseWriter) {
 	}
 }
 
-/*
-*
-validateSettings will adjust any values that are obviously out of range and bring them withing the limits defined
-*/
+func hasDuplicateSerial(arr []ElectrolyserSettingType) bool {
+	visited := make(map[string]bool, 0)
+	for i := 0; i < len(arr); i++ {
+		if visited[arr[i].Serial] == true {
+			return true
+		} else {
+			visited[arr[i].Serial] = true
+		}
+	}
+	return false
+}
+
+func hasDuplicateIP(arr []ElectrolyserSettingType) bool {
+	visited := make(map[string]bool, 0)
+	for i := 0; i < len(arr); i++ {
+		if visited[arr[i].IP] == true {
+			return true
+		} else {
+			visited[arr[i].IP] = true
+		}
+	}
+	return false
+}
+
+// validateSettings will adjust any values that are obviously out of range and bring them withing the limits defined
 func (settings *SettingsType) validateSettings() {
 	if settings.FuelCellSettings.LowBatterySetpoint < 35.0 ||
 		settings.FuelCellSettings.LowBatterySetpoint > settings.FuelCellSettings.HighBatterySetpoint {
@@ -434,6 +475,13 @@ func (settings *SettingsType) validateSettings() {
 	if settings.FuelCellSettings.HighBatterySetpoint > 70.0 ||
 		settings.FuelCellSettings.HighBatterySetpoint < settings.FuelCellSettings.LowBatterySetpoint {
 		settings.FuelCellSettings.HighBatterySetpoint = 65.0
+	}
+	// Find duplicate serial numbers in eletrolysers
+	if hasDuplicateSerial(settings.Electrolysers) {
+		settings.rescanElectrolysers = true
+	}
+	if hasDuplicateIP(settings.Electrolysers) {
+		settings.rescanElectrolysers = true
 	}
 }
 

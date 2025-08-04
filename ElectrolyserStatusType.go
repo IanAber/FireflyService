@@ -348,6 +348,7 @@ func (eljst *ElectrolyserJSONStatusType) load(elt ElectrolyserStatusType) {
 		eljst.StackSerialNumber = elt.StackSerialNumber
 	}
 	eljst.StackStartStopCycles = int32(elt.StackStartStopCycles) - elt.elm.RestartCyclesOffset
+	//	log.Printf("Stack run time = %d offset = %d total = %d", elt.StackTotalRunTime, elt.elm.StackTimeOffset, int32(elt.StackTotalRunTime)-elt.elm.StackTimeOffset)
 	eljst.StackTotalRunTime = int32(elt.StackTotalRunTime) - elt.elm.StackTimeOffset
 	eljst.StackTotalProduction = elt.StackTotalProduction - jsonFloat32(elt.elm.StackProductionOffset)
 	eljst.H2Flow = elt.H2Flow

@@ -11,7 +11,7 @@
         <option name="customName" value="Marval" />
       </sshConfig>
       <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="20eb7cb8-790e-4a37-9861-b4284eab1fea" port="41018" nameFormat="DESCRIPTIVE" username="egadmin" useOpenSSHConfig="true" />
-      <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="fa2e4392-8547-4944-913d-455541ac2c8f" port="41072" customName="Breathe Transport" nameFormat="CUSTOM" username="egadmin" useOpenSSHConfig="true">
+      <sshConfig authType="PASSWORD" host="cloud.elektrik.green" id="fa2e4392-8547-4944-913d-455541ac2c8f" port="41028" customName="Breathe Transport" nameFormat="CUSTOM" username="egadmin" useOpenSSHConfig="true">
         <option name="customName" value="Breathe Transport" />
       </sshConfig>
     </configs>

@@ -305,6 +305,7 @@ func (el *ElectrolysersType) Init() {
 	slices.SortStableFunc(els, func(a ElectrolyserSettingType, b ElectrolyserSettingType) int {
 		return cmp.Compare(a.StackTime, b.StackTime)
 	})
+	//	log.Printf("Electrolysers: %s, %s, %s", els[0].Name, els[1].Name, els[2].Name)
 
 	for _, el := range currentSettings.Electrolysers {
 		if el.Name != "" {
@@ -444,14 +445,14 @@ func (el *ElectrolyserType) setClient(IP net.IP) {
 			//			el.Client.Close()
 			time.Sleep(time.Duration(5) * time.Second)
 			if debugOutput {
-				log.Printf("%s - New modbus client error %d - %v", tries, el.status.Name, err)
+				log.Printf("%d - New modbus client error %s - %v", tries, el.status.Name, err)
 			}
 		}
 		if err != nil {
 			log.Printf("%s error - %v", el.status.Name, err)
 			el.Client = nil
 			el.connectErrorCount++
-			if el.connectErrorCount > 20 {
+			if el.connectErrorCount > 5 {
 				if elConfig := currentSettings.findElByIP(IP.String()); elConfig != nil {
 					log.Printf("Rescanning for %s", elConfig.Name)
 					if ip, elType, err := el.rescan(0, elConfig.Serial); err != nil {
@@ -937,9 +938,11 @@ func (el *ElectrolyserType) ReadValues() error {
 			if elSetting := currentSettings.findElByName(el.status.Name); elSetting != nil {
 				elSetting.IP = el.status.IP.String()
 				elSetting.Serial = serial
-				if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
-					log.Println("failed to save the settings. ", err)
-				}
+				//if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
+				//	log.Println("failed to save the settings. ", err)
+				//} else {
+				//	log.Printf("New ip assigned to %s : %s", el.status.Name, el.status.IP.String())
+				//}
 			} else {
 				log.Println("Settings for electrolyser " + el.status.Name + " not found.")
 			}
@@ -953,9 +956,9 @@ func (el *ElectrolyserType) ReadValues() error {
 					el.status.IP = ip
 					log.Printf("%s electrolyser with serial number %s found at %s", elType, el.status.Serial, ip.String())
 					currentSettings.findElByName(el.status.Name).IP = ip.String()
-					if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
-						log.Print(err)
-					}
+					//					if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
+					//						log.Print(err)
+					//					}
 				}
 			}
 		}
@@ -1606,7 +1609,7 @@ func (el *ElectrolyserType) Start() (int, error) {
 				}
 				el.clientConnected = false
 			} else {
-				log.Printf("Disable maintenance command sent to %s", el.status.Name)
+				log.Printf("Start command sent to %s", el.status.Name)
 				return http.StatusOK, nil
 			}
 		} else {
@@ -1634,7 +1637,7 @@ func (el *ElectrolyserType) Stop() (int, error) {
 				el.clientConnected = false
 			} else {
 				log.Printf("Stop command sent to %s", el.status.Name)
-				currentSettings.findElByName(el.status.Name).StackTime = el.status.StackTotalRunTime
+				currentSettings.findElByName(el.status.Name).StackTime = uint32(int32(el.status.StackTotalRunTime) - el.status.elm.StackTimeOffset)
 				if err := currentSettings.SaveSettings(currentSettings.filepath); err != nil {
 					log.Print("Error saving settings - ", err)
 				}
@@ -2153,7 +2156,7 @@ func (el *ElectrolyserType) MonitorDryerErrors() {
 		select {
 		case <-dryerTicker.C:
 			// Drop out if the electrolyser is switched off or does not have a dryer attached
-			log.Printf("%s Monitor dryer errors", el.status.Name)
+			//			log.Printf("%s Monitor dryer errors", el.status.Name)
 			if !el.IsSwitchedOn() || !el.hasDryer {
 				return
 			}
