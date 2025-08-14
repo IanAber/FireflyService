@@ -9,30 +9,21 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Changed admin link to open in a new window.">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sshConfigs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sshConfigs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/webServers.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Changed admin link to open in a new window.&#10;Fixed unhandled errors.">
+      <change afterPath="$PROJECT_DIR$/web/scripts/buttons.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ElectrolyserMaintenance.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserMaintenance.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ElectrolyserStatusType.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserStatusType.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSiteRedirect.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSocket.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSocket.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/release/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/release/FireflyService" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/security.go" beforeDir="false" afterPath="$PROJECT_DIR$/security.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/AnalogData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/AnalogData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/ElectrolyserData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/ElectrolyserData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/admin.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/registration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/registration.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/scripts/ELControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/userControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/userControl.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userControl.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/userRegistration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userRegistration.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +103,7 @@
     "DefaultGoTemplateProperty": "Go File",
     "DefaultHtmlFileTemplate": "HTML File",
     "Go Build.Linux X86 Development.executor": "Debug",
-    "Go Build.Linux X86 Release.executor": "Run",
+    "Go Build.Linux X86 Release.executor": "Debug",
     "RunOnceActivity.GoLinterPluginOnboarding": "true",
     "RunOnceActivity.GoLinterPluginStorageMigration": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
@@ -303,7 +294,8 @@
     <MESSAGE value="Fix electrolyser rescan issue on EL4.0&#10;Work around electrolyser without chassis serial number" />
     <MESSAGE value="Added electrolyser maintenance features allowing stack replacement." />
     <MESSAGE value="Changed admin link to open in a new window." />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed admin link to open in a new window." />
+    <MESSAGE value="Changed admin link to open in a new window.&#10;Fixed unhandled errors." />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed admin link to open in a new window.&#10;Fixed unhandled errors." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
@@ -313,7 +305,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/default.js</url>
-          <line>409</line>
+          <line>370</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">

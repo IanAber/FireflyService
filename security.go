@@ -11,6 +11,10 @@ import (
 )
 
 func userManagement(w http.ResponseWriter, r *http.Request) {
+	returnUserManagement(w, r, "")
+}
+
+func returnUserManagement(w http.ResponseWriter, r *http.Request, status string) {
 	const function = "userManagement"
 
 	var count int
@@ -71,8 +75,7 @@ func userManagement(w http.ResponseWriter, r *http.Request) {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		return
 	} else {
-
-		if _, err := fmt.Fprint(w, strings.Replace(string(fileContent), "<!--map-->", sOptions, -1)); err != nil {
+		if _, err := fmt.Fprint(w, strings.Replace(strings.Replace(string(fileContent), "<!--status-->", status, -1), "<!--map-->", sOptions, -1)); err != nil {
 			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
 		}
 	}
@@ -117,7 +120,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 	if err := loadUserCreds(); err != nil {
 		log.Println(err)
 	}
-	userManagement(w, r)
+	returnUserManagement(w, r, fmt.Sprintf("%s added", creds.Username))
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +159,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	if err := loadUserCreds(); err != nil {
 		log.Println(err)
 	}
-	userManagement(w, r)
+	returnUserManagement(w, r, fmt.Sprintf("%s deleted", creds.Username))
 }
 
 type CredType struct {

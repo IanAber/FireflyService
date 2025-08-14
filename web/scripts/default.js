@@ -5,6 +5,7 @@ let wsConn;
 let gasUnits = {
                  displayUnits: '',
                  capacity: 0};
+let HasFuelCell = false;
 
 function RegisterWebSocket() {
     let url = window.origin.replace("http", "ws") + "/ws";
@@ -32,6 +33,7 @@ function RegisterWebSocket() {
             let gasLeft = gas.offset().left;
             let FuelCell = $("#fc");
             if (jsonData.PanFuelCellStatus !== null) {
+                HasFuelCell = true;
                 $("FuelCell").show();
                 FuelCell.val(jsonData.PanFuelCellStatus.StackPower);
                 if (jsonData.PanFuelCellStatus.StackPower > 0) {
@@ -51,6 +53,7 @@ function RegisterWebSocket() {
                     usingH2Div.show();
                 } else {
                     $("#usingH2Div").hide();
+                    HasFuelCell = false;
                 }
                 diameter = smallest(FuelCell.jqxGauge('height'), FuelCell.jqxGauge('width'));
                 showFuelCellAlarms(jsonData.PanFuelCellStatus, $("#fcAlarms"));
@@ -125,52 +128,6 @@ function RegisterWebSocket() {
         }
     }
 }
-
-function RenderButtons(buttons) {
-    const controls = $("#buttonsDiv");
-    let buttonCount = 0;
-    for (let button of buttons) {
-        if (button.ShowOnCustomer) {
-            buttonCount++
-        }
-    }
-    if (controls.children().length === buttonCount) {
-        let buttonId = 0;
-        for (let button of buttons) {
-            if (button.ShowOnCustomer) {
-                const btn = $("#buttonDiv" + buttonId);
-
-                if (button.Pressed) {
-                    btn.removeClass("ButtonChanging");
-                    btn.removeClass("ButtonOff");
-                    btn.addClass("ButtonOn");
-                } else {
-                    btn.removeClass("ButtonChanging");
-                    btn.removeClass("ButtonOn");
-                    btn.addClass("ButtonOff");
-                }
-            }
-            buttonId++;
-        }
-    } else {
-        controls.children().remove();
-        let buttonId = 0;
-        let buttonTag;
-        for (let button of buttons) {
-            if (button.ShowOnCustomer) {
-                let buttonClass = button.Pressed ? 'ButtonOn' : 'ButtonOff'
-                buttonTag = `<div class="button ${buttonClass}" onclick="clickButton(${buttonId})" id="buttonDiv${buttonId}"><span class="button" id="button${buttonId}">${button.Name}</span></div>`;
-                controls.append(buttonTag);
-                const btn = document.getElementById("buttonDiv" + buttonId);
-                btn.addEventListener("contextmenu", (e) => {e.preventDefault()});
-            }
-            buttonId++;
-        }
-    }
-}
-
-
-
 
 function openElectrolyser(name, id) {
     // Do nothing in the user interface, only used in the admin interface
@@ -297,7 +254,11 @@ function postUpdate(data) {
 //        units = "lbs";
 //        co2Saved = co2Saved * 2.2;
 //    }
-    $("#co2").html(`<h2>${co2Saved.toFixed(2)}${units} of CO<sub>2</sub> Saved</h2>`);
+    if (HasFuelCell) {
+        $("#co2").html(`<h2>${co2Saved.toFixed(2)}${units} of CO<sub>2</sub> Saved</h2>`);
+    } else {
+        $("#co2").html('<h2>&nbsp;</h2>');
+    }
 }
 
 function setupPage() {

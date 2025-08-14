@@ -74,6 +74,7 @@ function RegisterWebSocket() {
 //            updatePressure(jsonData.Analog.Inputs[jsonData.SystemSettings.gasInput].Value, jsonData.SystemSettings.gasDisplayUnits, jsonData.SystemSettings.gasCapacity);
             updatePressure(jsonData.h2);
             updateConductivity(jsonData.Analog.Inputs[7], jsonData.SystemSettings.maxConductivityGreen, jsonData.SystemSettings.maxConductivityYellow);
+            RenderButtons(jsonData.Buttons);
         } catch (e) {
 //            alert(e);
             $("#ErrorText").text(e);

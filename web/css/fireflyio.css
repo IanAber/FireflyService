@@ -773,6 +773,19 @@ span.ValFalse {
     color: red;
 }
 
+span.loginStatus {
+    color: green;
+    font-size: x-large;
+    font-weight: bold;
+    font-style: italic;
+}
+
+div.loginStatus {
+    margin: 10px;
+    text-align: center;
+    background-color: antiquewhite;
+}
+
 select.Electrolysers {
 
 }
@@ -792,7 +805,6 @@ span.errors {
 div.buttons {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
 }
 span.button {
     font-size: 20px;
@@ -808,8 +820,6 @@ div.button {
     padding: 8px 15px;
     cursor: pointer;
     transition: all 0.3s ease;
-    outline: none;
-    user-select: none;
     border-top-width: 3px;
     border-right-width: 3px;
     border-bottom-width: 3px;

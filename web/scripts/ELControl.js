@@ -26,7 +26,7 @@ const ELDIV = `<div class="centered electrolyser">
                     <span id="ELDisabled{{id}}" style="color:orange; display:none">DISABLED</span>
                 </div>
             </div>
-            <div class="control">
+            <div class="control" style="display:none">
                 <img id="ELReboot{{id}}" class="swOff" src="images/power-off.png" alt="Enable" onclick='RebootClick({{id}}, "ELReboot{{id}}", "{{name}}")' />
                 <label for="ELReboot{{id}}">Reboot</label></td>
             </div>
