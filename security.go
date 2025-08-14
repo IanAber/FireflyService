@@ -14,69 +14,74 @@ func userManagement(w http.ResponseWriter, r *http.Request) {
 	returnUserManagement(w, r, "")
 }
 
-func returnUserManagement(w http.ResponseWriter, r *http.Request, status string) {
-	const function = "userManagement"
-
-	var count int
-	var options []string
-	var adminRole bool
-	var filename string
-
+func isAdmin(r *http.Request) (bool, error) {
 	session, err := store.Get(r, "user-session")
 	if err != nil {
 		log.Println(err)
-		return
+		return false, err
 	}
 
 	if !session.IsNew {
 		sessionRole := session.Values["role"]
 		if sessionRole == "admin" {
-			adminRole = true
+			return true, nil
 		} else {
-			adminRole = false
+			return false, nil
 		}
 	} else {
-		log.Println("No seesion found")
-		return
+		log.Println("No session found")
+		return false, fmt.Errorf("No session found")
 	}
+}
 
-	result := pDB.QueryRow("select count(*) from users")
-	if err := result.Scan(&count); err != nil {
-		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-	}
+func returnUserManagement(w http.ResponseWriter, r *http.Request, status string) {
+	const function = "userManagement"
 
-	sOptions := ""
-	name := ""
-	role := ""
-	qry := "select name, role from users where role = 'user' and name <> 'administrator' order by name"
-	if adminRole {
-		qry = "select name, role from users where name <> 'administrator' order by name"
-	}
-	if result, err := pDB.Query(qry); err != nil {
-		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-		return
-	} else {
-		for result.Next() {
-			if err = result.Scan(&name, &role); err != nil {
-				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-			} else {
-				options = append(options, `["`+name+`","`+role+`"]`)
-			}
-		}
-		sOptions = strings.Join(options[:], ",")
-	}
+	var count int
+	var options []string
+	var filename string
 
-	if adminRole {
-		filename = webFiles + "/registration.html"
-	} else {
-		filename = webFiles + "/userRegistration.html"
-	}
-	if fileContent, err := os.ReadFile(filename); err != nil {
+	if adminRole, err := isAdmin(r); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-		return
 	} else {
-		if _, err := fmt.Fprint(w, strings.Replace(strings.Replace(string(fileContent), "<!--status-->", status, -1), "<!--map-->", sOptions, -1)); err != nil {
+		result := pDB.QueryRow("select count(*) from users")
+		if err := result.Scan(&count); err != nil {
 			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+		}
+
+		sOptions := ""
+		name := ""
+		role := ""
+		qry := "select name, role from users where role = 'user' and name <> 'administrator' order by name"
+		if adminRole {
+			qry = "select name, role from users where name <> 'administrator' order by name"
+		}
+		if result, err := pDB.Query(qry); err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			return
+		} else {
+			for result.Next() {
+				if err = result.Scan(&name, &role); err != nil {
+					ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+				} else {
+					options = append(options, `["`+name+`","`+role+`"]`)
+				}
+			}
+			sOptions = strings.Join(options[:], ",")
+		}
+
+		if adminRole {
+			filename = webFiles + "/registration.html"
+		} else {
+			filename = webFiles + "/userRegistration.html"
+		}
+		if fileContent, err := os.ReadFile(filename); err != nil {
+			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			return
+		} else {
+			if _, err := fmt.Fprint(w, strings.Replace(strings.Replace(string(fileContent), "<!--status-->", status, -1), "<!--map-->", sOptions, -1)); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			}
 		}
 	}
 }

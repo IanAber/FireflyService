@@ -9,20 +9,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Changed admin link to open in a new window.&#10;Fixed unhandled errors.">
-      <change afterPath="$PROJECT_DIR$/web/scripts/buttons.js" afterDir="false" />
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Added status to the user management screens.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/release/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/release/FireflyService" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/security.go" beforeDir="false" afterPath="$PROJECT_DIR$/security.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/default.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/default.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/registration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/registration.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/ELControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/ELControl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/default.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/default.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/userControl.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/userControl.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/userControl.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userControl.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/Electrolyser.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/Electrolyser.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/scripts/Electrolyser.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/Electrolyser.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/userRegistration.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/userRegistration.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -96,43 +89,43 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "DefaultGoTemplateProperty": "Go File",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Go Build.Linux X86 Development.executor": "Debug",
-    "Go Build.Linux X86 Release.executor": "Debug",
-    "RunOnceActivity.GoLinterPluginOnboarding": "true",
-    "RunOnceActivity.GoLinterPluginStorageMigration": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "RunOnceActivity.go.vendoring.notification.had.been.shown": "true",
-    "WebServerToolWindowFactoryState": "true",
-    "git-widget-placeholder": "master",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/Users/ianaber/Documents/Projects/Go_Home/src/FireflyService/web",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.stylelint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.stylelint": "",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aProject Default",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Go Build.Linux X86 Development.executor&quot;: &quot;Debug&quot;,
+    &quot;Go Build.Linux X86 Release.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.GoLinterPluginOnboarding&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.GoLinterPluginStorageMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.vendoring.notification.had.been.shown&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/ianaber/Documents/Projects/Go_Home/src/FireflyService/web&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mariadb"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mariadb&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/web" />
@@ -295,7 +288,8 @@
     <MESSAGE value="Added electrolyser maintenance features allowing stack replacement." />
     <MESSAGE value="Changed admin link to open in a new window." />
     <MESSAGE value="Changed admin link to open in a new window.&#10;Fixed unhandled errors." />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed admin link to open in a new window.&#10;Fixed unhandled errors." />
+    <MESSAGE value="Added status to the user management screens." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added status to the user management screens." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
@@ -315,7 +309,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/web/scripts/Electrolyser.js</url>
-          <line>113</line>
+          <line>119</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">

@@ -89,6 +89,12 @@ function setupPage(name) {
         lockSlider = true;
     })
 
+    if (role !== 'admin') {
+        $("#productionRateDiv").hide();
+        $("#controlsDiv").hide();
+        $("#DryerError").hide();
+        $("#DryerDiv").hide();
+    }
     RegisterWebSocket();
     MonitorWebService();
 

@@ -486,17 +486,26 @@ func serveElectrolyser(w http.ResponseWriter, r *http.Request) {
 	const function = "serveElectrolyser"
 	vars := mux.Vars(r)
 
-	if fileContent, err := os.ReadFile(webFiles + "/Electrolyser.html"); err != nil {
+	if adminRole, err := isAdmin(r); err != nil {
 		ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
-		return
 	} else {
-		replacements := make(ReplacementsType)
-		replacements["title"] = currentSettings.Name + " - " + vars["electrolyser"]
-		replacements["name"] = vars["electrolyser"]
-		replacements["version"] = version
-
-		if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
+		admin := "user"
+		if adminRole {
+			admin = "admin"
+		}
+		if fileContent, err := os.ReadFile(webFiles + "/Electrolyser.html"); err != nil {
 			ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			return
+		} else {
+			replacements := make(ReplacementsType)
+			replacements["title"] = currentSettings.Name + " - " + vars["electrolyser"]
+			replacements["name"] = vars["electrolyser"]
+			replacements["version"] = version
+			replacements["admin"] = admin
+
+			if _, err := fmt.Fprint(w, replaceText(string(fileContent), replacements)); err != nil {
+				ReturnJSONError(w, function, err, http.StatusInternalServerError, true)
+			}
 		}
 	}
 }

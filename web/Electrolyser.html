@@ -93,11 +93,11 @@
                   </tr>
               </table>
           </div>
-          <div class="centered">
+          <div class="centered" id="productionRateDiv">
               <label class="parameters" for="rate">Production Rate</label><br>
               <div style="margin:auto;" id="rate"></div>
           </div>
-          <div class="centered">
+          <div class="centered" id="controlsDiv">
               <table class="firefly">
                   <tr class="parameters">
                       <td class="label"><img id="Run" class="swOff" src="/images/power-off.png" alt="Enable" onclick="RunClick()" /></td>
@@ -180,6 +180,7 @@
   </body>
   <script type="text/javascript">
       const name='{{name}}';
+      const role='{{admin}}';
       $(document).ready(function() {setupPage(name);});
   </script>
 </html>
