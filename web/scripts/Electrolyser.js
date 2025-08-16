@@ -318,6 +318,8 @@ function MaintenanceClick() {
             "Drain the electrolyser completely watching for the level to go to Empty.\n" +
             "Then refill to high with new electrolyte using 1.54%KOH.\n" +
             "Assuming 90% pure KOH granules use 17g per litre of pure water.\n\n" +
+            "For EL2.1, quantities are 3.6l (3.6kg) of deionised water and 62g of 90% Potassium Hydroxide pellets (Amazon - https://a.co/d/0ago5Yb).\n" +
+            "For EL4.1, quantities are 2.0l (2kg) of deionised water and 35g of 90% Potassium Hydroxide pellets (Amazon - https://a.co/d/0ago5Yb).\n\n" +
             "Are you really sure this is what you want to do?") === true) {
             url = "/setElectrolyser/StartMaintenance/" + elName;
         } else {

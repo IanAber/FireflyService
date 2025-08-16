@@ -915,3 +915,25 @@ func (settings *SettingsType) buildLinks(external bool, admin bool) string {
 	}
 	return strings.Join(linkSet, "")
 }
+
+func (settings *SettingsType) hasACDevices() bool {
+	for _, device := range settings.ACMeasurement {
+		if device.Name != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func (settings *SettingsType) hasDCDevices() bool {
+	for _, device := range settings.DCMeasurement {
+		if device.Name != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func (settings *SettingsType) hasFuelCell() bool {
+	return settings.FuelCell
+}

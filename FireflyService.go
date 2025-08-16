@@ -349,35 +349,41 @@ func DatabaseLogger() {
 					pDB = nil
 					logAnalog = nil
 				}
-				if err := dbRecord.saveToDatabase(); err != nil {
-					log.Println(err)
-					if closeErr := pDB.Close(); closeErr != nil {
-						log.Println(closeErr)
+				if currentSettings.hasFuelCell() {
+					if err := dbRecord.saveToDatabase(); err != nil {
+						log.Println(err)
+						if closeErr := pDB.Close(); closeErr != nil {
+							log.Println(closeErr)
+						}
+						pDB = nil
+						dbRecord.stmt = nil
 					}
-					pDB = nil
-					dbRecord.stmt = nil
 				}
-				if _, err := ACStatement.Exec(ACMeasurements[0].getVolts(), ACMeasurements[0].getAmps(), ACMeasurements[0].getPower(), ACMeasurements[0].getFrequency(), ACMeasurements[0].getPowerFactor(),
-					ACMeasurements[1].getVolts(), ACMeasurements[1].getAmps(), ACMeasurements[1].getPower(), ACMeasurements[1].getFrequency(), ACMeasurements[1].getPowerFactor(),
-					ACMeasurements[2].getVolts(), ACMeasurements[2].getAmps(), ACMeasurements[2].getPower(), ACMeasurements[2].getFrequency(), ACMeasurements[2].getPowerFactor(),
-					ACMeasurements[3].getVolts(), ACMeasurements[3].getAmps(), ACMeasurements[3].getPower(), ACMeasurements[3].getFrequency(), ACMeasurements[3].getPowerFactor()); err != nil {
-					log.Println(err)
-					if closeErr := pDB.Close(); closeErr != nil {
-						log.Println(closeErr)
+				if currentSettings.hasACDevices() {
+					if _, err := ACStatement.Exec(ACMeasurements[0].getVolts(), ACMeasurements[0].getAmps(), ACMeasurements[0].getPower(), ACMeasurements[0].getFrequency(), ACMeasurements[0].getPowerFactor(),
+						ACMeasurements[1].getVolts(), ACMeasurements[1].getAmps(), ACMeasurements[1].getPower(), ACMeasurements[1].getFrequency(), ACMeasurements[1].getPowerFactor(),
+						ACMeasurements[2].getVolts(), ACMeasurements[2].getAmps(), ACMeasurements[2].getPower(), ACMeasurements[2].getFrequency(), ACMeasurements[2].getPowerFactor(),
+						ACMeasurements[3].getVolts(), ACMeasurements[3].getAmps(), ACMeasurements[3].getPower(), ACMeasurements[3].getFrequency(), ACMeasurements[3].getPowerFactor()); err != nil {
+						log.Println(err)
+						if closeErr := pDB.Close(); closeErr != nil {
+							log.Println(closeErr)
+						}
+						pDB = nil
+						ACStatement = nil
 					}
-					pDB = nil
-					ACStatement = nil
 				}
-				if _, err := DCStatement.Exec(DCMeasurements[0].getVolts(), DCMeasurements[0].getAmps(),
-					DCMeasurements[1].getVolts(), DCMeasurements[1].getAmps(),
-					DCMeasurements[2].getVolts(), DCMeasurements[2].getAmps(),
-					DCMeasurements[3].getVolts(), DCMeasurements[3].getAmps()); err != nil {
-					log.Println(err)
-					if closeErr := pDB.Close(); closeErr != nil {
-						log.Println(closeErr)
+				if currentSettings.hasDCDevices() {
+					if _, err := DCStatement.Exec(DCMeasurements[0].getVolts(), DCMeasurements[0].getAmps(),
+						DCMeasurements[1].getVolts(), DCMeasurements[1].getAmps(),
+						DCMeasurements[2].getVolts(), DCMeasurements[2].getAmps(),
+						DCMeasurements[3].getVolts(), DCMeasurements[3].getAmps()); err != nil {
+						log.Println(err)
+						if closeErr := pDB.Close(); closeErr != nil {
+							log.Println(closeErr)
+						}
+						pDB = nil
+						DCStatement = nil
 					}
-					pDB = nil
-					DCStatement = nil
 				}
 				for _, pc := range PowerControl {
 					pc.logData(PowerStatement)
