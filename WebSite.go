@@ -61,13 +61,15 @@ func RequestLoggerMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 			//}
 			if callLogging {
 				defer func() {
-					log.Printf(
-						"[%s] %s %s %s",
-						req.Method,
-						req.Host,
-						req.URL.Path,
-						req.URL.RequestURI(),
-					)
+					if req.URL.Path != "/recordPower" {
+						log.Printf(
+							"[%s] %s %s %s",
+							req.Method,
+							req.Host,
+							req.URL.Path,
+							req.URL.RequestURI(),
+						)
+					}
 				}()
 			}
 			next.ServeHTTP(w, req)
@@ -948,7 +950,7 @@ func stopElectrolyser(w http.ResponseWriter, r *http.Request) {
 	if el := Electrolysers.FindByName(request); el == nil {
 		ReturnJSONErrorString(w, function, "Electrolyser "+request+" was not found", http.StatusBadRequest, false)
 	} else {
-		if st, err := el.Stop(); err != nil {
+		if st, err := el.Stop(false); err != nil {
 			ReturnJSONErrorString(w, function, err.Error(), st, false)
 		} else {
 			ReturnJSONSuccess(w)

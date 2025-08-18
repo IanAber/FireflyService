@@ -1598,6 +1598,10 @@ func (el *ElectrolyserType) SetRestartPressure(pressure float32) error {
 // Start will Attempt to start the electrolyser - return an httpStatus. 200 if successful
 func (el *ElectrolyserType) Start() (int, error) {
 	if el.CheckConnected() {
+		_, conductivity := AnalogInputs.GetInput(7)
+		if float64(conductivity) >= currentSettings.MaximumConductivity {
+			return http.StatusConflict, fmt.Errorf("conductivity is too high - %f", conductivity)
+		}
 		if time.Since(el.stopTime) > time.Minute*time.Duration(currentSettings.ElectrolyserStopToStartTime) {
 			if !el.status.IsRunning() {
 				el.startTime = time.Now()
@@ -1622,9 +1626,9 @@ func (el *ElectrolyserType) Start() (int, error) {
 /*
 Stop -  Attempt to stop the electrolyser - returns an http.Status. 200 if successful
 */
-func (el *ElectrolyserType) Stop() (int, error) {
+func (el *ElectrolyserType) Stop(immediate bool) (int, error) {
 	if el.CheckConnected() {
-		if time.Since(el.startTime) > time.Minute*time.Duration(currentSettings.ElectrolyserStartToStopTime) {
+		if time.Since(el.startTime) > time.Minute*time.Duration(currentSettings.ElectrolyserStartToStopTime) || immediate {
 			if el.status.IsRunning() {
 				el.stopTime = time.Now()
 			}

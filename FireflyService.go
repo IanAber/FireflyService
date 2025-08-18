@@ -621,6 +621,7 @@ func LeakDetection() {
 					alarmCount -= 1
 				}
 				if alarmCount > 5 {
+					log.Println("Turning off electrolysers due to alarmCount > 5")
 					for _, el := range Electrolysers.Arr {
 						Relays.SetRelay(el.powerRelay, false)
 						SystemAlarms.H2DetectedAlarm = true
@@ -636,8 +637,17 @@ func LeakDetection() {
 					conductivityAlarmCount -= 1
 				}
 				if conductivityAlarmCount > 5 {
+					log.Println("Stopping electrolysers because conductivity is too high!")
 					for _, el := range Electrolysers.Arr {
-						Relays.SetRelay(el.powerRelay, false)
+						if st, err := el.Stop(true); err != nil {
+							log.Println(err)
+							// Failed to stop the electrolyser so we should power it off.
+							Relays.SetRelay(el.powerRelay, false)
+						} else {
+							if st != 200 {
+								log.Printf("Stop electrolyser returned %d\n", st)
+							}
+						}
 					}
 					conductivityAlarmCount = 5
 					SystemAlarms.ConductivityAlarm = true
