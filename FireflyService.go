@@ -168,6 +168,39 @@ func ConnectCANBus() *CANBus {
 	return NewCANBus(CANInterface)
 }
 
+func CheckLogRotate() {
+	const RotateFileName = "/etc/logrotate.d/FireflyService"
+	const RotateFileContent = `/var/log/FireflyService
+{
+        rotate 7
+        daily
+        missingok
+        notifempty
+        compress
+	copytruncate
+        delaycompress
+        sharedscripts
+#        postrotate
+#                /usr/lib/rsyslog/rsyslog-rotate
+        endscript
+}
+`
+	if f, err := os.Open(RotateFileName); err != nil {
+		f, err = os.Create(RotateFileName)
+		if err != nil {
+			log.Fatal("Error creating logrotate file: ", err.Error())
+		}
+		if _, err := fmt.Println(RotateFileContent, f); err != nil {
+			log.Fatal("Error writing logrotate file: ", err.Error())
+		}
+		if err := f.Close(); err != nil {
+			log.Fatal("Error closing logrotate file: ", err.Error())
+		}
+	} else {
+		_ = f.Close()
+	}
+}
+
 func init() {
 	flag.StringVar(&CANInterface, "can", "can0", "CAN Interface Name")
 	//	flag.StringVar(&WebPort, "WebPort", "20080", "Web port")
@@ -194,6 +227,7 @@ func init() {
 	// set log output
 	log.SetOutput(logFile)
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	CheckLogRotate()
 
 	Relays.InitRelays()
 	Outputs.InitOutputs()
