@@ -9,24 +9,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fix incorrect dryer warning recording.">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/2848a7b0-bf75-4c64-af6e-761ad9cade45.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Electrolyser.go" beforeDir="false" afterPath="$PROJECT_DIR$/Electrolyser.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ElectrolyserMaintenance.go" beforeDir="false" afterPath="$PROJECT_DIR$/ElectrolyserMaintenance.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FireflyService.go" beforeDir="false" afterPath="$PROJECT_DIR$/FireflyService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PowerControl.go" beforeDir="false" afterPath="$PROJECT_DIR$/PowerControl.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Settings.go" beforeDir="false" afterPath="$PROJECT_DIR$/Settings.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSite.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSite.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebSiteRedirect.go" beforeDir="false" afterPath="$PROJECT_DIR$/WebSiteRedirect.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/amd64/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/amd64/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/release/FireflyService" beforeDir="false" afterPath="$PROJECT_DIR$/dist/release/FireflyService" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/version.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/PowerData.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/PowerData.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/css/fireflyio.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/fireflyio.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/scripts/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/web/scripts/admin.js" afterDir="false" />
-    </list>
+    <list default="true" id="d944bae9-6240-4f73-94a6-a279edea667d" name="Changes" comment="Fix incorrect dryer warning recording." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
