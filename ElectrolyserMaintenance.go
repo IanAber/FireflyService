@@ -4,26 +4,27 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type ELMaintenanceType struct {
 	ID                    uint64    `json:"id"`
-	Name                  string    `json:"name"`
-	Logged                time.Time `json:"logged"`
-	StackTimeOffset       int32     `json:"stackTimeOffset"`
-	SystemTimeOffset      int32     `json:"systemTimeOffset"`
-	RestartCyclesOffset   int32     `json:"restartCyclesOffset"`
-	StackProductionOffset float32   `json:"stackProductionOffset"`
-	StackSerialNumber     string    `json:"stackSerialNumber"`
-	SystemSerialNumber    string    `json:"systemSerialNumber"`
-	Activity              string    `json:"activity"`
-	Notes                 string    `json:"notes"`
+	Name                  string    `json:"name"`                  // Name of the electrolyser
+	Logged                time.Time `json:"logged"`                // Time and date of the maintenance activity
+	StackTimeOffset       int32     `json:"stackTimeOffset"`       // Used to adjust stack time when it is replaced
+	SystemTimeOffset      int32     `json:"systemTimeOffset"`      // Used to adjust system run time
+	RestartCyclesOffset   int32     `json:"restartCyclesOffset"`   // Used to adjust restart cycles
+	StackProductionOffset float32   `json:"stackProductionOffset"` // Used to adjust stack production if it is changed
+	StackSerialNumber     string    `json:"stackSerialNumber"`     // Used to override the stack serial number from the machine
+	SystemSerialNumber    string    `json:"systemSerialNumber"`    // Used to override the serial number from the machine
+	Activity              string    `json:"activity"`              // Records the maintenance activity performed
+	Notes                 string    `json:"notes"`                 // Free text to record notes regarding the maintenance activity
 }
 
 // LoadMaintenanceRecords loads a new set of maintenance records with the latest data
@@ -40,10 +41,22 @@ func LoadMaintenanceRecords(pdb *sql.DB) {
 
 // loadLatest reads the database to find the latest record
 func (elm *ELMaintenanceType) loadLatest(pdb *sql.DB, name string) error {
-	row := pdb.QueryRow(`select ID, Name, StackTimeOffset, SystemTimeOffset, RestartCyclesOffset, StackProductionOffset, StackSerial, SystemSerial, Activity, Notes from ElectrolyserMaintenanceLog eml where Name = ? order by id desc`, name)
+	elm = new(ELMaintenanceType) // Initialise a new record
+	elm.Name = name
+	elm.SystemTimeOffset = 0
+	elm.SystemSerialNumber = ""
+	elm.StackTimeOffset = 0
+	elm.StackProductionOffset = 0
+	elm.StackSerialNumber = ""
+	elm.RestartCyclesOffset = 0
+	elm.Activity = ""
+	elm.Notes = ""
+	elm.Logged = time.Now()
+
+	row := pdb.QueryRow(`select ID, Name, StackTimeOffset, SystemTimeOffset, RestartCyclesOffset, StackProductionOffset, StackSerial, SystemSerial, Activity, Notes from ElectrolyserMaintenanceLog eml where Name = ? order by id desc limit 1`, name)
 	if err := row.Scan(&elm.ID, &elm.Name, &elm.StackTimeOffset, &elm.SystemTimeOffset, &elm.RestartCyclesOffset, &elm.StackProductionOffset, &elm.StackSerialNumber, &elm.SystemSerialNumber, &elm.Activity, &elm.Notes); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil
+			return nil // This is not an error, it just indicates that we do not yet have any records for this electrolyser
 		} else {
 			return err
 		}
@@ -73,7 +86,7 @@ func (elm *ELMaintenanceType) resetStackHours(pdb *sql.DB, notes string) {
 
 // resetSystemHours resets the system hours by updating the offset to the current setting and writes a new record to the database
 func (elm *ELMaintenanceType) resetSystemHours(pdb *sql.DB, notes string) {
-	elm.StackTimeOffset = int32(Electrolysers.FindByName(elm.Name).status.StackTotalRunTime)
+	elm.SystemTimeOffset = int32(Electrolysers.FindByName(elm.Name).status.SystemHours)
 	elm.Activity = "Reset System Hours"
 	elm.Notes = notes
 	if err := elm.WriteToDB(pdb); err != nil {
@@ -92,46 +105,53 @@ func (elm *ELMaintenanceType) resetRestartCycles(pdb *sql.DB, notes string) {
 }
 
 func (elm *ELMaintenanceType) replaceSystem(pdb *sql.DB, notes string) {
-	elm.StackTimeOffset = 0
-	elm.StackProductionOffset = 0
-	elm.SystemTimeOffset = 0
-	elm.Notes = notes
-	if err := elm.WriteToDB(pdb); err != nil {
-		log.Println(err)
+	if el := Electrolysers.FindByName(elm.Name); el == nil {
+		log.Printf("Failed to find %s by name", elm.Name)
+		return
+	} else {
+		elm.SystemTimeOffset = int32(el.status.SystemHours)
+		elm.SystemSerialNumber = el.status.Serial
+		elm.StackTimeOffset = int32(el.status.StackTotalRunTime)
+		elm.StackProductionOffset = float32(el.status.StackTotalProduction)
+		elm.StackSerialNumber = el.status.StackSerialNumber
+		elm.RestartCyclesOffset = int32(el.status.StackStartStopCycles)
+		elm.Activity = "Replace System"
+		elm.Notes = notes
+		if err := elm.WriteToDB(pdb); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
-func (elm *ELMaintenanceType) resetStackSerialNumber(pdb *sql.DB, serial string, notes string) {
-	elm.StackSerialNumber = serial
+func (elm *ELMaintenanceType) resetStackSerialNumber(pdb *sql.DB, el *ElectrolyserType, serial string, notes string) {
 	elm.Activity = "Replace Stack"
+	elm.SystemSerialNumber = el.status.Serial
+	elm.StackSerialNumber = serial
+	elm.RestartCyclesOffset = 0
 	elm.Notes = notes
-	st := Electrolysers.FindByName(elm.Name)
-	elm.RestartCyclesOffset = int32(st.status.StackStartStopCycles)
-	elm.StackTimeOffset = int32(st.status.StackTotalRunTime)
+	elm.StackTimeOffset = int32(el.status.StackTotalRunTime)
 	if err := elm.WriteToDB(pdb); err != nil {
 		log.Println(err)
-	} else {
-		log.Println("Updated stack serial number for ", elm.Name)
 	}
 }
 
 func (elm *ELMaintenanceType) replaceElectrolyte(pdb *sql.DB, notes string) {
-	elm.Notes = notes
 	elm.Activity = "Replace Electrolyte"
-	st := Electrolysers.FindByName(elm.Name)
-	if _, err := pdb.Exec("INSERT INTO ElectrolyserMaintenanceLog (Name, StackTimeOffset, StackSerial, RestartCyclesOffset, SystemTimeOffset, SystemSerial, Activity) VALUES (?,?,?,?,?,?,?)",
-		elm.Name, elm.SystemTimeOffset, st.GetSerial(), elm.RestartCyclesOffset, elm.SystemTimeOffset, st.GetSerial(), "replceElectrolyte"); err != nil {
+	elm.Notes = notes
+	if err := elm.WriteToDB(pdb); err != nil {
 		log.Println(err)
 	}
 }
 
-func (elm *ELMaintenanceType) resetSystemSerialNumber(pdb *sql.DB, notes string) {
-	st := Electrolysers.FindByName(elm.Name)
-	elm.Activity = "Replace System"
-	elm.SystemSerialNumber = st.status.Serial
+func (elm *ELMaintenanceType) resetSystemSerialNumber(el *ElectrolyserType, pdb *sql.DB, notes string) {
+	elm.Activity = "Reset Serial Number"
+	elm.SystemSerialNumber = el.status.Serial
+	elm.StackSerialNumber = el.status.StackSerialNumber
 	elm.Notes = notes
 	elm.SystemTimeOffset = 0
 	elm.StackTimeOffset = 0
+	elm.RestartCyclesOffset = 0
+	elm.Name = el.status.Name
 	if err := elm.WriteToDB(pdb); err != nil {
 		log.Println(err)
 	}
@@ -147,7 +167,7 @@ func recordElMaintenance(w http.ResponseWriter, r *http.Request) {
 	if el := Electrolysers.FindByName(name); el != nil {
 		switch action {
 		case "ReplaceStack":
-			el.status.elm.resetStackSerialNumber(pDB, serial, notes)
+			el.status.elm.resetStackSerialNumber(pDB, el, serial, notes)
 		case "ReplaceSystem":
 			log.Println("Electrolyser Replaced")
 			el.status.elm.replaceSystem(pDB, notes)

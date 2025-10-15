@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AnalogSettingType struct {
@@ -404,7 +406,59 @@ func (settings *SettingsType) UpdateElectrolyserArray() {
 	//	Electrolysers.Arr[2].status.Name, Electrolysers.Arr[2].status.StackTotalRunTime)
 }
 
+func (settings *SettingsType) ListBackupFiles(name string) ([]string, error) {
+	root := name[:strings.LastIndex(name, "/")]
+	var files []string
+	f, err := os.Open(root)
+	if err != nil {
+		return files, err
+	}
+	fileInfo, err := f.Readdir(-1)
+	if closeErr := f.Close(); closeErr != nil {
+		log.Println(closeErr)
+	}
+	if err != nil {
+		return files, err
+	}
+
+	for _, file := range fileInfo {
+		name := file.Name()
+		if strings.Contains(name, ".backup-") {
+			files = append(files, name)
+		}
+	}
+	sort.Strings(files)
+	return files, nil
+}
+
+const FilesToKeep = 30
+
+func (settings *SettingsType) Backup(filepath string) {
+	backupFile := fmt.Sprintf("%s.backup-%s", filepath, time.Now().Format("2006-01-02"))
+	if _, err := os.Stat(backupFile); err == nil {
+		return
+	}
+	if renameErr := os.Rename(filepath, backupFile); renameErr != nil {
+		log.Println(renameErr)
+	}
+	searchFile := fmt.Sprintf("%s.backup-*", filepath)
+	if files, err := settings.ListBackupFiles(searchFile); err != nil {
+		log.Printf("Error reading directory: %s", err)
+	} else {
+		if len(files) > FilesToKeep {
+			for _, file := range files[:len(files)-FilesToKeep] {
+				//				log.Printf("Removing backup file %s", file)
+				fileToDelete := filepath[:strings.LastIndex(filepath, "/")+1] + file
+				if removeErr := os.Remove(fileToDelete); removeErr != nil {
+					log.Println(removeErr)
+				}
+			}
+		}
+	}
+}
+
 func (settings *SettingsType) SaveSettings(filepath string) error {
+	settings.Backup(filepath)
 	settings.filepath = filepath
 	if bData, err := json.MarshalIndent(settings, "", "    "); err != nil {
 		log.Println("Error converting settings to text -", err)
@@ -414,9 +468,6 @@ func (settings *SettingsType) SaveSettings(filepath string) error {
 			log.Println("Error writing JSON settings file -", err)
 			return err
 		}
-	}
-	if err := settings.LoadSettings(filepath); err != nil {
-		log.Println("Error loading settings file -", err)
 	}
 	return nil
 }

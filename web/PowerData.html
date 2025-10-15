@@ -15,7 +15,7 @@
   <script type="text/javascript" src="scripts/charts.js"></script>
   <script type="text/ecmascript" src="scripts/utils.js"></script>
 </head>
-  <body style="background:white;" onload="PopulateTitle()">
+  <body style="background:white;">
     <header class="header">
       <h1>
         <span class="system" id="system">Loading...</span>
@@ -116,8 +116,8 @@
               visible: true,
               step: 2,
             },
-            minValue: -300,
-            maxValue: 300,
+            minValue: -400,
+            maxValue: 400,
             description: 'Battery Current',
           },
           series: [{
@@ -170,6 +170,29 @@
             dataField: 'soc',
             displayText: 'State of Charge'
           }]
+        },{
+            type: 'spline',
+            valueAxis: {
+                unitInterval: 10,
+                gridLines: {
+                    visible: true,
+                    unitInterval: 50,
+                },
+                labels: {
+                    formatSettings: {
+                        decimalPlaces: 1,
+                    },
+                    visible: true,
+                    step: 10,
+                },
+                minValue: 0,
+                maxValue: 1200,
+                description: 'Max Charge Current',
+            },
+            series: [{
+                dataField: 'maxCharge',
+                displayText: 'Max Charge Current'
+            }]
         },{
           type: 'spline',
           valueAxis: {

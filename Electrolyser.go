@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/simonvetter/modbus"
 	"html"
 	"log"
 	"math"
@@ -19,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/simonvetter/modbus"
 )
 
 //const ElIdle = 2
@@ -1876,7 +1877,7 @@ func (el *ElectrolyserType) GetDryerWarningsHTML() string {
 
 // GetDryerWarningText returns any errors from the connected dryer
 func (el *ElectrolyserType) GetDryerWarningText() string {
-	return strings.Join(el.GetWarnings(), "\n")
+	return strings.Join(el.GetDryerWarnings(), "\n")
 }
 
 // Acquire searches for an electrolyser

@@ -205,7 +205,7 @@ function AddSource (source) {
     <table id="PowerInputs" class="PowerInputs">
         <thead class="PowerHeader">
             <tr class="PowerHeader">
-                <th class="PowerName" colSpan="4">Battery</th>
+                <th class="PowerName" colSpan="5">Battery</th>
                 <th class="PowerName" colSpan="2">Mains</th>
             </tr>
             <tr class="PowerHeader">
@@ -213,16 +213,18 @@ function AddSource (source) {
                 <th class="PowerName">Current</th>
                 <th class="PowerName">Voltage</th>
                 <th class="PowerName">State of Charge</th>
+                <th class="PowerName">Maximum Charge Current</th>
                 <th class="PowerName">Solar Power</th>
                 <th class="PowerName">Frequency</th>
             </tr>
         </thead>
         <tbody class="PowerData">
             <tr class="PowerData PowerRow" ondblclick="openPowerChart(0)">
-                <td class="PowerName"><span id="source0">firefly</span></td>
+                <td class="PowerName"><span id="source0">` + source + `</span></td>
                 <td class="PowerData"><span id="iBatt0">0.0</span></td>
                 <td class="PowerData"><span id="vBatt0">0.0</span></td>
                 <td class="PowerData"><span id="socBatt0">0.0</span></td>
+                <td class="PowerData"><span id="maxChargeAmps0">0.0</span></td>
                 <td class="PowerData"><span id="solar0">0.0</span></td>
                 <td class="PowerData"><span id="hz0">0.0</span></td>
             </tr>
@@ -231,7 +233,7 @@ function AddSource (source) {
         sourceNum = 0;
     } else {
        sourceNum = $(".PowerRow").length;
-       let strRow = `<tr class="PowerData PowerRow" ondblclick="openPowerChart(${sourceNum})"><td class="PowerName"><span id="source${sourceNum}">${source}</span></td><td class="PowerData"><span id="iBatt${sourceNum}"></span></td><td class="PowerData"><span id="vBatt${sourceNum}"></span></td><td class="PowerData"><span id="socBatt${sourceNum}"></span></td><td class="PowerData"><span id="solar${sourceNum}"></span></td><td class="PowerData"><span id="hz${sourceNum}"></span></td></tr>`;
+       let strRow = `<tr class="PowerData PowerRow" ondblclick="openPowerChart(${sourceNum})"><td class="PowerName"><span id="source${sourceNum}">${source}</span></td><td class="PowerData"><span id="iBatt${sourceNum}"></span></td><td class="PowerData"><span id="vBatt${sourceNum}"></span></td><td class="PowerData"><span id="socBatt${sourceNum}"></span></td><td class="PowerData"><span id="maxChargeAmps${sourceNum}"></span></td><td class="PowerData"><span id="solar${sourceNum}"></span></td><td class="PowerData"><span id="hz${sourceNum}"></span></td></tr>`;
        $("tbody.PowerData").append(strRow);
     }
     return sourceNum;
@@ -264,6 +266,7 @@ function UpdatePower(Power) {
     $("#iBatt"+idx).text((Power.amps).toFixed(2) + "A");
     $("#vBatt"+idx).text((Power.volts).toFixed(2) + "V");
     $("#socBatt"+idx).text((Power.soc).toFixed(2) + "%");
+    $("#maxChargeAmps"+idx).text((Power.bmsChargeCurrentMax).toFixed(2) + "A");
     $("#solar"+idx).text((Power.solar / 1000).toFixed(3) + "kW");
 }
 

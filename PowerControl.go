@@ -9,13 +9,14 @@ import (
 	"time"
 )
 
-const InsertPowerSQL = "INSERT INTO firefly.Power(source, amps, volts, soc, frequency,solar) VALUES (?,?,?,?,?,?)"
+const InsertPowerSQL = "INSERT INTO firefly.Power(source, amps, volts, soc, maxchargeamps, frequency, solar) VALUES (?,?,?,?,?,?,?)"
 
 type PowerControlType struct {
 	Source        string    `json:"source"`
 	Voltage       float64   `json:"volts"`
 	Current       float64   `json:"amps"`
 	StateOfCharge float64   `json:"soc"`
+	MaxChargeAmps float64   `json:"bmsChargeCurrentMax"`
 	Frequency     float64   `json:"hz"`
 	Solar         float64   `json:"solar"`
 	LastUpdated   time.Time `json:"lastUpdated"`
@@ -65,6 +66,14 @@ func (pc *PowerControlType) setStateOfCharge(s float64) {
 	pc.updated = true
 }
 
+// setMaxChargeCurrent sets the value provided by the BMS
+func (pc *PowerControlType) setMaxChargeCurrent(f float64) {
+	pc.mu.Lock()
+	defer pc.mu.Unlock()
+	pc.MaxChargeAmps = f
+	pc.updated = true
+}
+
 // setFrequency sets the mains frequency used to help determine available solar power
 func (pc *PowerControlType) setFrequency(f float64) {
 	pc.mu.Lock()
@@ -82,12 +91,13 @@ func (pc *PowerControlType) setSolar(s float64) {
 }
 
 // setAll sets volts, amps, soc and optionally f. If f < 1 ignore it. If solar < 0 ignore it.
-func (pc *PowerControlType) setAll(v float64, i float64, soc float64, f float64, solar float64) {
+func (pc *PowerControlType) setAll(v float64, i float64, soc float64, f float64, maxCharge float64, solar float64) {
 	pc.mu.Lock()
 	defer pc.mu.Unlock()
 	pc.Voltage = v
 	pc.Current = i
 	pc.StateOfCharge = soc
+	pc.MaxChargeAmps = maxCharge
 	if solar >= 0.0 {
 		pc.Solar = solar
 	}
@@ -97,18 +107,21 @@ func (pc *PowerControlType) setAll(v float64, i float64, soc float64, f float64,
 	pc.updated = true
 }
 
-func (pc *PowerControlType) getValues() (source string, current int32, voltage uint16, soc uint16, frequency uint16, solar uint32, updated bool) {
+func (pc *PowerControlType) getValues() (source string, current int32, voltage uint16, soc uint16, maxchargecurrent int64, frequency uint16, solar uint32, updated bool) {
 	pc.mu.Lock()
 	defer pc.mu.Unlock()
-	return pc.Source, int32(math.Round(pc.Current * 100)), uint16(math.Round(pc.Voltage * 100)), uint16(math.Round(pc.StateOfCharge * 100)), uint16(math.Round(pc.Frequency * 100)), uint32(pc.Solar), pc.updated
+	return pc.Source, int32(math.Round(pc.Current * 100)), uint16(math.Round(pc.Voltage * 100)), uint16(math.Round(pc.StateOfCharge * 100)), int64(math.Round(pc.MaxChargeAmps * 100)), uint16(math.Round(pc.Frequency * 100)), uint32(pc.Solar), pc.updated
 }
 
 func (pc *PowerControlType) logData(stmt *sql.Stmt) {
-	source, current, voltage, soc, frequency, solar, updated := pc.getValues()
+	// source, amps, volts, soc, maxchargeamps, frequency, solar
+	source, current, voltage, soc, maxchargeamps, frequency, solar, updated := pc.getValues()
 	// Update the database if values have changed since last time
 	if updated {
-		if _, err := stmt.Exec(source, current, voltage, soc, frequency, solar); err != nil {
+		if _, err := stmt.Exec(source, current, voltage, soc, maxchargeamps, frequency, solar); err != nil {
 			log.Print(err)
+		} else {
+			log.Printf("Wrote %s %d %d %d %d %d %d", source, current, voltage, soc, maxchargeamps, frequency, solar)
 		}
 	}
 	pc.updated = false
@@ -119,6 +132,7 @@ const PowerBySecond = `select UNIX_TIMESTAMP(logged) as logged,
 	volts / 100 as vBatt,
 	soc / 100 as soc,
 	frequency / 100 as hz,
+	maxchargeamps / 100 as maxCharge,
 	solar / 1000 as solar
 	from Power
    where logged between ? and ? AND source = ?`
@@ -132,6 +146,7 @@ const PowerByMinute = `select min(UNIX_TIMESTAMP(logged)) as logged,
 	AVG(volts) / 100 as vBatt,
 	AVG(soc) / 100 as soc,
 	AVG(frequency) / 100 as hz,
+	Avg(maxchargeamps) / 100 as maxCharge,
 	AVG(solar) / 1000 as solar
 	from Power
   where logged between ? and ? AND source = ?

@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
 	"log"
 	"net"
 	"os"
 	"strings"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 )
 
 /*
@@ -761,8 +762,8 @@ WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
 
 	const DCValuesCleanupStatement = `DELETE FROM firefly.DCValues WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH));`
 
-	const PowerArchiveStatement = `INSERT INTO firefly.Power_Archive (logged, volts, amps, soc, frequency, solar, source)
-  SELECT min(logged), avg(volts), avg(amps), avg(soc), avg(frequency), avg(solar), source
+	const PowerArchiveStatement = `INSERT INTO firefly.Power_Archive (logged, volts, amps, soc, frequency, maxchargeamps, solar, source)
+  SELECT min(logged), avg(volts), avg(amps), avg(soc), avg(frequency), avg(maxchargeamps), avg(solar), source
     FROM firefly.Power
 WHERE logged < DATE(DATE_ADD( now(), INTERVAL -1 MONTH))
  GROUP BY UNIX_TIMESTAMP(logged) DIV 60, source;`

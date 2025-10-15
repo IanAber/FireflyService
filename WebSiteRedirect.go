@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type APIType struct {
@@ -132,12 +133,12 @@ func RegisterWebSiteAPICalls(router *mux.Router) {
 	RegisterWebSiteAPI(router, "/logCalls/{on}", "", "GET", "Enable logging of all API calls", setCallLogging)
 	RegisterWebSiteAPI(router, "/logCanBus/{on}", "", "GET", "Enable logging of all CAN bus errors", setCANLogging)
 
-	RegisterWebSiteAPI(router, "/recordPower", "", "POST", `Post a JSON block {"source":"firefly", current":i.i, "voltage": v.v, "soc":s.s, "hz":f.f, "solar":w } hz is optional, positive current is charging.`, recordPowerData)
-	RegisterWebSiteAPI(router, "/recordBatteryVolts", "", "POST", `Post a JSON block {"source":"firefly", "voltage": v.v }`, recordBatteryVolts)
-	RegisterWebSiteAPI(router, "/recordBatteryAmps", "", "POST", `Post a JSON block {"source":"firefly", "current":i.i } positive current is charging.`, recordBatteryAmps)
-	RegisterWebSiteAPI(router, "/recordBatterySOC", "", "POST", `Post a JSON block {"source":"firefly", "soc":s.s } State of charge as %`, recordBatterySOC)
-	RegisterWebSiteAPI(router, "/recordBatteryHertz", "", "POST", `Post a JSON block {"source":"firefly", "hz":f.f } hz is mains frequency in Hz.`, recordMainsFrequency)
-	RegisterWebSiteAPI(router, "/recordSolar", "", "POST", `Post a JSON Block {"source":"firefly", "solar":w, "hz":f.f } hz is mains frequency and is optional. Set to 0 to ignore`, recordSolar)
+	RegisterWebSiteAPI(router, "/recordPower", "", "POST", `Post a JSON block {"source":"firefly", current":i.i, "voltage": v.v, "soc":s.s, "maxchargecurrent":m.m, "hz":f.f, "solar":w } hz is optional, positive current is charging.`, recordPowerData)
+	//RegisterWebSiteAPI(router, "/recordBatteryVolts", "", "POST", `Post a JSON block {"source":"firefly", "voltage": v.v }`, recordBatteryVolts)
+	//RegisterWebSiteAPI(router, "/recordBatteryAmps", "", "POST", `Post a JSON block {"source":"firefly", "current":i.i } positive current is charging.`, recordBatteryAmps)
+	//RegisterWebSiteAPI(router, "/recordBatterySOC", "", "POST", `Post a JSON block {"source":"firefly", "soc":s.s } State of charge as %`, recordBatterySOC)
+	//RegisterWebSiteAPI(router, "/recordBatteryHertz", "", "POST", `Post a JSON block {"source":"firefly", "hz":f.f } hz is mains frequency in Hz.`, recordMainsFrequency)
+	//RegisterWebSiteAPI(router, "/recordSolar", "", "POST", `Post a JSON Block {"source":"firefly", "solar":w, "hz":f.f } hz is mains frequency and is optional. Set to 0 to ignore`, recordSolar)
 
 	RegisterWebSiteAPI(router, "/h2", "", "GET", `Return the current hydrogen volume`, getH2Volume)
 

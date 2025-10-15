@@ -812,6 +812,7 @@ span.button {
     color: #ffffff;
 }
 div.button {
+    margin: 6px 6px 6px 6px;
     -webkit-user-select: none;
     position: relative;
     display: inline-flex;

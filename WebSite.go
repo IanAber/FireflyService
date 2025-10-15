@@ -4,8 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"log"
 	"net"
 	"net/http"
@@ -14,9 +12,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
-const firefly = "firefly"
+//const firefly = "firefly"
 
 type neuteredFileSystem struct {
 	fs http.FileSystem
@@ -133,87 +134,83 @@ func setUpWebSite() {
 }
 
 type PowerBody struct {
-	Source    string  `json:"source"`
-	Amps      float64 `json:"iBatt"`
-	Volts     float64 `json:"vBatt"`
-	SOC       float64 `json:"soc"`
-	Frequency float64 `json:"frequency"`
-	Solar     float64 `json:"solar"`
+	Source           string  `json:"source"`
+	Amps             float64 `json:"iBatt"`
+	Volts            float64 `json:"vBatt"`
+	SOC              float64 `json:"soc"`
+	MaxChargeCurrent float64 `json:"bmsChargeCurrentMax"`
+	Frequency        float64 `json:"hz"`
+	Solar            float64 `json:"solar"`
 }
 
 func recordPowerData(w http.ResponseWriter, r *http.Request) {
 	var data PowerBody
-	data.Source = firefly
 	err := json.NewDecoder(r.Body).Decode(&data)
+	log.Print(data)
 	if err != nil {
 		ReturnJSONError(w, "recordBatteryData", err, http.StatusBadRequest, true)
 		return
 	}
 	pc := FindPowerControl(data.Source)
-	pc.setAll(data.Volts, data.Amps, data.SOC, data.Frequency, data.Solar)
+	pc.setAll(data.Volts, data.Amps, data.SOC, data.Frequency, data.MaxChargeCurrent, data.Solar)
 }
 
-func recordBatteryVolts(w http.ResponseWriter, r *http.Request) {
-	var data PowerBody
-	data.Source = firefly
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		ReturnJSONError(w, "recordBatteryVolts", err, http.StatusBadRequest, true)
-		return
-	}
-	pc := FindPowerControl(data.Source)
-	pc.setVoltage(data.Volts)
-}
-
-func recordBatteryAmps(w http.ResponseWriter, r *http.Request) {
-	var data PowerBody
-	data.Source = firefly
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		ReturnJSONError(w, "recordBatteryAmps", err, http.StatusBadRequest, true)
-		return
-	}
-	pc := FindPowerControl(data.Source)
-	pc.setCurrent(data.Amps)
-}
-func recordBatterySOC(w http.ResponseWriter, r *http.Request) {
-	var data PowerBody
-	data.Source = firefly
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		ReturnJSONError(w, "recordBatterySOC", err, http.StatusBadRequest, true)
-		return
-	}
-	pc := FindPowerControl(data.Source)
-	pc.setStateOfCharge(data.SOC)
-}
-func recordMainsFrequency(w http.ResponseWriter, r *http.Request) {
-	var data PowerBody
-	data.Source = firefly
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		ReturnJSONError(w, "recordMainsFrequency", err, http.StatusBadRequest, true)
-		return
-	}
-	pc := FindPowerControl(data.Source)
-	pc.setFrequency(data.Frequency)
-}
-
-func recordSolar(w http.ResponseWriter, r *http.Request) {
-	var data PowerBody
-	data.Source = firefly
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		ReturnJSONError(w, "recordBatteryData", err, http.StatusBadRequest, true)
-		return
-	}
-	log.Println(data)
-	pc := FindPowerControl(data.Source)
-	pc.setSolar(data.Solar)
-	if data.Frequency > 0 {
-		pc.setFrequency(data.Frequency)
-	}
-}
+//func recordBatteryVolts(w http.ResponseWriter, r *http.Request) {
+//	var data PowerBody
+//	err := json.NewDecoder(r.Body).Decode(&data)
+//	if err != nil {
+//		ReturnJSONError(w, "recordBatteryVolts", err, http.StatusBadRequest, true)
+//		return
+//	}
+//	pc := FindPowerControl(data.Source)
+//	pc.setVoltage(data.Volts)
+//}
+//
+//func recordBatteryAmps(w http.ResponseWriter, r *http.Request) {
+//	var data PowerBody
+//	err := json.NewDecoder(r.Body).Decode(&data)
+//	if err != nil {
+//		ReturnJSONError(w, "recordBatteryAmps", err, http.StatusBadRequest, true)
+//		return
+//	}
+//	pc := FindPowerControl(data.Source)
+//	pc.setCurrent(data.Amps)
+//}
+//func recordBatterySOC(w http.ResponseWriter, r *http.Request) {
+//	var data PowerBody
+//	err := json.NewDecoder(r.Body).Decode(&data)
+//	if err != nil {
+//		ReturnJSONError(w, "recordBatterySOC", err, http.StatusBadRequest, true)
+//		return
+//	}
+//	pc := FindPowerControl(data.Source)
+//	pc.setStateOfCharge(data.SOC)
+//}
+//func recordMainsFrequency(w http.ResponseWriter, r *http.Request) {
+//	var data PowerBody
+//	err := json.NewDecoder(r.Body).Decode(&data)
+//	if err != nil {
+//		ReturnJSONError(w, "recordMainsFrequency", err, http.StatusBadRequest, true)
+//		return
+//	}
+//	pc := FindPowerControl(data.Source)
+//	pc.setFrequency(data.Frequency)
+//}
+//
+//func recordSolar(w http.ResponseWriter, r *http.Request) {
+//	var data PowerBody
+//	err := json.NewDecoder(r.Body).Decode(&data)
+//	if err != nil {
+//		ReturnJSONError(w, "recordBatteryData", err, http.StatusBadRequest, true)
+//		return
+//	}
+//	log.Println(data)
+//	pc := FindPowerControl(data.Source)
+//	pc.setSolar(data.Solar)
+//	if data.Frequency > 0 {
+//		pc.setFrequency(data.Frequency)
+//	}
+//}
 
 func getTitle(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -1894,6 +1891,9 @@ func AcquireAllElectrolysers() error {
 	for _, rl := range relays {
 
 		el := Electrolysers.FindByRelay(rl)
+		if el == nil {
+			return fmt.Errorf("failed to identify the electrolyser for relay %d", rl)
+		}
 		log.Printf("Searching for electrolyser on relay %d", el.powerRelay)
 		if err := el.Acquire(); err != nil {
 			return err
